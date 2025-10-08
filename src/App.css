@@ -1,0 +1,8 @@
+#root {
+  max-width: 100dvw;
+  display: flex;
+  min-height: 100dvh;
+  margin: 0 auto;
+  text-align: center;
+  background-color: #f7f9ff;
+}

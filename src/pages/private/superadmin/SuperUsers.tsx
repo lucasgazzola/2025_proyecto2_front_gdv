@@ -320,33 +320,6 @@ export default function SuperUsers() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          className={`rounded-full text-xs transition-colors
-                            ${
-                              user.isDemo
-                                ? "bg-blue-100 text-blue-800 border border-blue-200"
-                                : "bg-gray-100 text-gray-700 border border-gray-200"
-                            }`}
-                        >
-                          {user.isDemo ? t("common.yes") : t("common.no")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="flex items-center justify-center space-x-1">
-                        <span>
-                          {user.tokensUsed} / {user.tokensAvailable}
-                        </span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <InfoIcon className="w-4 h-4 text-gray-400" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{t("users.usedTokensOfAvaiable")}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
                           className={`capitalize ${
                             user.active
                               ? "bg-green-100 text-green-800"

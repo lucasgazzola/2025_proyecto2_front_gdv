@@ -5,7 +5,6 @@ import { ToastContainer } from "react-toastify";
 
 import App from "./App.tsx";
 import "./index.css";
-// import { StrictMode } from "react";
 
 import { AuthProvider } from "./contexts/providers/AuthContextProvider.tsx";
 import { LanguageProvider } from "./contexts/providers/LanguageContextProvider.tsx";

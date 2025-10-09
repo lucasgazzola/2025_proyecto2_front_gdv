@@ -77,11 +77,6 @@ export default function Header({
             {t("nav.profile") ?? "Mi perfil"}
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={toggleLanguage} className="cursor-pointer">
-            <Globe className="w-4 h-4 mr-2" />
-            {language === "es" ? "English" : "Español"}
-          </DropdownMenuItem>
-
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="cursor-pointer">
             <LogOut className="w-4 h-4 mr-2" />

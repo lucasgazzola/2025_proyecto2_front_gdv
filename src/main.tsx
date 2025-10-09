@@ -11,7 +11,6 @@ import { AuthProvider } from "./contexts/providers/AuthContextProvider.tsx";
 import { LanguageProvider } from "./contexts/providers/LanguageContextProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
-  // <StrictMode>
   <BrowserRouter>
     <AuthProvider>
       <LanguageProvider>
@@ -31,5 +30,4 @@ createRoot(document.getElementById("root")!).render(
       </LanguageProvider>
     </AuthProvider>
   </BrowserRouter>
-  // </StrictMode>
 );

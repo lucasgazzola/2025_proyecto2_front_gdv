@@ -224,6 +224,9 @@ export default {
   nav: {
     dashboard: "Dashboard",
     services: "Services",
+    brands: "Brands",
+    invoices: "Invoices",
+    audits: "Audits",
     products: "Products",
     users: "Users",
     companies: "Companies",

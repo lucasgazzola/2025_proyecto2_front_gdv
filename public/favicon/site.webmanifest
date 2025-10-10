@@ -1,6 +1,6 @@
 {
-  "name": "Gestor de Ventas",
-  "short_name": "Ventas",
+  "name": "MyWebSite",
+  "short_name": "MySite",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

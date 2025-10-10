@@ -3,14 +3,12 @@ import { lazy } from "react";
 import {
   LayoutDashboard,
   Users,
-  FileText,
   Mail,
-  Database,
-  Infinity as InfinityLogo,
+  FilePlus,
   User,
-  Settings,
-  Bug,
-  Boxes,
+  Package,
+  Tag,
+  FileSearch,
 } from "lucide-react";
 
 export type RouteItem = {
@@ -22,6 +20,7 @@ export type RouteItem = {
 };
 
 import { Role } from "./types/Role";
+import Audits from "./pages/private/superadmin/Audits";
 
 // Lazy-loaded pages
 const Login = lazy(() => import("@/pages/public/Login"));
@@ -29,7 +28,6 @@ const Register = lazy(() => import("@/pages/public/Register"));
 const ForgotPassword = lazy(() => import("@/pages/public/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/public/ResetPassword"));
 const Profile = lazy(() => import("@/pages/public/Profile"));
-const Config = lazy(() => import("@/pages/public/Config"));
 const NotFound = lazy(() => import("@/pages/public/NotFound"));
 
 const SuperDashboard = lazy(
@@ -37,10 +35,12 @@ const SuperDashboard = lazy(
 );
 const SuperUsers = lazy(() => import("@/pages/private/superadmin/SuperUsers"));
 
-const SuperLogs = lazy(() => import("@/pages/private/superadmin/SuperLogs"));
 const SuperProducts = lazy(
   () => import("@/pages/private/superadmin/SuperProducts")
 );
+
+const Invoices = lazy(() => import("@/pages/private/superadmin/Invoices"));
+const Brands = lazy(() => import("./pages/private/superadmin/Brands"));
 
 export const publicRoutes: RouteItem[] = [
   {
@@ -99,25 +99,35 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <SuperDashboard />,
     },
     {
+      label: "nav.invoices",
+      to: "/new-invoice",
+      icon: FilePlus,
+      element: <Invoices />,
+    },
+    {
+      label: "nav.products",
+      to: "/products",
+      icon: Package,
+      element: <SuperProducts />,
+    },
+    {
+      label: "nav.brands",
+      to: "/brands",
+      icon: Tag,
+      element: <Brands />,
+    },
+    {
       label: "nav.users",
       to: "/users",
       icon: Users,
       element: <SuperUsers />,
     },
     {
-      label: "nav.products",
-      to: "/products",
-      icon: Boxes,
-      element: <SuperProducts />,
+      label: "nav.audits",
+      to: "/audits",
+      icon: FileSearch,
+      element: <Audits />,
     },
-    // {
-    //   label: "nav.stats",
-    //   to: "/stats",
-    //   icon: BarChart3,
-    //   element: <SuperStats />,
-    // },
-    { label: "nav.logs", to: "/logs", icon: Bug, element: <SuperLogs /> },
-    { label: "nav.config", to: "/config", icon: Settings, element: <Config /> },
   ],
 };
 
@@ -137,14 +147,3 @@ export const getPublicRoutes = (): RouteItem[] => {
 export const getNotFound404Element = () => {
   return <NotFound />;
 };
-
-export const footerLinks: RouteItem[] = [
-  {
-    to: "/data-integration",
-    icon: Database,
-    label: "Integración de datos",
-  },
-  { to: "/about-us", icon: InfinityLogo, label: "Acerca de nosotros" },
-  { to: "/use-cases", icon: FileText, label: "Casos de uso" },
-  { to: "/contact", icon: Mail, label: "Contáctenos" },
-];

@@ -36,17 +36,22 @@ export default function SuperEditProductModal({
 
   const [formFields, setFormFields] = useState({
     name: "",
-    idEcommerce: "",
+    brand: "",
+    category: "",
+    imageUrl: "",
     quantity: 0,
+    state: true,
   });
 
-  const { name, idEcommerce, quantity } = formFields;
+  const { name, brand, category, imageUrl, quantity } = formFields;
 
   const productSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, t("products.nameRequired")),
-    idEcommerce: z.string().min(1, t("products.idEcommerceRequired")),
-    quantity: z.number().min(1, t("products.quantityRequired")),
+    brand: z.string().min(1, "La marca es obligatoria"),
+    category: z.string().min(1, "La categoría es obligatoria"),
+    imageUrl: z.string().url("URL de imagen inválida").optional(),
+    quantity: z.number().min(0, t("products.quantityRequired")),
   });
 
   const [errors, setErrors] = useState<
@@ -57,14 +62,20 @@ export default function SuperEditProductModal({
     if (isEdit && product) {
       setFormFields({
         name: product.name,
-        idEcommerce: product.idEcommerce,
+        brand: product.brand,
+        category: product.category,
+        imageUrl: product.imageUrl || "",
         quantity: product.quantity,
+        state: product.state,
       });
     } else {
       setFormFields({
         name: "",
-        idEcommerce: "",
+        brand: "",
+        category: "",
+        imageUrl: "",
         quantity: 0,
+        state: true,
       });
     }
   }, [isEdit, product]);
@@ -92,17 +103,19 @@ export default function SuperEditProductModal({
       const parsed = productSchema.safeParse({
         id: product.id,
         name,
-        idEcommerce,
-        quantity,
+        brand,
+        category,
+        imageUrl,
+        quantity
       });
 
       if (!parsed.success) {
         const fieldErrors: Partial<
           Record<keyof z.infer<typeof productSchema>, string>
         > = {};
-        parsed.error.errors.forEach((error) => {
-          fieldErrors[error.path[0] as keyof z.infer<typeof productSchema>] =
-            error.message;
+        parsed.error.issues.forEach((issue: z.ZodIssue) => {
+          fieldErrors[issue.path[0] as keyof z.infer<typeof productSchema>] =
+            issue.message;
         });
         setErrors(fieldErrors);
         return;
@@ -118,7 +131,9 @@ export default function SuperEditProductModal({
     } else {
       const parsed = productSchema.safeParse({
         name,
-        idEcommerce,
+        brand,
+        category,
+        imageUrl,
         quantity,
       });
 
@@ -126,15 +141,16 @@ export default function SuperEditProductModal({
         const fieldErrors: Partial<
           Record<keyof z.infer<typeof productSchema>, string>
         > = {};
-        parsed.error.errors.forEach((error) => {
-          fieldErrors[error.path[0] as keyof z.infer<typeof productSchema>] =
-            error.message;
+        parsed.error.issues.forEach((issue: z.ZodIssue) => {
+          fieldErrors[issue.path[0] as keyof z.infer<typeof productSchema>] =
+            issue.message;
         });
         setErrors(fieldErrors);
         return;
       }
 
-      saveProduct(parsed.data, isEdit);
+      // parsed.data coincide con ProductFormData
+      saveProduct(parsed.data as ProductFormData, isEdit);
     }
   };
 
@@ -170,20 +186,50 @@ export default function SuperEditProductModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="idEcommerce">
-                {t("products.idEcommerceLabel")}
-              </Label>
+              <Label htmlFor="brand">{t("products.brand")}</Label>
               <Input
-                id="idEcommerce"
-                name="idEcommerce"
+                id="brand"
+                name="brand"
                 type="text"
-                value={idEcommerce}
+                value={brand}
                 onChange={handleChange}
-                placeholder={t("products.idEcommercePlaceholder")}
+                placeholder={t("products.brand")}
                 autoComplete="off"
               />
-              {errors.idEcommerce && (
-                <p className="text-sm text-red-500">{errors.idEcommerce}</p>
+              {errors.brand && (
+                <p className="text-sm text-red-500">{errors.brand}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">{t("products.category")}</Label>
+              <Input
+                id="category"
+                name="category"
+                type="text"
+                value={category}
+                onChange={handleChange}
+                placeholder={t("products.category")}
+                autoComplete="off"
+              />
+              {errors.category && (
+                <p className="text-sm text-red-500">{errors.category}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="imageUrl">{t("products.image")}</Label>
+              <Input
+                id="imageUrl"
+                name="imageUrl"
+                type="text"
+                value={imageUrl}
+                onChange={handleChange}
+                placeholder={t("products.image")}
+                autoComplete="off"
+              />
+              {errors.imageUrl && (
+                <p className="text-sm text-red-500">{errors.imageUrl}</p>
               )}
             </div>
 
@@ -194,7 +240,7 @@ export default function SuperEditProductModal({
                 type="number"
                 name="quantity"
                 step="1"
-                min={1}
+                min={0}
                 value={quantity}
                 onChange={handleChange}
                 placeholder={t("products.quantityPlaceholder")}
@@ -202,6 +248,19 @@ export default function SuperEditProductModal({
               {errors.quantity && (
                 <p className="text-sm text-red-500">{errors.quantity}</p>
               )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                id="state"
+                name="state"
+                type="checkbox"
+                checked={formFields.state}
+                onChange={(e) =>
+                  setFormFields((prev) => ({ ...prev, state: e.target.checked }))
+                }
+              />
+              <Label htmlFor="state">{t("products.state")}</Label>
             </div>
           </div>
 

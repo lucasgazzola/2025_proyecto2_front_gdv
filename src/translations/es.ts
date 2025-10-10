@@ -1,3 +1,6 @@
+import { stat } from "fs";
+import { Images } from "lucide-react";
+
 export default {
   // Común
   common: {
@@ -257,15 +260,18 @@ export default {
 
   products: {
     title: "Productos",
-    subtitle: "Gestiona todos los productos registrados en el sistema.",
+    subtitle: "Sección donde se listan todos los productos existentes dentro del sistema.",
     searchPlaceholder: "Buscar por nombre de producto...",
-    createProduct: "Crear producto",
+    createProduct: "Agregar producto",
     listTitle: "Lista de productos",
     listDescription: "Listado de todos los productos disponibles.",
-    name: "Nombre",
     id: "ID",
-    idEcommerce: "ID Ecommerce",
+    name: "Nombre",
+    brand: "Marca",
+    category: "Categoría",
+    image: "Imagen",
     quantity: "Cantidad",
+    state: "Estado",
     noResults: "No se encontraron productos.",
     editTitle: "Editar producto",
     createTitle: "Crear producto",

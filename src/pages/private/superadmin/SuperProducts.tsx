@@ -76,32 +76,7 @@ export default function SuperProducts() {
   };
 
   useEffect(() => {
-    //   (async () => {
-    //     if (!token) {
-    //       toast.error("Por favor, inicia sesión para acceder a esta sección.");
-    //       logout();
-    //       return;
-    //     }
-
-    //     setLoading(true);
-    //     const { success, products } = await getAllProductsService(token);
-    //     setLoading(false);
-
-    //     if (!success) {
-    //       toast.error("Error al cargar los productos. Intenta nuevamente.");
-    //       return;
-    //     }
-
-    //     if (!products || products.length === 0) {
-    //       toast.info("No hay productos registrados.");
-    //       return;
-    //     }
-
-    //     setProducts(products);
-    //   }
-    // )();
     fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSaveProduct = async (
@@ -184,7 +159,7 @@ export default function SuperProducts() {
     product.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const PRODUCTS_PER_PAGE = 5;
+  const PRODUCTS_PER_PAGE = 8;
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * PRODUCTS_PER_PAGE,
@@ -232,8 +207,11 @@ export default function SuperProducts() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("products.name")}</TableHead>
-                    <TableHead>{t("products.idEcommerce")}</TableHead>
+                    <TableHead>{t("products.brand")}</TableHead>
+                    <TableHead>{t("products.category")}</TableHead>
+                    <TableHead>{t("products.image")}</TableHead>
                     <TableHead>{t("products.quantity")}</TableHead>
+                    <TableHead>{t("products.state")}</TableHead>
                     <TableHead className="text-center">
                       {t("common.actions")}
                     </TableHead>
@@ -242,13 +220,13 @@ export default function SuperProducts() {
                 <TableBody className="text-start">
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-6">
+                      <TableCell colSpan={7} className="text-center py-6">
                         <FetchingSpinner />
                       </TableCell>
                     </TableRow>
                   ) : paginatedProducts.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-6">
+                      <TableCell colSpan={7} className="text-center py-6">
                         {t("products.noResults")}
                       </TableCell>
                     </TableRow>
@@ -256,8 +234,26 @@ export default function SuperProducts() {
                     paginatedProducts.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell>{product.name}</TableCell>
-                        <TableCell>{product.idEcommerce}</TableCell>
+                        <TableCell>{product.brand}</TableCell>
+                        <TableCell>{product.category}</TableCell>
+                        <TableCell>
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        </TableCell>
                         <TableCell>{product.quantity}</TableCell>
+                        <TableCell>{product.state ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs">
+                              {t("common.active")}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full bg-rose-100 text-rose-700 text-xs">
+                              {t("common.inactive")}
+                            </span> 
+                          )}
+                        </TableCell>
                         <TableCell className="text-center space-x-2">
                           <EditButton
                             handleEdit={() => {

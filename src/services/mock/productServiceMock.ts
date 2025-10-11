@@ -7,7 +7,7 @@ class ProductServiceMock implements IProductService {
       success: true,
       products: [
         {
-          id: "mock-id",
+          id: "mock-id-1",
           name: "Producto Mock",
           brand: "Marca Mock",
           category: "Categoria Mock",
@@ -17,7 +17,7 @@ class ProductServiceMock implements IProductService {
           state: true,
         },
         {
-          id: "mock-id",
+          id: "mock-id-2",
           name: "2 Mock",
           brand: "3 Mock",
           category: "Categoria Kcom",
@@ -25,6 +25,36 @@ class ProductServiceMock implements IProductService {
           quantity: 2,
           price: 5.49,
           state: false,
+        },
+        {
+          id: "mock-id-3",
+          name: "Producto Mock 3",
+          brand: "Marca Mock 3",
+          category: "Categoria Mock 3",
+          imageUrl: "/favicon/favicon-96x96.png",
+          quantity: 50,
+          price: 15.99,
+          state: true,
+        },
+        {
+          id: "mock-id-4",
+          name: "Producto Mock 4",
+          brand: "Marca Mock 4",
+          category: "Categoria Mock 4",
+          imageUrl: "/favicon/favicon-96x96.png",
+          quantity: 25,
+          price: 8.49,
+          state: false,
+        },
+        {
+          id: "mock-id-5",
+          name: "Producto Mock 5",
+          brand: "Marca Mock 5",
+          category: "Categoria Mock 5",
+          imageUrl: "/favicon/favicon-96x96.png",
+          quantity: 75,
+          price: 12.99,
+          state: true,
         },
       ],
     };
@@ -39,6 +69,7 @@ class ProductServiceMock implements IProductService {
         category: "Categoria Mock",
         imageUrl: "/favicon/favicon-96x96.png",
         quantity: 100,
+        price: 10.99, // Added price to match ProductDto
         state: true,
       },
     };
@@ -53,6 +84,7 @@ class ProductServiceMock implements IProductService {
         category: product.category,
         imageUrl: product.imageUrl,
         quantity: product.quantity,
+        price: 0, // Default price added to match ProductDto
         state: product.state,
       },
     };

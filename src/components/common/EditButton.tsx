@@ -7,14 +7,8 @@ type EditButtonProps = {
 
 export default function EditButton({ handleEdit }: EditButtonProps) {
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="min-w-[80px] h-8"
-      onClick={handleEdit}
-    >
+    <Button variant="secondary" title="Editar" size="sm" onClick={handleEdit}>
       <Pencil className="h-3 w-3" />
-      Editar
     </Button>
   );
 }

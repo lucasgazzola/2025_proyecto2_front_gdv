@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -17,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -38,20 +33,25 @@ const {
   getAllProducts: getAllProductsService,
   addNewProduct: addNewProductService,
   updateProduct: updateProductService,
+  deleteProduct: deleteProductService,
 } = productService;
 
-import EditProductModal from "./components/EditProductModal";
+import EditProductModal from "@/pages/private/components/EditProductModal";
+import DeleteButton from "@/components/common/DeleteButton";
+import MoreDetailsButton from "@/components/common/MoreDetailsButton";
+import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
 
 export default function Products() {
   const { logout, getAccessToken } = useAuth();
 
   const [products, setProducts] = useState<ProductDto[]>([]);
-  const [searchBy, setSearchBy] = useState<string>("name");
+  const [orderBy, setOrderBy] = useState<string>("latest");
   const [productsPerPage, setProductsPerPage] = useState<number>(10);
   const [selectedProduct, setSelectedProduct] = useState<ProductDto | null>(
     null
   );
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -115,7 +115,6 @@ export default function Products() {
         toast.error("Error al crear el producto. Intenta nuevamente.");
         return;
       }
-      // setProducts((prev) => [{ ...newProduct }, ...prev]);
       fetchProducts();
     } else {
       if (!product) {
@@ -135,10 +134,6 @@ export default function Products() {
         toast.error(message);
         return;
       }
-      // TODO: Agregar que en el nombre se agrege _X para la cantidad de producto que tiene
-      // setProducts((prev) =>
-      //   prev.map((p) => (p.id === product.id ? { ...p, ...product } : p))
-      // );
       fetchProducts();
     }
 
@@ -147,26 +142,30 @@ export default function Products() {
     setCurrentPage(1);
   };
 
-  // const handleDeleteProduct = async (id: string) => {
-  //   if (!token) {
-  //     toast.error("Por favor, inicia sesión para realizar esta acción.");
-  //     logout();
-  //     return;
-  //   }
+  const handleDeleteProduct = async (id: string) => {
+    if (!token) {
+      toast.error("Por favor, inicia sesión para realizar esta acción.");
+      logout();
+      return;
+    }
 
-  //   const { success } = await deleteProductService(token, id);
-  //   if (!success) {
-  //     toast.error("Error al eliminar el producto. Intenta nuevamente.");
-  //     return;
-  //   }
-  //   setProducts((prev) => prev.filter((p) => p.id !== id));
-  //   toast.success("Producto eliminado correctamente.");
-  // };
+    const { success } = await deleteProductService(token, id);
+    if (!success) {
+      toast.error("Error al eliminar el producto. Intenta nuevamente.");
+      return;
+    }
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    toast.success("Producto eliminado correctamente.");
+  };
 
   const filteredProducts = products.filter((product) => {
     const q = search.toLowerCase().trim();
     if (!q) return true;
-    switch (searchBy) {
+
+    // TODO: VER
+    switch (orderBy) {
+      case "latest":
+        return product.name.toLowerCase().includes(q);
       case "name":
         return product.name.toLowerCase().includes(q);
       case "brand":
@@ -189,30 +188,40 @@ export default function Products() {
   return (
     <>
       <div className="p-6 space-y-6">
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Productos</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Sección donde se listan todos los productos existentes dentro del
-              sistema.
-            </CardDescription>
-          </CardHeader>
-
+        <h1 className="text-4xl font-bold">Productos</h1>
+        <p className="text-muted-foreground">
+          Sección donde se listan todos los productos existentes dentro del
+          sistema.
+        </p>
+        <Card className="mb-6 border-0 rounded-none">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4 items-center">
-              <Input
-                placeholder="Buscar..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full md:w-1/3"
-              />
+              <div className="text-start">
+                <h3 className="text-2xl font-semibold">Todos los productos</h3>
+                <p className="text-md text-green-500">
+                  Productos activos ({products.length})
+                </p>
+              </div>
+              <div className="relative w-full max-w-60 md:w-1/3 ml-auto bg-gray-50">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Search size={16} />
+                </span>
+                <Input
+                  aria-label="Buscar productos"
+                  placeholder="Buscar"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 border-none"
+                />
+              </div>
 
-              <Select value={searchBy} onValueChange={(v) => setSearchBy(v)}>
-                <span>Buscar por:</span>
-                <SelectTrigger className="w-full md:w-30">
-                  <SelectValue />
+              <Select value={orderBy} onValueChange={(v) => setOrderBy(v)}>
+                <SelectTrigger className="w-full lg:w-1/4 max-w-60 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Ordenar por:</span>
+                  <SelectValue placeholder="Ordenar por" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="latest">Más reciente</SelectItem>
                   <SelectItem value="name">Nombre</SelectItem>
                   <SelectItem value="brand">Marca</SelectItem>
                   <SelectItem value="category">Categoría</SelectItem>
@@ -220,59 +229,34 @@ export default function Products() {
                 </SelectContent>
               </Select>
 
-              <div className="flex items-center gap-2">
-                <span>Mostrar:</span>
-                <Select
-                  value={String(productsPerPage)}
-                  onValueChange={(value) => setProductsPerPage(Number(value))}
-                >
-                  <SelectTrigger className="w-20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                  </SelectContent>
-                </Select>
-                <span>Por página</span>
-              </div>
-
-              <div className="ml-auto w-full md:w-auto">
+              <div className="w-full md:w-auto">
                 <Button
                   onClick={() => {
                     setSelectedProduct(null);
                     setModalOpen(true);
                   }}
                 >
-                  Crear Nuevo Producto
+                  Agregar producto
                 </Button>
               </div>
             </div>
           </CardContent>
 
-          <CardHeader className="px-6 py-4">
-            <CardTitle>
-              Lista de productos ({filteredProducts.length})
-            </CardTitle>
-            <CardDescription>
-              Descripción de la lista de productos
-            </CardDescription>
-          </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Marca</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Imágen</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Precio</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-center">Acciones</TableHead>
+                    <TableHead className="text-gray-400">Nombre</TableHead>
+                    <TableHead className="text-gray-400">Marca</TableHead>
+                    <TableHead className="text-gray-400">Categoría</TableHead>
+                    <TableHead className="text-gray-400">Imágenes</TableHead>
+                    <TableHead className="text-gray-400">Stock</TableHead>
+                    <TableHead className="text-gray-400">Precio</TableHead>
+                    <TableHead className="text-gray-400">Estado</TableHead>
+                    <TableHead className="text-gray-400 text-center">
+                      Acciones
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-start">
@@ -305,27 +289,34 @@ export default function Products() {
                         <TableCell>${product.price}</TableCell>
                         <TableCell>
                           {product.state ? (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs">
+                            <span className="block text-center w-24 text-emerald-700 p-4 rounded-sm bg-emerald-100 text-xs">
                               Activo
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full bg-rose-100 text-rose-700 text-xs">
+                            <span className="block text-center w-24 text-rose-700 p-4 rounded-sm bg-rose-100 text-xs">
                               Inactivo
                             </span>
                           )}
                         </TableCell>
                         <TableCell className="text-center space-x-2">
+                          <MoreDetailsButton
+                            handleViewDetails={() => {
+                              setSelectedProduct(product);
+                              setModalOpen(true);
+                            }}
+                          />
                           <EditButton
                             handleEdit={() => {
                               setSelectedProduct(product);
                               setModalOpen(true);
                             }}
                           />
-                          {/* <DeleteButton
-                            handleDelete={() =>
-                              handleDeleteProduct(product.id!)
-                            }
-                          /> */}
+                          <DeleteButton
+                            handleDelete={() => {
+                              setSelectedProduct(product);
+                              setDeleteModalOpen(true);
+                            }}
+                          />
                         </TableCell>
                       </TableRow>
                     ))
@@ -368,6 +359,22 @@ export default function Products() {
           onOpenChange={setModalOpen}
           product={selectedProduct}
           saveProduct={handleSaveProduct}
+        />
+      )}
+      {deleteModalOpen && selectedProduct && (
+        <ConfirmDeleteModal
+          isOpen={deleteModalOpen}
+          onClose={() => {
+            setDeleteModalOpen(false);
+            setSelectedProduct(null);
+          }}
+          onConfirm={async () => {
+            if (selectedProduct && selectedProduct.id) {
+              await handleDeleteProduct(selectedProduct.id);
+            }
+            setDeleteModalOpen(false);
+            setSelectedProduct(null);
+          }}
         />
       )}
     </>

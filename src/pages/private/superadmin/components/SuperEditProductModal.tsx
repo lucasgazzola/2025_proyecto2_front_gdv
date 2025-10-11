@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 import type { ProductDto, ProductFormData } from "@/types/Product";
-import { useLanguage } from "@/hooks/useLanguage";
 import useAuth from "@/hooks/useAuth";
 import { productService } from "@/services/factories/productServiceFactory";
 
@@ -34,8 +33,6 @@ export default function SuperEditProductModal({
 }: Props) {
   const isEdit = product !== null;
 
-  const { t } = useLanguage();
-
   const [formFields, setFormFields] = useState({
     name: "",
     brand: "",
@@ -49,12 +46,12 @@ export default function SuperEditProductModal({
 
   const productSchema = z.object({
     id: z.string().optional(),
-    name: z.string().min(1, t("products.nameRequired")),
+    name: z.string().min(1, "El nombre es obligatorio"),
     brand: z.string().min(1, "La marca es obligatoria"),
     category: z.string().min(1, "La categoría es obligatoria"),
     // imageUrl handled separately (we allow data URLs or remote URLs), keep optional here
     imageUrl: z.string().optional(),
-    quantity: z.number().min(0, t("products.quantityRequired")),
+    quantity: z.number().min(0, "La cantidad es obligatoria"),
   });
 
   const [errors, setErrors] = useState<
@@ -81,9 +78,13 @@ export default function SuperEditProductModal({
       if (!token) return;
       const { success, products } = await productService.getAllProducts(token);
       if (!success || !products) return;
-      const uniqueCats = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+      const uniqueCats = Array.from(
+        new Set(products.map((p) => p.category).filter(Boolean))
+      );
       setCategories(uniqueCats);
-      const uniqueBrands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)));
+      const uniqueBrands = Array.from(
+        new Set(products.map((p) => p.brand).filter(Boolean))
+      );
       setBrands(uniqueBrands);
     };
     fetchCategories();
@@ -100,7 +101,12 @@ export default function SuperEditProductModal({
         state: product.state,
       });
       // populate multi-category selection from joined string
-      const catsSelected = product.category ? product.category.split(",").map((s) => s.trim()).filter(Boolean) : [];
+      const catsSelected = product.category
+        ? product.category
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
       setSelectedCategories(catsSelected);
       setImagePreview(product.imageUrl || "");
     } else {
@@ -150,7 +156,9 @@ export default function SuperEditProductModal({
 
   const handleAddCategory = (cat: string) => {
     if (!cat) return;
-    setSelectedCategories((prev) => (prev.includes(cat) ? prev : [...prev, cat]));
+    setSelectedCategories((prev) =>
+      prev.includes(cat) ? prev : [...prev, cat]
+    );
   };
 
   const removeCategory = (cat: string) => {
@@ -174,7 +182,7 @@ export default function SuperEditProductModal({
         brand,
         category,
         imageUrl,
-        quantity
+        quantity,
       });
 
       if (!parsed.success) {
@@ -190,7 +198,10 @@ export default function SuperEditProductModal({
       }
       // ensure image preview exists (image required)
       if (!imagePreview) {
-        setErrors((prev) => ({ ...prev, imageUrl: "La imagen es obligatoria" }));
+        setErrors((prev) => ({
+          ...prev,
+          imageUrl: "La imagen es obligatoria",
+        }));
         return;
       }
 
@@ -227,7 +238,10 @@ export default function SuperEditProductModal({
       }
 
       if (!imagePreview) {
-        setErrors((prev) => ({ ...prev, imageUrl: "La imagen es obligatoria" }));
+        setErrors((prev) => ({
+          ...prev,
+          imageUrl: "La imagen es obligatoria",
+        }));
         return;
       }
 
@@ -250,25 +264,25 @@ export default function SuperEditProductModal({
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-center text-black text-xl font-semibold mb-1">
-            {isEdit ? t("products.editTitle") : t("products.createTitle")}
+            {isEdit ? "Editar producto" : "Crear producto"}
           </DialogTitle>
           <DialogDescription className="text-center text-white text-sm">
             {isEdit
-              ? t("products.editDescription")
-              : t("products.createDescription")}
+              ? "Modifica los datos generales del producto."
+              : "Completa los campos para registrar un nuevo producto."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSave}>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">{t("products.nameLabel")}</Label>
+              <Label htmlFor="name">Nombre del producto</Label>
               <Input
                 id="name"
                 name="name"
                 type="text"
                 value={name}
                 onChange={handleChange}
-                placeholder={t("products.namePlaceholder")}
+                placeholder="Nombre del producto"
                 autoComplete="off"
               />
               {errors.name && (
@@ -277,16 +291,21 @@ export default function SuperEditProductModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="brand">{t("products.brand")}</Label>
+              <Label htmlFor="brand">Marca</Label>
               <div className="flex gap-2 items-center">
                 <select
                   id="brand"
                   name="brand"
                   value={brand}
-                  onChange={(e) => setFormFields((prev) => ({ ...prev, brand: e.target.value }))}
+                  onChange={(e) =>
+                    setFormFields((prev) => ({
+                      ...prev,
+                      brand: e.target.value,
+                    }))
+                  }
                   className="flex-1 rounded-md border px-3 py-2 bg-white"
                 >
-                  <option value="">{t("products.brand")}</option>
+                  <option value="">Marca</option>
                   {brands.map((b) => (
                     <option key={b} value={b}>
                       {b}
@@ -294,7 +313,7 @@ export default function SuperEditProductModal({
                   ))}
                 </select>
                 <Button onClick={() => setAddBrandOpen(true)}>
-                  {t("brands.createBrand")}
+                  Crear marca
                 </Button>
               </div>
               {errors.brand && (
@@ -303,7 +322,7 @@ export default function SuperEditProductModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">{t("products.category")}</Label>
+              <Label htmlFor="category">Categoría</Label>
               <div className="flex gap-2">
                 <select
                   id="categorySelect"
@@ -311,7 +330,7 @@ export default function SuperEditProductModal({
                   onChange={(e) => handleAddCategory(e.target.value)}
                   defaultValue=""
                 >
-                  <option value="">{t("products.category")}</option>
+                  <option value="">Categoría</option>
                   {categories.map((c) => (
                     <option key={c} value={c}>
                       {c}
@@ -322,9 +341,18 @@ export default function SuperEditProductModal({
 
               <div className="flex flex-wrap gap-2 mt-2">
                 {selectedCategories.map((c) => (
-                  <span key={c} className="inline-flex items-center gap-2 bg-primary/10 px-2 py-1 rounded-full text-sm">
+                  <span
+                    key={c}
+                    className="inline-flex items-center gap-2 bg-primary/10 px-2 py-1 rounded-full text-sm"
+                  >
                     {c}
-                    <button type="button" className="text-xs text-muted-foreground" onClick={() => removeCategory(c)}>x</button>
+                    <button
+                      type="button"
+                      className="text-xs text-muted-foreground"
+                      onClick={() => removeCategory(c)}
+                    >
+                      x
+                    </button>
                   </span>
                 ))}
               </div>
@@ -334,7 +362,7 @@ export default function SuperEditProductModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">{t("products.image")}</Label>
+              <Label htmlFor="image">Imagen</Label>
               <input
                 ref={fileInputRef}
                 id="image"
@@ -346,20 +374,39 @@ export default function SuperEditProductModal({
               />
 
               <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" type="button" onClick={() => fileInputRef.current?.click()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   {imagePreview ? "Cambiar archivo" : "Elegir archivo"}
                 </Button>
                 <span className="text-sm text-muted-foreground">
-                  {_imageFile?.name || (imagePreview ? "Archivo seleccionado" : "No hay archivo seleccionado")}
+                  {_imageFile?.name ||
+                    (imagePreview
+                      ? "Archivo seleccionado"
+                      : "No hay archivo seleccionado")}
                 </span>
               </div>
 
               {imagePreview && (
                 <div className="mt-2 flex items-center gap-2">
-                  <img src={imagePreview} alt="preview" className="w-20 h-20 object-cover rounded" />
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    className="w-20 h-20 object-cover rounded"
+                  />
                   <div>
                     <div className="text-sm">Preview</div>
-                    <button type="button" className="text-xs text-rose-600" onClick={() => { setImageFile(null); setImagePreview(""); }}>
+                    <button
+                      type="button"
+                      className="text-xs text-rose-600"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview("");
+                      }}
+                    >
                       Eliminar
                     </button>
                   </div>
@@ -372,7 +419,7 @@ export default function SuperEditProductModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quantity">{t("products.quantityLabel")}</Label>
+              <Label htmlFor="quantity">Cantidad</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -381,7 +428,7 @@ export default function SuperEditProductModal({
                 min={0}
                 value={quantity}
                 onChange={handleChange}
-                placeholder={t("products.quantityPlaceholder")}
+                placeholder="Cantidad del producto"
               />
               {errors.quantity && (
                 <p className="text-sm text-red-500">{errors.quantity}</p>
@@ -389,7 +436,7 @@ export default function SuperEditProductModal({
             </div>
 
             <div className="space-y-2">
-              <Label>{t("products.state")}</Label>
+              <Label>Estado</Label>
               <div className="flex gap-4 items-center">
                 <label className="inline-flex items-center gap-2">
                   <input
@@ -397,9 +444,11 @@ export default function SuperEditProductModal({
                     name="state"
                     value="active"
                     checked={formFields.state === true}
-                    onChange={() => setFormFields((prev) => ({ ...prev, state: true }))}
+                    onChange={() =>
+                      setFormFields((prev) => ({ ...prev, state: true }))
+                    }
                   />
-                  <span>{t("common.active")}</span>
+                  <span>Activo</span>
                 </label>
                 <label className="inline-flex items-center gap-2">
                   <input
@@ -407,9 +456,11 @@ export default function SuperEditProductModal({
                     name="state"
                     value="inactive"
                     checked={formFields.state === false}
-                    onChange={() => setFormFields((prev) => ({ ...prev, state: false }))}
+                    onChange={() =>
+                      setFormFields((prev) => ({ ...prev, state: false }))
+                    }
                   />
-                  <span>{t("common.inactive")}</span>
+                  <span>Inactivo</span>
                 </label>
               </div>
             </div>
@@ -417,7 +468,7 @@ export default function SuperEditProductModal({
 
           <DialogFooter>
             <Button type="submit">
-              {isEdit ? t("products.saveChanges") : t("products.create")}
+              {isEdit ? "Guardar cambios" : "Crear"}
             </Button>
           </DialogFooter>
         </form>

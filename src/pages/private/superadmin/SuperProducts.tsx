@@ -31,7 +31,6 @@ import EditButton from "@/components/common/EditButton";
 // import DeleteButton from "@/components/common/DeleteButton";
 import FetchingSpinner from "@/components/common/FetchingSpinner";
 import useAuth from "@/hooks/useAuth";
-import { useLanguage } from "@/hooks/useLanguage";
 
 import { productService } from "@/services/factories/productServiceFactory";
 
@@ -45,7 +44,6 @@ import SuperEditProductModal from "./components/SuperEditProductModal";
 
 export default function SuperProducts() {
   const { logout, getAccessToken } = useAuth();
-  const { t } = useLanguage();
 
   const [products, setProducts] = useState<ProductDto[]>([]);
   const [searchBy, setSearchBy] = useState<string>("name");
@@ -92,7 +90,12 @@ export default function SuperProducts() {
     product: ProductDto | ProductFormData,
     isEdit: boolean
   ) => {
-    if (!product.name || !("brand" in product) || !("category" in product) || product.quantity === undefined) {
+    if (
+      !product.name ||
+      !("brand" in product) ||
+      !("category" in product) ||
+      product.quantity === undefined
+    ) {
       toast.error("Por favor, completa todos los campos obligatorios.");
       return;
     }
@@ -186,43 +189,43 @@ export default function SuperProducts() {
   return (
     <>
       <div className="p-6 space-y-6">
-
         <Card className="mb-6">
-
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">
-              {t("products.title")}
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold">Productos</CardTitle>
             <CardDescription className="text-muted-foreground">
-              {t("products.subtitle")}
+              Sección donde se listan todos los productos existentes dentro del
+              sistema.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <Input
-                placeholder={t("common.search")}
+                placeholder="Buscar..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full md:w-1/3"
               />
 
               <Select value={searchBy} onValueChange={(v) => setSearchBy(v)}>
-                <span>{t("common.by")}</span>
+                <span>Buscar por:</span>
                 <SelectTrigger className="w-full md:w-30">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="name">{t("products.name")}</SelectItem>
-                  <SelectItem value="brand">{t("products.brand")}</SelectItem>
-                  <SelectItem value="category">{t("products.category")}</SelectItem>
-                  <SelectItem value="quantity">{t("products.quantity")}</SelectItem>
+                  <SelectItem value="name">Nombre</SelectItem>
+                  <SelectItem value="brand">Marca</SelectItem>
+                  <SelectItem value="category">Categoría</SelectItem>
+                  <SelectItem value="quantity">Cantidad</SelectItem>{" "}
                 </SelectContent>
               </Select>
 
               <div className="flex items-center gap-2">
-                <span>{t("common.show")}:</span>
-                <Select value={String(productsPerPage)} onValueChange={(value) => setProductsPerPage(Number(value))}>
+                <span>Mostrar:</span>
+                <Select
+                  value={String(productsPerPage)}
+                  onValueChange={(value) => setProductsPerPage(Number(value))}
+                >
                   <SelectTrigger className="w-20">
                     <SelectValue />
                   </SelectTrigger>
@@ -233,7 +236,7 @@ export default function SuperProducts() {
                     <SelectItem value="50">50</SelectItem>
                   </SelectContent>
                 </Select>
-                <span>{t("common.perPage")}</span>
+                <span>Por página</span>
               </div>
 
               <div className="ml-auto w-full md:w-auto">
@@ -243,33 +246,33 @@ export default function SuperProducts() {
                     setModalOpen(true);
                   }}
                 >
-                  {t("products.createProduct")}
+                  Crear Nuevo Producto
                 </Button>
               </div>
             </div>
           </CardContent>
-      
+
           <CardHeader className="px-6 py-4">
             <CardTitle>
-              {t("products.listTitle")} ({filteredProducts.length})
+              Lista de productos ({filteredProducts.length})
             </CardTitle>
-            <CardDescription>{t("products.listDescription")}</CardDescription>
+            <CardDescription>
+              Descripción de la lista de productos
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("products.name")}</TableHead>
-                    <TableHead>{t("products.brand")}</TableHead>
-                    <TableHead>{t("products.category")}</TableHead>
-                    <TableHead>{t("products.image")}</TableHead>
-                    <TableHead>{t("products.quantity")}</TableHead>
-                    <TableHead>{t("products.price")}</TableHead>
-                    <TableHead>{t("products.state")}</TableHead>
-                    <TableHead className="text-center">
-                      {t("common.actions")}
-                    </TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Marca</TableHead>
+                    <TableHead>Categoría</TableHead>
+                    <TableHead>Imágen</TableHead>
+                    <TableHead>Cantidad</TableHead>
+                    <TableHead>Precio</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-center">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-start">
@@ -282,7 +285,7 @@ export default function SuperProducts() {
                   ) : paginatedProducts.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-6">
-                        {t("products.noResults")}
+                        No hay resultados
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -300,14 +303,15 @@ export default function SuperProducts() {
                         </TableCell>
                         <TableCell>{product.quantity}</TableCell>
                         <TableCell>${product.price}</TableCell>
-                        <TableCell>{product.state ? (
+                        <TableCell>
+                          {product.state ? (
                             <span className="inline-flex items-center px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs">
-                              {t("common.active")}
+                              Activo
                             </span>
                           ) : (
                             <span className="inline-flex items-center px-2 py-1 rounded-full bg-rose-100 text-rose-700 text-xs">
-                              {t("common.inactive")}
-                            </span> 
+                              Inactivo
+                            </span>
                           )}
                         </TableCell>
                         <TableCell className="text-center space-x-2">
@@ -331,8 +335,7 @@ export default function SuperProducts() {
             </div>
             <div className="flex items-center justify-between pt-4">
               <span className="text-sm text-muted-foreground">
-                {t("common.page")} {currentPage} {t("common.of")}{" "}
-                {totalPages || 1}
+                Página {currentPage} de {totalPages || 1}
               </span>
               <div className="space-x-2">
                 <Button
@@ -341,7 +344,7 @@ export default function SuperProducts() {
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 >
-                  {t("common.previous")}
+                  Anterior
                 </Button>
                 <Button
                   size="sm"
@@ -351,7 +354,7 @@ export default function SuperProducts() {
                   }
                   disabled={currentPage === totalPages || totalPages === 0}
                 >
-                  {t("common.next")}
+                  Siguiente
                 </Button>
               </div>
             </div>

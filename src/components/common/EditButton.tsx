@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/hooks/useLanguage";
 import { Pencil } from "lucide-react";
 
 type EditButtonProps = {
@@ -7,8 +6,6 @@ type EditButtonProps = {
 };
 
 export default function EditButton({ handleEdit }: EditButtonProps) {
-  const { t } = useLanguage();
-
   return (
     <Button
       variant="outline"
@@ -17,7 +14,7 @@ export default function EditButton({ handleEdit }: EditButtonProps) {
       onClick={handleEdit}
     >
       <Pencil className="h-3 w-3" />
-      {t("common.edit")}
+      Editar
     </Button>
   );
 }

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { Globe, LogOut, Menu, User } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -10,7 +10,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-import { useLanguage } from "@/hooks/useLanguage";
 import useAuth from "@/hooks/useAuth";
 
 interface HeaderProps {
@@ -25,12 +24,6 @@ export default function Header({
   const navigate = useNavigate();
 
   const { logout, name, lastname } = useAuth();
-
-  const { t, language, setLanguage } = useLanguage();
-
-  const toggleLanguage = () => {
-    setLanguage(language === "es" ? "en" : "es");
-  };
 
   return (
     <header className="bg-[#ffffff] px-6 py-4 flex justify-between items-center shadow-md">
@@ -74,13 +67,13 @@ export default function Header({
             className="cursor-pointer"
           >
             <User className="w-4 h-4 mr-2" />
-            {t("nav.profile") ?? "Mi perfil"}
+            {"Mi perfil"}
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="cursor-pointer">
             <LogOut className="w-4 h-4 mr-2" />
-            {t("auth.logout")}
+            {"Cerrar sesión"}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

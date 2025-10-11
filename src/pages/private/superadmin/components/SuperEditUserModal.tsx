@@ -20,17 +20,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import ShowPasswordButton from "@/components/common/ShowPasswordButton";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 import { authService } from "@/services/factories/authServiceFactory";
-const { registerAdmin } = authService;
+const { register } = authService;
 
 import { userService } from "@/services/factories/userServiceFactory";
 const { updateUserByEmail } = userService;
 
-import { useLanguage } from "@/hooks/useLanguage";
 import useAuth from "@/hooks/useAuth";
 
 import type { User } from "@/types/User";
@@ -93,7 +91,6 @@ export default function SuperEditUserModal({
   user,
   onSave,
 }: Props) {
-  const { t } = useLanguage();
   const { logout, getAccessToken } = useAuth();
   const isEdit = user !== null;
 
@@ -178,13 +175,11 @@ export default function SuperEditUserModal({
         return;
       }
       setLoading(true);
-      const { success, user: createdUser } = await registerAdmin(token, {
+      const { success, message } = await register({
         name: form.name,
         lastname: form.lastname,
         email: form.email,
         password: form.password,
-        roles:
-          form.role.toUpperCase() === "SUPER" ? ["SUPER", "USER"] : ["USER"],
       });
       setLoading(false);
 
@@ -194,7 +189,7 @@ export default function SuperEditUserModal({
         );
         return;
       }
-      if (createdUser) onSave(createdUser, isEdit);
+      // if (createdUser) onSave(createdUser, isEdit);
       setModalOpen(false);
     } else {
       if (!form.name || !form.lastname || !form.status) {
@@ -225,30 +220,21 @@ export default function SuperEditUserModal({
   return (
     <Dialog open={open} onOpenChange={setModalOpen}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-        {/* <CardHeader className="bg-[#2C638B] rounded-t-xl pt-6 pb-5 px-6">
-          <CardTitle className="text-white text-lg font-semibold mb-1">
-            {t("auth.resetTitle")}
-          </CardTitle>
-          <CardDescription className="text-white text-sm">
-            {t("auth.changePasswordDescription")}
-          </CardDescription>
-        </CardHeader> */}
-
         <DialogHeader className="bg-[#2C638B] rounded-t-xl pt-6 pb-5 px-6">
           <DialogTitle className="text-white text-lg font-semibold mb-1">
-            {isEdit ? t("users.editModalTitle") : t("users.createModalTitle")}
+            {isEdit ? "Editar usuario" : "Crear nuevo usuario"}
           </DialogTitle>
           <DialogDescription className="text-white text-sm">
             {isEdit
-              ? t("users.editModalDescription")
-              : t("users.createModalDescription")}
+              ? "Modifica los datos del usuario seleccionado."
+              : "Completa los campos para crear un nuevo usuario."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSave}>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">{t("auth.name")}</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input id="name" value={form.name} onChange={handleChange} />
               {errors.name && (
                 <p className="text-sm text-red-500">{errors.name}</p>
@@ -256,12 +242,12 @@ export default function SuperEditUserModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lastname">{t("auth.lastname")}</Label>
+              <Label htmlFor="lastname">Apellido</Label>
               <Input
                 id="lastname"
                 value={form.lastname}
                 onChange={handleChange}
-                placeholder={t("auth.enterLastname")}
+                placeholder="Ingresa el apellido"
               />
               {errors.lastname && (
                 <p className="text-sm text-red-500">{errors.lastname}</p>
@@ -269,14 +255,14 @@ export default function SuperEditUserModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">{t("auth.email")}</Label>
+              <Label htmlFor="email">Correo electrónico</Label>
               <Input
                 id="email"
                 type="email"
                 value={form.email}
                 disabled={isEdit}
                 onChange={handleChange}
-                placeholder={t("auth.enterEmail")}
+                placeholder="Ingresa el correo electrónico"
               />
               {errors.email && (
                 <p className="text-sm text-red-500">{errors.email}</p>
@@ -286,7 +272,7 @@ export default function SuperEditUserModal({
             {!isEdit && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="password">{t("auth.password")}</Label>
+                  <Label htmlFor="password">Contraseña</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -294,7 +280,7 @@ export default function SuperEditUserModal({
                       autoComplete="new-password"
                       value={form.password}
                       onChange={handleChange}
-                      placeholder={t("auth.enterPassword")}
+                      placeholder="Ingresa la contraseña"
                     />
                     <ShowPasswordButton
                       togglePasswordVisibility={() =>
@@ -308,9 +294,7 @@ export default function SuperEditUserModal({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">
-                    {t("auth.confirmPassword")}
-                  </Label>
+                  <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
@@ -318,7 +302,7 @@ export default function SuperEditUserModal({
                       autoComplete="new-confirm-password"
                       value={form.confirmPassword}
                       onChange={handleChange}
-                      placeholder={t("auth.reEnterPassword")}
+                      placeholder="Confirma la contraseña"
                     />
                     <ShowPasswordButton
                       togglePasswordVisibility={() =>
@@ -334,20 +318,7 @@ export default function SuperEditUserModal({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="hash">{t("auth.hash")}</Label>
-                  <Input
-                    id="hash"
-                    value={form.hash}
-                    onChange={handleChange}
-                    placeholder={t("auth.enterHash")}
-                  />
-                  {errors.hash && (
-                    <p className="text-sm text-red-500">{errors.hash}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="role">{t("users.role")}</Label>
+                  <Label htmlFor="role">Rol</Label>
                   <Select
                     value={form.role}
                     onValueChange={(val) =>
@@ -358,9 +329,9 @@ export default function SuperEditUserModal({
                       <SelectValue placeholder="Seleccionar rol" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="user">{t("users.user")}</SelectItem>
+                      <SelectItem value="user">Usuario</SelectItem>
                       <SelectItem value="superadmin">
-                        {t("users.superadmin")}
+                        Superadministrador
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -373,7 +344,7 @@ export default function SuperEditUserModal({
 
             {isEdit && (
               <div className="space-y-2">
-                <Label htmlFor="status">{t("common.status")}</Label>
+                <Label htmlFor="status">Estado</Label>
                 <Select
                   value={form.status}
                   onValueChange={(val) =>
@@ -384,10 +355,8 @@ export default function SuperEditUserModal({
                     <SelectValue placeholder="Seleccionar estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">{t("common.active")}</SelectItem>
-                    <SelectItem value="inactive">
-                      {t("common.inactive")}
-                    </SelectItem>
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="inactive">Inactivo</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -396,7 +365,7 @@ export default function SuperEditUserModal({
 
           <DialogFooter>
             <Button disabled={loading} type="submit">
-              {isEdit ? t("common.saveChanges") : t("users.addUser")}
+              {isEdit ? "Guardar cambios" : "Agregar usuario"}
               {loading && <LoadingSpinner />}
             </Button>
           </DialogFooter>

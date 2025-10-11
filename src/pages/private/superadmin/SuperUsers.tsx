@@ -34,24 +34,13 @@ import EditButton from "@/components/common/EditButton";
 import SuperEditUserModal from "./components/SuperEditUserModal";
 
 import useAuth from "@/hooks/useAuth";
-import { useLanguage } from "@/hooks/useLanguage";
-
-import { authService } from "@/services/factories/authServiceFactory";
-const { regenerateOtp: regenerateOtpService } = authService;
 
 import type { User } from "@/types/User";
 import { userService } from "@/services/factories/userServiceFactory";
 const { getAllUsers, updateUserByEmail } = userService;
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export default function SuperUsers() {
   const { logout, email, getAccessToken } = useAuth();
-  const { t } = useLanguage();
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
@@ -121,28 +110,12 @@ export default function SuperUsers() {
       setUsers((prevUsers) =>
         prevUsers.map((u) => (u.email === user.email ? user : u))
       );
-      toast.success(t("users.userUpdatedSuccessfully"));
+      toast.success("Usuario actualizado correctamente");
     } else {
       // setUsers((prevUsers) => [...prevUsers, user]);
       fetchUsers(); // Refrescar la lista de usuarios
-      toast.success(t("users.userAddedSuccessfully"));
+      toast.success("Usuario agregado correctamente");
     }
-  };
-
-  const regenerateOtp = async (email: string) => {
-    if (!token) {
-      toast.error("Debes iniciar sesión");
-      logout();
-      return;
-    }
-
-    const { success, message } = await regenerateOtpService({ token, email });
-    if (!success) {
-      toast.error(message || "Error al reenviar el OTP");
-      return;
-    }
-
-    toast.success(`OTP reenviado al correo de ${email}`);
   };
 
   const toggleBlockUser = async (user: User) => {
@@ -194,9 +167,9 @@ export default function SuperUsers() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold mb-2">{t("users.userPageHeader")}</h1>
+        <h1 className="text-2xl font-bold mb-2">Usuarios</h1>
         <p className="text-muted-foreground mb-6">
-          {t("users.userPageHeaderDescription")}
+          Sección donde se gestionan los usuarios del sistema.
         </p>
       </div>
       <Card className="mb-6">
@@ -206,7 +179,7 @@ export default function SuperUsers() {
               id="user-search"
               name="user-search"
               autoComplete="search-users"
-              placeholder={t("users.searchPlaceholder")}
+              placeholder="Buscar usuarios..."
               value={search}
               type="text"
               onChange={(e) => setSearch(e.target.value)}
@@ -215,22 +188,22 @@ export default function SuperUsers() {
 
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger className="w-full lg:w-1/4">
-                <SelectValue placeholder={t("users.filterByRole")} />
+                <SelectValue placeholder="Filtrar por rol" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("common.all")}</SelectItem>
-                <SelectItem value="user">{t("roles.user")}</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="user">Usuario</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={activeFilter} onValueChange={setActiveFilter}>
               <SelectTrigger className="w-full lg:w-1/4">
-                <SelectValue placeholder={t("users.filterByStatus")} />
+                <SelectValue placeholder="Filtrar por estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("common.all")}</SelectItem>
-                <SelectItem value="active">{t("common.active")}</SelectItem>
-                <SelectItem value="inactive">{t("common.inactive")}</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="active">Activos</SelectItem>
+                <SelectItem value="inactive">Inactivos</SelectItem>
               </SelectContent>
             </Select>
             <Button
@@ -240,7 +213,7 @@ export default function SuperUsers() {
               }}
               className="w-full lg:max-w-36 lg:w-1/4 lg:ml-auto"
             >
-              {t("users.addUserButton")}
+              Agregar usuario
             </Button>
           </div>
         </CardContent>
@@ -248,26 +221,22 @@ export default function SuperUsers() {
 
       <Card>
         <CardHeader className="px-6 py-4">
-          <CardTitle>
-            {t("users.usersHeader")} ({filtered.length})
-          </CardTitle>
-          <CardDescription>{t("users.listOfUsersDescription")}</CardDescription>
+          <CardTitle>Usuarios ({filtered.length})</CardTitle>
+          <CardDescription>
+            Sección donde se gestionan los usuarios del sistema.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("users.name")}</TableHead>
-                  <TableHead>{t("users.lastname")}</TableHead>
-                  <TableHead>{t("users.email")}</TableHead>
-                  <TableHead>{t("users.rol")}</TableHead>
-                  <TableHead>{t("common.demo")}</TableHead>
-                  <TableHead>{t("common.usedTokensOfAvaiable")}</TableHead>
-                  <TableHead>{t("common.status")}</TableHead>
-                  <TableHead className="text-center">
-                    {t("common.actions")}
-                  </TableHead>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Apellido</TableHead>
+                  <TableHead>Correo electrónico</TableHead>
+                  <TableHead>Rol</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-center">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-start">
@@ -286,7 +255,7 @@ export default function SuperUsers() {
                       colSpan={9}
                       className="text-center text-muted-foreground py-6"
                     >
-                      {t("users.noUsersFound")}
+                      No se encontraron usuarios
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -326,24 +295,14 @@ export default function SuperUsers() {
                               : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {!user.active
-                            ? t("common.inactive")
-                            : t("common.active")}
+                          {!user.active ? "Inactivo" : "Activo"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center space-x-2">
                         <Button
                           size="icon"
                           variant="ghost"
-                          title={t("users.sendOtp")}
-                          onClick={() => regenerateOtp(user.email)}
-                        >
-                          <MailCheck className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          title={t("users.lockUnlock")}
+                          title="Bloquear/Desbloquear"
                           disabled={blockLoading}
                           onClick={() => toggleBlockUser(user)}
                         >
@@ -365,7 +324,7 @@ export default function SuperUsers() {
           {/* Paginación */}
           <div className="flex items-center justify-between pt-4">
             <span className="text-sm text-muted-foreground">
-              {t("common.page")} {currentPage} de {totalPages || 1}
+              Página {currentPage} de {totalPages || 1}
             </span>
             <div className="space-x-2">
               <Button
@@ -374,7 +333,7 @@ export default function SuperUsers() {
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
               >
-                {t("common.previous")}
+                Anterior
               </Button>
               <Button
                 size="sm"
@@ -384,7 +343,7 @@ export default function SuperUsers() {
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
               >
-                {t("common.next")}
+                Siguiente
               </Button>
             </div>
           </div>

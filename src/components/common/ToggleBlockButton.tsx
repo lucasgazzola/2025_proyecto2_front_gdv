@@ -1,4 +1,3 @@
-import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 
 type ToggleBlockButtonProps = {
@@ -10,8 +9,6 @@ export default function ToggleBlockButton({
   isBlocked,
   handleToggle,
 }: ToggleBlockButtonProps) {
-  const { t } = useLanguage();
-
   return (
     <Button
       variant="outline"
@@ -23,7 +20,7 @@ export default function ToggleBlockButton({
       }`}
       onClick={handleToggle}
     >
-      {isBlocked ? t("users.unblock") : t("users.block")}
+      {isBlocked ? "Desbloquear" : "Bloquear"}
     </Button>
   );
 }

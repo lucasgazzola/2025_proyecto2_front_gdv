@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/card";
 
 import useAuth from "@/hooks/useAuth";
-import { useLanguage } from "@/hooks/useLanguage";
 
 import { userService } from "@/services/factories/userServiceFactory";
 const { getUserProfile, updateUserProfile } = userService;
@@ -26,7 +25,6 @@ import { Lock } from "lucide-react";
 export default function Profile() {
   const { logout, name, lastname, setName, setLastname, getAccessToken } =
     useAuth();
-  const { t } = useLanguage();
 
   const [user, setUser] = useState<User>();
   const [newName, setNewName] = useState("");
@@ -38,7 +36,7 @@ export default function Profile() {
   useEffect(() => {
     (async () => {
       if (!token) {
-        toast.error(t("auth.authError"));
+        toast.error("Error de autenticación");
         logout();
         return;
       }
@@ -46,12 +44,12 @@ export default function Profile() {
       const { success, user, message } = await getUserProfile(token);
 
       if (!success) {
-        toast.error(message || t("auth.authError"));
+        toast.error(message || "Error de autenticación");
         return;
       }
 
       if (!user) {
-        toast.error(t("auth.userNotFound"));
+        toast.error("Usuario no encontrado");
         return;
       }
 
@@ -64,12 +62,12 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (!newName.trim() || !newLastname.trim()) {
-      toast.error(t("auth.requiredName") + " / " + t("auth.requiredLastname"));
+      toast.error("El nombre y el apellido son obligatorios.");
       return;
     }
 
     if (!token) {
-      toast.error(t("auth.authError"));
+      toast.error("Error de autenticación");
       logout();
       return;
     }
@@ -81,7 +79,7 @@ export default function Profile() {
     });
 
     if (!success) {
-      toast.error(message || t("auth.profileUpdateError"));
+      toast.error(message || "Error al actualizar el perfil");
       return;
     }
 
@@ -90,12 +88,12 @@ export default function Profile() {
 
     setName(newName);
     setLastname(newLastname);
-    toast.success(t("auth.profileUpdateSuccess"));
+    toast.success("Perfil actualizado con éxito");
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold text-center">{t("auth.myProfile")}</h1>
+      <h1 className="text-3xl font-bold text-center">Mi Perfil</h1>
 
       <Card className="p-8 shadow-lg rounded-2xl">
         <CardHeader className="text-center">
@@ -113,14 +111,14 @@ export default function Profile() {
           </div>
           <CardTitle className="text-xl">{user?.email}</CardTitle>
           <CardDescription className="text-muted-foreground">
-            {t("auth.editProfileSubtitle")}
+            {"Editar perfil"}
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4 mt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">{t("auth.name")}</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input
                 id="name"
                 value={newName}
@@ -129,7 +127,7 @@ export default function Profile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lastname">{t("auth.lastname")}</Label>
+              <Label htmlFor="lastname">Apellido</Label>
               <Input
                 id="lastname"
                 value={newLastname}
@@ -138,12 +136,12 @@ export default function Profile() {
             </div>
 
             <div className="space-y-2">
-              <Label>{t("auth.email")}</Label>
+              <Label>Email</Label>
               <Input value={user?.email || ""} disabled />
             </div>
 
             <div className="space-y-2">
-              <Label>{t("auth.role")}</Label>
+              <Label>Rol</Label>
               <Input
                 value={
                   user?.role
@@ -155,19 +153,8 @@ export default function Profile() {
             </div>
 
             <div className="space-y-2">
-              <Label>{t("auth.status")}</Label>
-              <Input
-                value={user?.active ? t("common.active") : t("common.inactive")}
-                disabled
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t("auth.accountType")}</Label>
-              <Input
-                value={user?.isDemo ? t("auth.demo") : t("auth.standard")}
-                disabled
-              />
+              <Label>Estado</Label>
+              <Input value={user?.active ? "Activo" : "Inactivo"} disabled />
             </div>
           </div>
 
@@ -178,9 +165,9 @@ export default function Profile() {
               onClick={() => setPasswordModalOpen(true)}
             >
               <Lock className="w-4 h-4" />
-              {t("auth.changePassword")}
+              Cambiar Contraseña
             </Button>
-            <Button onClick={handleSave}>{t("common.saveChanges")}</Button>
+            <Button onClick={handleSave}>Guardar Cambios</Button>
           </div>
         </CardContent>
       </Card>

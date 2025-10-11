@@ -12,7 +12,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
-import { useLanguage } from "@/hooks/useLanguage";
 import useAuth from "@/hooks/useAuth";
 
 import LoadingSpinner from "@/components/common/LoadingSpinner";
@@ -29,8 +28,7 @@ const loginSchema = z.object({
 type FormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const { t } = useLanguage();
-  document.title = `${t("auth.login")} | GDV`;
+  document.title = `Iniciar Sesión | InvoIQ`;
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,10 +77,10 @@ const Login = () => {
           <div className="flex items-start text-start">
             <div>
               <CardTitle className="text-white text-lg font-semibold mb-1">
-                {t("common.welcome")}
+                Bienvenido a InvoIQ
               </CardTitle>
               <CardDescription className="text-white text-sm">
-                {t("auth.loginWelcome")}
+                Inicie sesión para continuar
               </CardDescription>
             </div>
             <img
@@ -97,7 +95,7 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="email" className="text-sm font-medium">
-                {t("auth.email")}
+                Email
               </Label>
               <Input
                 id="email"
@@ -106,7 +104,7 @@ const Login = () => {
                 autoComplete="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder={t("auth.enterEmail")}
+                placeholder="Ingrese su correo electrónico"
                 className="mt-1"
               />
               {errors.email && (
@@ -118,7 +116,7 @@ const Login = () => {
 
             <div>
               <Label htmlFor="password" className="text-sm font-medium">
-                {t("auth.password")}
+                Contraseña
               </Label>
               <div className="relative">
                 <Input
@@ -127,7 +125,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   type={showPassword ? "text" : "password"}
-                  placeholder={t("auth.enterPassword")}
+                  placeholder="Ingrese su contraseña"
                   className="mt-1 pr-10"
                 />
                 <ShowPasswordButton
@@ -146,7 +144,7 @@ const Login = () => {
               className="w-full bg-[#2C638B] hover:bg-[#25597e] active:bg-[#1e4d6e] text-white font-semibold mt-4"
               disabled={isLoading}
             >
-              {t("auth.login")}
+              Iniciar Sesión
               {isLoading && <LoadingSpinner />}
             </Button>
 
@@ -155,17 +153,17 @@ const Login = () => {
                 to="/forgot-password"
                 className="text-sm text-blue-600 hover:underline"
               >
-                {t("auth.forgotPassword")}
+                Olvidé mi contraseña
               </Link>
             </div>
 
             <div className="text-center text-sm mt-4">
-              {t("auth.noAccount")}{" "}
+              No tengo una cuenta{" "}
               <Link
                 to="/register"
                 className="text-blue-600 hover:underline font-medium"
               >
-                {t("auth.registerHere")}
+                Regístrate aquí
               </Link>
             </div>
           </form>

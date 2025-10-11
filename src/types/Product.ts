@@ -1,12 +1,20 @@
 export interface ProductDto {
   id: string;
-  idEcommerce: string;
   name: string;
+  brand: string;
+  category: string;
+  imageUrl?: string;
   quantity: number;
+  price: number;
+  state: boolean;
 }
 
 export interface ProductFormData {
-  idEcommerce: string;
   name: string;
+  brand: string;
+  category: string;
+  imageUrl?: string;
   quantity: number;
+  price: number;
+  state: boolean;
 }

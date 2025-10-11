@@ -54,10 +54,14 @@ class ProductServiceReal implements IProductService {
         success: true,
         product: {
           id: productId,
-          idEcommerce: product.idEcommerce,
-          name: product.name,
-          quantity: product.quantity,
-        },
+          name: (product as ProductFormData).name,
+          brand: (product as ProductFormData).brand,
+          category: (product as ProductFormData).category,
+          imageUrl: (product as ProductFormData).imageUrl,
+          quantity: (product as ProductFormData).quantity,
+          price: (product as ProductFormData).price,
+          state: (product as ProductFormData).state,
+        } as ProductDto,
       };
     } catch (error) {
       return { success: false };

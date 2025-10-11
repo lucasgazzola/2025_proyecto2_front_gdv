@@ -1,8 +1,12 @@
+import { stat } from "fs";
+import { Images } from "lucide-react";
+
 export default {
   // Común
   common: {
     loading: "Cargando...",
     loadingRecords: "Cargando registros...",
+    by: "Por:",
     search: "Buscar",
     save: "Guardar",
     cancel: "Cancelar",
@@ -255,20 +259,30 @@ export default {
     company: "Empresa",
   },
 
+  brands: {
+    title: "Marcas",
+    createBrand: "Crear marca",
+    editBrand: "Editar marca"
+  },
+
   products: {
     title: "Productos",
-    subtitle: "Gestiona todos los productos registrados en el sistema.",
+    subtitle: "Sección donde se listan todos los productos existentes dentro del sistema.",
     searchPlaceholder: "Buscar por nombre de producto...",
-    createProduct: "Crear producto",
+    createProduct: "Agregar producto",
     listTitle: "Lista de productos",
     listDescription: "Listado de todos los productos disponibles.",
-    name: "Nombre",
     id: "ID",
-    idEcommerce: "ID Ecommerce",
+    name: "Nombre",
+    brand: "Marca",
+    category: "Categoría",
+    image: "Imagen",
     quantity: "Cantidad",
+    price: "Precio",
+    state: "Estado",
     noResults: "No se encontraron productos.",
     editTitle: "Editar producto",
-    createTitle: "Crear producto",
+    createTitle: "Agregar producto",
     editDescription: "Modifica los datos del producto.",
     createDescription: "Completa los campos para agregar un nuevo producto.",
     nameLabel: "Nombre del producto",
@@ -281,10 +295,10 @@ export default {
     quantityPlaceholder: "Cantidad disponible",
     quantityRequired: "La cantidad debe ser mayor a 0",
     saveChanges: "Guardar cambios",
-    create: "Crear producto",
+    create: "Agregar producto",
   },
   productModal: {
-    createTitle: "Crear producto",
+    createTitle: "Agregar producto",
     editTitle: "Editar producto",
     createDescription: "Completa los campos para registrar un nuevo producto.",
     editDescription: "Modifica los datos generales del producto.",

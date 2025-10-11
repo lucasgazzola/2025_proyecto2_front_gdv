@@ -1,13 +1,11 @@
 import { NavLink, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/hooks/useLanguage";
 import { getSidebarRoutesForRole } from "@/routes";
 import useAuth from "@/hooks/useAuth";
 import { isValidRole } from "@/types/Role";
 import RightArrowSidebarMenu from "./RightArrowSidebarMenu";
 
 export default function Sidebar({ isOpen }: { isOpen: boolean }) {
-  const { t } = useLanguage();
   const { role } = useAuth();
 
   const sidebarItems = isValidRole(role) ? getSidebarRoutesForRole(role) : [];
@@ -22,11 +20,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
       {/* Logo y navegación */}
       <div className="">
         <div className={`flex w-full justify-center ${isOpen && "p-4"}`}>
-          <Link
-            title={t("nav.dashboard")}
-            to="/dashboard"
-            className="flex items-center"
-          >
+          <Link title="Dashboard" to="/dashboard" className="flex items-center">
             <img
               src={isOpen ? "/logo/InvoIQLogo.png" : "/logo/InvoIQLogo.png"}
               alt="Logo"
@@ -40,7 +34,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
         <nav className="px-4 space-y-1 mb-10">
           {sidebarItems.map((item) => (
             <NavLink
-              title={t(item.label)}
+              title={item.label}
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
@@ -52,7 +46,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
               }
             >
               <item.icon className="w-4 h-4" />
-              {isOpen && <span>{t(item.label)}</span>}
+              {isOpen && <span>{item.label}</span>}
               {isOpen && <RightArrowSidebarMenu />}
             </NavLink>
           ))}

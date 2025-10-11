@@ -40,29 +40,29 @@ const SuperProducts = lazy(
 );
 
 const Invoices = lazy(() => import("@/pages/private/superadmin/Invoices"));
-const Brands = lazy(() => import("./pages/private/superadmin/Brands"));
+const Brands = lazy(() => import("@/pages/private/superadmin/Brands"));
 
 export const publicRoutes: RouteItem[] = [
   {
-    label: "nav.login",
+    label: "Login",
     to: "/login",
     icon: User,
     element: <Login />,
   },
   {
-    label: "nav.register",
+    label: "Registro",
     to: "/register",
     icon: User,
     element: <Register />,
   },
   {
-    label: "nav.forgotPassword",
+    label: "Olvidé mi contraseña",
     to: "/forgot-password",
     icon: Mail,
     element: <ForgotPassword />,
   },
   {
-    label: "nav.resetPassword",
+    label: "Restablecer contraseña",
     to: "/reset-password",
     icon: Mail,
     element: <ResetPassword />,
@@ -76,7 +76,7 @@ export const isPublicRoute = (path: string): boolean => {
 export const roleBasedRoutes: Record<Role, RouteItem[]> = {
   [Role.USER]: [
     {
-      label: "nav.profile",
+      label: "Perfil",
       to: "/profile",
       icon: User,
       element: <Profile />,
@@ -86,44 +86,44 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
 
   [Role.SUPERADMIN]: [
     {
-      label: "nav.profile",
+      label: "Perfil",
       to: "/profile",
       icon: User,
       element: <Profile />,
       hiddenOnSidebar: true,
     },
     {
-      label: "nav.dashboard",
+      label: "Dashboard",
       to: "/dashboard",
       icon: LayoutDashboard,
       element: <SuperDashboard />,
     },
     {
-      label: "nav.invoices",
+      label: "Facturas",
       to: "/new-invoice",
       icon: FilePlus,
       element: <Invoices />,
     },
     {
-      label: "nav.products",
+      label: "Productos",
       to: "/products",
       icon: Package,
       element: <SuperProducts />,
     },
     {
-      label: "nav.brands",
+      label: "Marcas",
       to: "/brands",
       icon: Tag,
       element: <Brands />,
     },
     {
-      label: "nav.users",
+      label: "Usuario",
       to: "/users",
       icon: Users,
       element: <SuperUsers />,
     },
     {
-      label: "nav.audits",
+      label: "Auditoría",
       to: "/audits",
       icon: FileSearch,
       element: <Audits />,

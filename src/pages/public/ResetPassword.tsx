@@ -4,13 +4,11 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-import { useLanguage } from "@/hooks/useLanguage";
 import { authService } from "@/services/factories/authServiceFactory";
 const { resetPassword: resetPasswordService } = authService;
 import { ArrowLeft } from "lucide-react";
 
 export default function ResetPassword() {
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || "";
@@ -35,12 +33,12 @@ export default function ResetPassword() {
       !formData.newPassword ||
       !formData.confirmPassword
     ) {
-      toast.error(t("auth.allFieldsRequired"));
+      toast.error("Todos los campos son obligatorios.");
       return;
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      toast.error(t("auth.passwordMismatch"));
+      toast.error("Las contraseñas no coinciden.");
       return;
     }
 
@@ -53,11 +51,11 @@ export default function ResetPassword() {
     );
     setLoading(false);
     if (!success) {
-      toast.error(message || t("auth.passwordResetFailed"));
+      toast.error(message || "Error al restablecer la contraseña.");
       return;
     }
 
-    toast.success(t("auth.passwordResetSuccess"));
+    toast.success("Contraseña restablecida correctamente.");
     navigate("/login");
   };
 
@@ -70,8 +68,8 @@ export default function ResetPassword() {
           onClick={() => navigate(-1)}
           className="absolute top-10 left-10 flex items-center gap-2 px-3 py-2 bg-white text-blue-700 hover:text-blue-900 hover:bg-blue-100 transition-colors rounded-md shadow-sm"
         >
-          <ArrowLeft className="w-96 h-96" />
-          {/* <span className="text-sm font-medium">{t("common.back")}</span> */}
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm font-medium">Volver</span>
         </Button>
       </div>
       <div className="w-full max-w-md">
@@ -79,12 +77,12 @@ export default function ResetPassword() {
           onSubmit={handleSubmit}
           className="bg-white shadow-md rounded-lg p-8 w-full"
         >
-          <h2 className="text-xl font-semibold mb-4">{t("auth.resetTitle")}</h2>
+          <h2 className="text-xl font-semibold mb-4">Restablecer contraseña</h2>
 
           <Input
             type="text"
             name="tokenPass"
-            placeholder={t("auth.enterTokenPass")}
+            placeholder={"Ingresa el código de recuperación"}
             value={formData.tokenPass}
             onChange={handleChange}
             className="mb-3"
@@ -94,7 +92,7 @@ export default function ResetPassword() {
           <Input
             type="password"
             name="newPassword"
-            placeholder={t("auth.enterNewPassword")}
+            placeholder={"Ingresa la nueva contraseña"}
             value={formData.newPassword}
             onChange={handleChange}
             className="mb-3"
@@ -104,7 +102,7 @@ export default function ResetPassword() {
           <Input
             type="password"
             name="confirmPassword"
-            placeholder={t("auth.confirmNewPassword")}
+            placeholder={"Confirma la nueva contraseña"}
             value={formData.confirmPassword}
             onChange={handleChange}
             className="mb-4"
@@ -112,7 +110,7 @@ export default function ResetPassword() {
           />
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? t("common.loading") : t("auth.resetPassword")}
+            {loading ? "Cargando..." : "Restablecer contraseña"}
           </Button>
         </form>
       </div>

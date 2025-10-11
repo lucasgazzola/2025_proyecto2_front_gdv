@@ -9,7 +9,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { useLanguage } from "@/hooks/useLanguage";
 import useAuth from "@/hooks/useAuth";
 import ShowPasswordButton from "@/components/common/ShowPasswordButton";
 import { toast } from "react-toastify";
@@ -51,7 +50,6 @@ const ProfileChangePasswordModal = ({
   passwordModalOpen,
   setPasswordModalOpen,
 }: ProfileChangePasswordModalProps) => {
-  const { t } = useLanguage();
   const { email, logout } = useAuth();
 
   const [formData, setFormData] = useState<FormData>({
@@ -82,7 +80,7 @@ const ProfileChangePasswordModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !email) {
-      toast.error(t("auth.authError"));
+      toast.error("Error de autenticación. Por favor inicia sesión de nuevo.");
       logout();
       return;
     }
@@ -106,11 +104,11 @@ const ProfileChangePasswordModal = ({
     );
     setIsLoading(false);
     if (success) {
-      toast.success(t("auth.passwordResetSuccess"));
+      toast.success("Contraseña cambiada correctamente.");
       setPasswordModalOpen(false);
       setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } else {
-      toast.error(message || t("auth.passwordResetFailed"));
+      toast.error(message || "Error al cambiar la contraseña.");
     }
   };
 
@@ -121,17 +119,18 @@ const ProfileChangePasswordModal = ({
       <Card className="w-full max-w-md rounded-xl shadow-lg p-6">
         <CardHeader className="bg-[#2C638B] rounded-t-xl pt-6 pb-5 px-6">
           <CardTitle className="text-white text-lg font-semibold mb-1">
-            {t("auth.resetTitle")}
+            Cambiar contraseña
           </CardTitle>
           <CardDescription className="text-white text-sm">
-            {t("auth.changePasswordDescription")}
+            Ingresa tu contraseña actual y la nueva contraseña para
+            actualizarla.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="oldPassword" className="text-sm font-medium">
-                {t("auth.password")}
+                Contraseña actual
               </Label>
               <div className="relative">
                 <Input
@@ -140,7 +139,7 @@ const ProfileChangePasswordModal = ({
                   type={showPassword.old ? "text" : "password"}
                   value={formData.oldPassword}
                   onChange={handleInputChange}
-                  placeholder={t("auth.enterOldPassword")}
+                  placeholder={"Ingresa la contraseña actual"}
                   className="mt-1 pr-10"
                 />
                 <ShowPasswordButton
@@ -157,7 +156,7 @@ const ProfileChangePasswordModal = ({
             </div>
             <div>
               <Label htmlFor="newPassword" className="text-sm font-medium">
-                {t("auth.newPassword")}
+                Nueva contraseña
               </Label>
               <div className="relative">
                 <Input
@@ -166,7 +165,7 @@ const ProfileChangePasswordModal = ({
                   type={showPassword.new ? "text" : "password"}
                   value={formData.newPassword}
                   onChange={handleInputChange}
-                  placeholder={t("auth.enterNewPassword")}
+                  placeholder={"Ingresa la nueva contraseña"}
                   className="mt-1 pr-10"
                 />
                 <ShowPasswordButton
@@ -183,7 +182,7 @@ const ProfileChangePasswordModal = ({
             </div>
             <div>
               <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                {t("auth.confirmNewPassword")}
+                Confirmar nueva contraseña
               </Label>
               <div className="relative">
                 <Input
@@ -192,7 +191,7 @@ const ProfileChangePasswordModal = ({
                   type={showPassword.confirm ? "text" : "password"}
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  placeholder={t("auth.enterConfirmNewPassword")}
+                  placeholder={"Confirma la nueva contraseña"}
                   className="mt-1 pr-10"
                 />
                 <ShowPasswordButton
@@ -213,14 +212,14 @@ const ProfileChangePasswordModal = ({
                 variant="outline"
                 onClick={() => setPasswordModalOpen(false)}
               >
-                {t("common.cancel")}
+                Cancelar
               </Button>
               <Button
                 type="submit"
                 className="bg-[#2C638B] hover:bg-[#25597e] text-white font-semibold"
                 disabled={isLoading}
               >
-                {t("auth.changePassword")}
+                Cambiar contraseña
                 {isLoading && <span className="ml-2 animate-spin">⏳</span>}
               </Button>
             </div>

@@ -25,7 +25,6 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateByLocale } from "@/utils/dates";
-import { useLanguage } from "@/hooks/useLanguage";
 import useAuth from "@/hooks/useAuth";
 import type { LogEntry, LogLevel } from "@/types/Logs";
 import { logsService } from "@/services/factories/logServiceFactory";
@@ -36,7 +35,6 @@ import FetchingSpinner from "@/components/common/FetchingSpinner";
 
 export default function Audits() {
   const { logout, getAccessToken } = useAuth();
-  const { t, language } = useLanguage();
 
   const [search, setSearch] = useState("");
   const [levelFilter, setLevelFilter] = useState("");
@@ -114,31 +112,31 @@ export default function Audits() {
     <div className="p-6 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{t("logs.title")}</CardTitle>
-          <CardDescription>{t("logs.description")}</CardDescription>
+          <CardTitle>Auditoría</CardTitle>
+          <CardDescription></CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {/* Filtros */}
           <div className="flex flex-col md:flex-row gap-4 items-center">
             <Input
-              placeholder={t("logs.searchPlaceholder")}
+              placeholder="Buscar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full md:w-1/2"
             />
             <Select value={levelFilter} onValueChange={setLevelFilter}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder={t("logs.filterByLevel")} />
+                <SelectValue placeholder="Filtrar por nivel" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("logs.all")}</SelectItem>
-                <SelectItem value="INFO">{t("logs.info")}</SelectItem>
-                <SelectItem value="ERROR">{t("logs.error")}</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="INFO">Información</SelectItem>
+                <SelectItem value="ERROR">Error</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex items-center gap-2">
-              <span>{t("common.show")}:</span>
+              <span>Mostrar:</span>
               <Select
                 value={String(logsPerPage)}
                 onValueChange={(value) => setLogsPerPage(Number(value))}
@@ -154,7 +152,7 @@ export default function Audits() {
                   <SelectItem value="100">100</SelectItem>
                 </SelectContent>
               </Select>
-              <span>{t("common.perPage")}</span>
+              <span>por página</span>
             </div>
           </div>
 
@@ -163,14 +161,12 @@ export default function Audits() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-20">{t("logs.date")}</TableHead>
-                  <TableHead>{t("logs.message")}</TableHead>
-                  <TableHead>{t("logs.file")}</TableHead>
-                  <TableHead className="text-center">
-                    {t("logs.level")}
-                  </TableHead>
-                  <TableHead>{t("logs.method")}</TableHead>
-                  <TableHead>{t("logs.user")}</TableHead>
+                  <TableHead className="w-20">Fecha</TableHead>
+                  <TableHead>Mensaje</TableHead>
+                  <TableHead>Archivo</TableHead>
+                  <TableHead className="text-center">Nivel</TableHead>
+                  <TableHead>Método</TableHead>
+                  <TableHead>Usuario</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-start">
@@ -189,7 +185,7 @@ export default function Audits() {
                       colSpan={6}
                       className="text-center text-muted-foreground py-6"
                     >
-                      {t("logs.noResults")}
+                      No se encontraron registros.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -211,7 +207,7 @@ export default function Audits() {
                     return (
                       <TableRow key={log.id}>
                         <TableCell className="text-nowrap">
-                          {formatDateByLocale(log.date, language)}
+                          {formatDateByLocale(log.date, "es-AR")}
                         </TableCell>
                         <TableCell className="whitespace-pre-line break-words min-w-sm">
                           <span>
@@ -228,9 +224,7 @@ export default function Audits() {
                               variant="ghost"
                               className="self-start px-2 text-sm text-slate-800  h-auto hover:bg-transparent hover:underline"
                             >
-                              {isExpanded
-                                ? t("logs.viewLess")
-                                : t("logs.viewMore")}
+                              {isExpanded ? "Ver menos" : "Ver más"}
                             </Button>
                           )}
                         </TableCell>
@@ -258,8 +252,7 @@ export default function Audits() {
           {/* Paginación */}
           <div className="flex items-center justify-between pt-4">
             <span className="text-sm text-muted-foreground">
-              {t("common.page")} {currentPage} {t("common.of")}{" "}
-              {totalPages || 1}
+              Página {currentPage} de {totalPages || 1}
             </span>
             <div className="space-x-2">
               <Button
@@ -268,7 +261,7 @@ export default function Audits() {
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
               >
-                {t("common.previous")}
+                Anterior
               </Button>
               <Button
                 size="sm"
@@ -278,7 +271,7 @@ export default function Audits() {
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
               >
-                {t("common.next")}
+                Siguiente
               </Button>
             </div>
           </div>

@@ -1,4 +1,3 @@
-import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "../ui/button";
 
 type ToggleActivateButtonProps = {
@@ -10,8 +9,6 @@ export default function ToggleActivateButton({
   status,
   handleToggle,
 }: ToggleActivateButtonProps) {
-  const { t } = useLanguage();
-
   return (
     <Button
       variant="outline"
@@ -23,7 +20,7 @@ export default function ToggleActivateButton({
       }`}
       onClick={handleToggle}
     >
-      {status === "activo" ? t("common.deactivate") : t("common.activate")}
+      {status === "activo" ? "Desactivar" : "Activar"}
     </Button>
   );
 }

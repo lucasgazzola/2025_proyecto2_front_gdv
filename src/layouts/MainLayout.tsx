@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 
-import { useLanguage } from "@/hooks/useLanguage";
-
 import Header from "@/components/common/Header";
 import Sidebar from "@/components/common/Sidebar";
 import Footer from "@/components/common/Footer";
 
 export default function MainLayout() {
-  const { language, t } = useLanguage();
-
-  document.title = `${t("dashboard.title")} | GDV`;
+  document.title = `Bienvenidos | InvoIQ`;
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -26,10 +22,6 @@ export default function MainLayout() {
       setIsSidebarOpen(false);
     }
   }, []);
-
-  useEffect(() => {
-    document.documentElement.setAttribute("lang", language);
-  }, [language]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);

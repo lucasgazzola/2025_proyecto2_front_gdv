@@ -16,7 +16,6 @@ import ShowPasswordIcon from "@/components/common/ShowPasswordIcon";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 import useAuth from "@/hooks/useAuth";
-import { useLanguage } from "@/hooks/useLanguage";
 import { z } from "zod";
 
 type RegisterForm = {
@@ -51,7 +50,6 @@ const registerSchema = z
 export default function Register() {
   window.document.title = "Registrarse | GDV";
 
-  const { t } = useLanguage();
   const { register } = useAuth();
 
   const [formData, setFormData] = useState<RegisterForm>({
@@ -109,10 +107,10 @@ export default function Register() {
           <div className="flex items-start text-start">
             <div>
               <CardTitle className="text-white text-lg font-semibold mb-1">
-                {t("register.title")}
+                Registrarse
               </CardTitle>
               <CardDescription className="text-white text-sm">
-                {t("register.description")}
+                Crea tu cuenta para comenzar a gestionar tus ventas.
               </CardDescription>
             </div>
             <img
@@ -126,7 +124,7 @@ export default function Register() {
         <CardContent className="px-6 py-6">
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
-              <Label>{t("auth.email")}</Label>
+              <Label>Correo electrónico</Label>
               <Input
                 required
                 className="mt-1"
@@ -134,7 +132,7 @@ export default function Register() {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder={t("auth.enterEmail")}
+                placeholder={"Ingresa tu correo electrónico"}
               />
               {errors.email && (
                 <p className="text-sm text-start text-red-500 mt-1">
@@ -144,14 +142,14 @@ export default function Register() {
             </div>
 
             <div>
-              <Label>{t("auth.name")}</Label>
+              <Label>Nombre</Label>
               <Input
                 required
                 className="mt-1"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder={t("auth.enterName")}
+                placeholder={"Ingresa tu nombre"}
               />
               {errors.name && (
                 <p className="text-sm text-start text-red-500 mt-1">
@@ -161,14 +159,14 @@ export default function Register() {
             </div>
 
             <div>
-              <Label>{t("auth.lastname")}</Label>
+              <Label>Apellido</Label>
               <Input
                 required
                 className="mt-1"
                 name="lastname"
                 value={formData.lastname}
                 onChange={handleChange}
-                placeholder={t("auth.enterLastname")}
+                placeholder={"Ingresa tu apellido"}
               />
               {errors.lastname && (
                 <p className="text-sm text-start text-red-500 mt-1">
@@ -178,7 +176,7 @@ export default function Register() {
             </div>
 
             <div>
-              <Label>{t("auth.password")}</Label>
+              <Label>Contraseña</Label>
               <div className="relative">
                 <Input
                   required
@@ -187,7 +185,7 @@ export default function Register() {
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder={t("auth.enterPassword")}
+                  placeholder={"Ingresa tu contraseña"}
                 />
                 <button
                   type="button"
@@ -205,7 +203,7 @@ export default function Register() {
             </div>
 
             <div>
-              <Label>{t("auth.confirmPassword")}</Label>
+              <Label>Confirmar contraseña</Label>
               <div className="relative">
                 <Input
                   required
@@ -214,7 +212,7 @@ export default function Register() {
                   type={showConfirmPassword ? "text" : "password"}
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder={t("auth.reEnterPassword")}
+                  placeholder={"Reingresa la contraseña"}
                 />
                 <button
                   type="button"
@@ -236,25 +234,25 @@ export default function Register() {
               className="w-full mt-4 bg-[#2C638B] text-white"
               disabled={isLoading}
             >
-              {t("auth.register")}
+              Registrarse
               {isLoading && <LoadingSpinner />}
             </Button>
 
             <p className="text-center text-xs mt-2 text-muted-foreground">
-              {t("common.withYourRegistrationYouAcceptOur")}{" "}
+              Al registrarte aceptas nuestros{" "}
               <a href="#" className="underline font-medium text-blue-600">
-                {t("common.termsAndConditions")}
+                Términos y condiciones
               </a>
             </p>
           </form>
 
           <div className="text-center text-sm mt-4">
-            {t("auth.haveAccount")}{" "}
+            ¿Ya tienes una cuenta?{" "}
             <Link
               to="/login"
               className="text-blue-600 hover:underline font-medium"
             >
-              {t("auth.loginHere")}
+              Inicia sesión aquí
             </Link>
           </div>
         </CardContent>

@@ -9,7 +9,6 @@ export default function DeleteButton({ handleDelete }: DeleteButtonProps) {
   return (
     <Button variant="destructive" onClick={handleDelete}>
       <Trash2 className="w-4 h-4" />
-      <span className="text-sm">Eliminar</span>
     </Button>
   );
 }

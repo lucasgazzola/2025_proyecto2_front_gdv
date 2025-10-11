@@ -6,6 +6,7 @@ export default {
   common: {
     loading: "Cargando...",
     loadingRecords: "Cargando registros...",
+    by: "Por:",
     search: "Buscar",
     save: "Guardar",
     cancel: "Cancelar",
@@ -258,6 +259,12 @@ export default {
     company: "Empresa",
   },
 
+  brands: {
+    title: "Marcas",
+    createBrand: "Crear marca",
+    editBrand: "Editar marca"
+  },
+
   products: {
     title: "Productos",
     subtitle: "Sección donde se listan todos los productos existentes dentro del sistema.",
@@ -271,10 +278,11 @@ export default {
     category: "Categoría",
     image: "Imagen",
     quantity: "Cantidad",
+    price: "Precio",
     state: "Estado",
     noResults: "No se encontraron productos.",
     editTitle: "Editar producto",
-    createTitle: "Crear producto",
+    createTitle: "Agregar producto",
     editDescription: "Modifica los datos del producto.",
     createDescription: "Completa los campos para agregar un nuevo producto.",
     nameLabel: "Nombre del producto",
@@ -287,10 +295,10 @@ export default {
     quantityPlaceholder: "Cantidad disponible",
     quantityRequired: "La cantidad debe ser mayor a 0",
     saveChanges: "Guardar cambios",
-    create: "Crear producto",
+    create: "Agregar producto",
   },
   productModal: {
-    createTitle: "Crear producto",
+    createTitle: "Agregar producto",
     editTitle: "Editar producto",
     createDescription: "Completa los campos para registrar un nuevo producto.",
     editDescription: "Modifica los datos generales del producto.",

@@ -5,6 +5,7 @@ export interface ProductDto {
   category: string;
   imageUrl?: string;
   quantity: number;
+  price: number;
   state: boolean;
 }
 
@@ -14,5 +15,6 @@ export interface ProductFormData {
   category: string;
   imageUrl?: string;
   quantity: number;
+  price: number;
   state: boolean;
 }

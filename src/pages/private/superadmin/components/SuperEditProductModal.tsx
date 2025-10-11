@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import {
   Dialog,
@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 
 import type { ProductDto, ProductFormData } from "@/types/Product";
 import { useLanguage } from "@/hooks/useLanguage";
+import useAuth from "@/hooks/useAuth";
+import { productService } from "@/services/factories/productServiceFactory";
 
 import { z } from "zod";
 
@@ -50,13 +52,42 @@ export default function SuperEditProductModal({
     name: z.string().min(1, t("products.nameRequired")),
     brand: z.string().min(1, "La marca es obligatoria"),
     category: z.string().min(1, "La categoría es obligatoria"),
-    imageUrl: z.string().url("URL de imagen inválida").optional(),
+    // imageUrl handled separately (we allow data URLs or remote URLs), keep optional here
+    imageUrl: z.string().optional(),
     quantity: z.number().min(0, t("products.quantityRequired")),
   });
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof z.infer<typeof productSchema>, string>>
   >({});
+
+  const { getAccessToken } = useAuth();
+  const [categories, setCategories] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
+  const [_addBrandOpen, setAddBrandOpen] = useState(false);
+
+  // For multi-category selection UI
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  // Image upload handling
+  const [_imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // obtener categorías únicas desde los productos registrados
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const token = getAccessToken();
+      if (!token) return;
+      const { success, products } = await productService.getAllProducts(token);
+      if (!success || !products) return;
+      const uniqueCats = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+      setCategories(uniqueCats);
+      const uniqueBrands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)));
+      setBrands(uniqueBrands);
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (isEdit && product) {
@@ -68,6 +99,10 @@ export default function SuperEditProductModal({
         quantity: product.quantity,
         state: product.state,
       });
+      // populate multi-category selection from joined string
+      const catsSelected = product.category ? product.category.split(",").map((s) => s.trim()).filter(Boolean) : [];
+      setSelectedCategories(catsSelected);
+      setImagePreview(product.imageUrl || "");
     } else {
       setFormFields({
         name: "",
@@ -77,6 +112,8 @@ export default function SuperEditProductModal({
         quantity: 0,
         state: true,
       });
+      setSelectedCategories([]);
+      setImagePreview("");
     }
   }, [isEdit, product]);
 
@@ -93,6 +130,37 @@ export default function SuperEditProductModal({
       delete newErrors[name as keyof typeof prev];
       return newErrors;
     });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    setImageFile(f);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(String(reader.result));
+    };
+    reader.readAsDataURL(f);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors.imageUrl;
+      return newErrors;
+    });
+  };
+
+  const handleAddCategory = (cat: string) => {
+    if (!cat) return;
+    setSelectedCategories((prev) => (prev.includes(cat) ? prev : [...prev, cat]));
+  };
+
+  const removeCategory = (cat: string) => {
+    setSelectedCategories((prev) => prev.filter((c) => c !== cat));
+  };
+
+  const _handleAddBrand = (brand: string) => {
+    if (!brand) return;
+    setBrands((prev) => (prev.includes(brand) ? prev : [...prev, brand]));
+    setFormFields((prev) => ({ ...prev, brand }));
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -120,14 +188,23 @@ export default function SuperEditProductModal({
         setErrors(fieldErrors);
         return;
       }
-      // const productToSave: ProductDto = {
-      //   id: product.id, // solo necesario para edición
-      //   name,
-      //   idEcommerce,
-      //   quantity,
-      // };
+      // ensure image preview exists (image required)
+      if (!imagePreview) {
+        setErrors((prev) => ({ ...prev, imageUrl: "La imagen es obligatoria" }));
+        return;
+      }
 
-      saveProduct(parsed.data, isEdit);
+      const toSave = {
+        ...parsed.data,
+        id: product!.id,
+        brand: parsed.data.brand,
+        category: selectedCategories.join(", ") || parsed.data.category,
+        imageUrl: imagePreview,
+        quantity: parsed.data.quantity,
+        state: formFields.state,
+      } as ProductDto;
+
+      saveProduct(toSave, isEdit);
     } else {
       const parsed = productSchema.safeParse({
         name,
@@ -149,19 +226,33 @@ export default function SuperEditProductModal({
         return;
       }
 
+      if (!imagePreview) {
+        setErrors((prev) => ({ ...prev, imageUrl: "La imagen es obligatoria" }));
+        return;
+      }
+
       // parsed.data coincide con ProductFormData
-      saveProduct(parsed.data as ProductFormData, isEdit);
+      const toSave = {
+        ...parsed.data,
+        brand: parsed.data.brand,
+        category: selectedCategories.join(", ") || parsed.data.category,
+        imageUrl: imagePreview,
+        quantity: parsed.data.quantity,
+        state: formFields.state,
+      } as ProductFormData;
+
+      saveProduct(toSave, isEdit);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="bg-[#2C638B] rounded-t-xl pt-6 pb-5 px-6">
-          <DialogTitle className="text-white text-lg font-semibold mb-1">
+        <DialogHeader>
+          <DialogTitle className="text-center text-black text-xl font-semibold mb-1">
             {isEdit ? t("products.editTitle") : t("products.createTitle")}
           </DialogTitle>
-          <DialogDescription className="text-white text-sm">
+          <DialogDescription className="text-center text-white text-sm">
             {isEdit
               ? t("products.editDescription")
               : t("products.createDescription")}
@@ -187,15 +278,25 @@ export default function SuperEditProductModal({
 
             <div className="space-y-2">
               <Label htmlFor="brand">{t("products.brand")}</Label>
-              <Input
-                id="brand"
-                name="brand"
-                type="text"
-                value={brand}
-                onChange={handleChange}
-                placeholder={t("products.brand")}
-                autoComplete="off"
-              />
+              <div className="flex gap-2 items-center">
+                <select
+                  id="brand"
+                  name="brand"
+                  value={brand}
+                  onChange={(e) => setFormFields((prev) => ({ ...prev, brand: e.target.value }))}
+                  className="flex-1 rounded-md border px-3 py-2 bg-white"
+                >
+                  <option value="">{t("products.brand")}</option>
+                  {brands.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+                <Button onClick={() => setAddBrandOpen(true)}>
+                  {t("brands.createBrand")}
+                </Button>
+              </div>
               {errors.brand && (
                 <p className="text-sm text-red-500">{errors.brand}</p>
               )}
@@ -203,31 +304,68 @@ export default function SuperEditProductModal({
 
             <div className="space-y-2">
               <Label htmlFor="category">{t("products.category")}</Label>
-              <Input
-                id="category"
-                name="category"
-                type="text"
-                value={category}
-                onChange={handleChange}
-                placeholder={t("products.category")}
-                autoComplete="off"
-              />
+              <div className="flex gap-2">
+                <select
+                  id="categorySelect"
+                  className="flex-1 rounded-md border px-3 py-2 bg-white"
+                  onChange={(e) => handleAddCategory(e.target.value)}
+                  defaultValue=""
+                >
+                  <option value="">{t("products.category")}</option>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mt-2">
+                {selectedCategories.map((c) => (
+                  <span key={c} className="inline-flex items-center gap-2 bg-primary/10 px-2 py-1 rounded-full text-sm">
+                    {c}
+                    <button type="button" className="text-xs text-muted-foreground" onClick={() => removeCategory(c)}>x</button>
+                  </span>
+                ))}
+              </div>
               {errors.category && (
                 <p className="text-sm text-red-500">{errors.category}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="imageUrl">{t("products.image")}</Label>
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                type="text"
-                value={imageUrl}
-                onChange={handleChange}
-                placeholder={t("products.image")}
-                autoComplete="off"
+              <Label htmlFor="image">{t("products.image")}</Label>
+              <input
+                ref={fileInputRef}
+                id="image"
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
               />
+
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm" type="button" onClick={() => fileInputRef.current?.click()}>
+                  {imagePreview ? "Cambiar archivo" : "Elegir archivo"}
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {_imageFile?.name || (imagePreview ? "Archivo seleccionado" : "No hay archivo seleccionado")}
+                </span>
+              </div>
+
+              {imagePreview && (
+                <div className="mt-2 flex items-center gap-2">
+                  <img src={imagePreview} alt="preview" className="w-20 h-20 object-cover rounded" />
+                  <div>
+                    <div className="text-sm">Preview</div>
+                    <button type="button" className="text-xs text-rose-600" onClick={() => { setImageFile(null); setImagePreview(""); }}>
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {errors.imageUrl && (
                 <p className="text-sm text-red-500">{errors.imageUrl}</p>
               )}
@@ -250,17 +388,30 @@ export default function SuperEditProductModal({
               )}
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                id="state"
-                name="state"
-                type="checkbox"
-                checked={formFields.state}
-                onChange={(e) =>
-                  setFormFields((prev) => ({ ...prev, state: e.target.checked }))
-                }
-              />
-              <Label htmlFor="state">{t("products.state")}</Label>
+            <div className="space-y-2">
+              <Label>{t("products.state")}</Label>
+              <div className="flex gap-4 items-center">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="state"
+                    value="active"
+                    checked={formFields.state === true}
+                    onChange={() => setFormFields((prev) => ({ ...prev, state: true }))}
+                  />
+                  <span>{t("common.active")}</span>
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="state"
+                    value="inactive"
+                    checked={formFields.state === false}
+                    onChange={() => setFormFields((prev) => ({ ...prev, state: false }))}
+                  />
+                  <span>{t("common.inactive")}</span>
+                </label>
+              </div>
             </div>
           </div>
 

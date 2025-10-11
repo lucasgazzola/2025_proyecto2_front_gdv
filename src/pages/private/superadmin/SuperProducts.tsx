@@ -18,6 +18,13 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 import type { ProductDto, ProductFormData } from "@/types/Product";
 import EditButton from "@/components/common/EditButton";
@@ -41,6 +48,8 @@ export default function SuperProducts() {
   const { t } = useLanguage();
 
   const [products, setProducts] = useState<ProductDto[]>([]);
+  const [searchBy, setSearchBy] = useState<string>("name");
+  const [productsPerPage, setProductsPerPage] = useState<number>(10);
   const [selectedProduct, setSelectedProduct] = useState<ProductDto | null>(
     null
   );
@@ -83,11 +92,7 @@ export default function SuperProducts() {
     product: ProductDto | ProductFormData,
     isEdit: boolean
   ) => {
-    if (
-      !product.name ||
-      !product.idEcommerce ||
-      product.quantity === undefined
-    ) {
+    if (!product.name || !("brand" in product) || !("category" in product) || product.quantity === undefined) {
       toast.error("Por favor, completa todos los campos obligatorios.");
       return;
     }
@@ -155,46 +160,95 @@ export default function SuperProducts() {
   //   toast.success("Producto eliminado correctamente.");
   // };
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProducts = products.filter((product) => {
+    const q = search.toLowerCase().trim();
+    if (!q) return true;
+    switch (searchBy) {
+      case "name":
+        return product.name.toLowerCase().includes(q);
+      case "brand":
+        return product.brand.toLowerCase().includes(q);
+      case "category":
+        return product.category.toLowerCase().includes(q);
+      case "quantity":
+        return String(product.quantity).includes(q);
+      default:
+        return product.name.toLowerCase().includes(q);
+    }
+  });
 
-  const PRODUCTS_PER_PAGE = 8;
-  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * PRODUCTS_PER_PAGE,
-    currentPage * PRODUCTS_PER_PAGE
+    (currentPage - 1) * productsPerPage,
+    currentPage * productsPerPage
   );
 
   return (
     <>
       <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">{t("products.title")}</h1>
-          <p className="text-muted-foreground mb-6">{t("products.subtitle")}</p>
-        </div>
 
         <Card className="mb-6">
-          <CardContent className="p-6 flex flex-col items-center gap-4 lg:flex-row lg:justify-between">
-            <Input
-              placeholder={t("products.searchPlaceholder")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full lg:w-1/3"
-            />
-            <Button
-              onClick={() => {
-                setSelectedProduct(null);
-                setModalOpen(true);
-              }}
-              className="w-full lg:max-w-36 lg:w-1/4 lg:ml-auto"
-            >
-              {t("products.createProduct")}
-            </Button>
-          </CardContent>
-        </Card>
 
-        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">
+              {t("products.title")}
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              {t("products.subtitle")}
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <Input
+                placeholder={t("common.search")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full md:w-1/3"
+              />
+
+              <Select value={searchBy} onValueChange={(v) => setSearchBy(v)}>
+                <span>{t("common.by")}</span>
+                <SelectTrigger className="w-full md:w-30">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">{t("products.name")}</SelectItem>
+                  <SelectItem value="brand">{t("products.brand")}</SelectItem>
+                  <SelectItem value="category">{t("products.category")}</SelectItem>
+                  <SelectItem value="quantity">{t("products.quantity")}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="flex items-center gap-2">
+                <span>{t("common.show")}:</span>
+                <Select value={String(productsPerPage)} onValueChange={(value) => setProductsPerPage(Number(value))}>
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span>{t("common.perPage")}</span>
+              </div>
+
+              <div className="ml-auto w-full md:w-auto">
+                <Button
+                  onClick={() => {
+                    setSelectedProduct(null);
+                    setModalOpen(true);
+                  }}
+                >
+                  {t("products.createProduct")}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+      
           <CardHeader className="px-6 py-4">
             <CardTitle>
               {t("products.listTitle")} ({filteredProducts.length})
@@ -211,6 +265,7 @@ export default function SuperProducts() {
                     <TableHead>{t("products.category")}</TableHead>
                     <TableHead>{t("products.image")}</TableHead>
                     <TableHead>{t("products.quantity")}</TableHead>
+                    <TableHead>{t("products.price")}</TableHead>
                     <TableHead>{t("products.state")}</TableHead>
                     <TableHead className="text-center">
                       {t("common.actions")}
@@ -244,6 +299,7 @@ export default function SuperProducts() {
                           />
                         </TableCell>
                         <TableCell>{product.quantity}</TableCell>
+                        <TableCell>${product.price}</TableCell>
                         <TableCell>{product.state ? (
                             <span className="inline-flex items-center px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs">
                               {t("common.active")}

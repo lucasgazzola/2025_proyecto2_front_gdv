@@ -25,7 +25,7 @@ type Props = {
   saveProduct: (product: ProductDto | ProductFormData, isEdit: boolean) => void;
 };
 
-export default function SuperEditProductModal({
+export default function EditProductModal({
   open,
   onOpenChange,
   product,

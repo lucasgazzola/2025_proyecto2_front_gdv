@@ -2,7 +2,7 @@ import { lazy } from "react";
 
 import {
   LayoutDashboard,
-  Users,
+  Users as UsersIcon,
   Mail,
   FilePlus,
   User,
@@ -20,7 +20,6 @@ export type RouteItem = {
 };
 
 import { Role } from "./types/Role";
-import Audits from "./pages/private/superadmin/Audits";
 
 // Lazy-loaded pages
 const Login = lazy(() => import("@/pages/public/Login"));
@@ -30,17 +29,12 @@ const ResetPassword = lazy(() => import("@/pages/public/ResetPassword"));
 const Profile = lazy(() => import("@/pages/public/Profile"));
 const NotFound = lazy(() => import("@/pages/public/NotFound"));
 
-const SuperDashboard = lazy(
-  () => import("@/pages/private/superadmin/SuperDashboard")
-);
-const SuperUsers = lazy(() => import("@/pages/private/superadmin/SuperUsers"));
-
-const SuperProducts = lazy(
-  () => import("@/pages/private/superadmin/SuperProducts")
-);
-
-const Invoices = lazy(() => import("@/pages/private/superadmin/Invoices"));
-const Brands = lazy(() => import("@/pages/private/superadmin/Brands"));
+const Dashboard = lazy(() => import("@/pages/private/Dashboard"));
+const Users = lazy(() => import("@/pages/private/Users"));
+const Audits = lazy(() => import("@/pages/private/Audits"));
+const Products = lazy(() => import("@/pages/private/Products"));
+const Invoices = lazy(() => import("@/pages/private/Invoices"));
+const Brands = lazy(() => import("@/pages/private/Brands"));
 
 export const publicRoutes: RouteItem[] = [
   {
@@ -96,7 +90,7 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       label: "Dashboard",
       to: "/dashboard",
       icon: LayoutDashboard,
-      element: <SuperDashboard />,
+      element: <Dashboard />,
     },
     {
       label: "Facturas",
@@ -108,7 +102,7 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       label: "Productos",
       to: "/products",
       icon: Package,
-      element: <SuperProducts />,
+      element: <Products />,
     },
     {
       label: "Marcas",
@@ -119,8 +113,8 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
     {
       label: "Usuario",
       to: "/users",
-      icon: Users,
-      element: <SuperUsers />,
+      icon: UsersIcon,
+      element: <Users />,
     },
     {
       label: "Auditoría",

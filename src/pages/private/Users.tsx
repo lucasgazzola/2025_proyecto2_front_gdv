@@ -31,7 +31,7 @@ import {
 import FetchingSpinner from "@/components/common/FetchingSpinner";
 import EditButton from "@/components/common/EditButton";
 
-import SuperEditUserModal from "./components/SuperEditUserModal";
+import EditUserModal from "./components/EditUserModal";
 
 import useAuth from "@/hooks/useAuth";
 
@@ -350,7 +350,7 @@ export default function SuperUsers() {
         </CardContent>
       </Card>
       {modalOpen && (
-        <SuperEditUserModal
+        <EditUserModal
           open={modalOpen}
           setModalOpen={setModalOpen}
           user={selectedUser}

@@ -40,9 +40,9 @@ const {
   updateProduct: updateProductService,
 } = productService;
 
-import SuperEditProductModal from "./components/SuperEditProductModal";
+import EditProductModal from "./components/EditProductModal";
 
-export default function SuperProducts() {
+export default function Products() {
   const { logout, getAccessToken } = useAuth();
 
   const [products, setProducts] = useState<ProductDto[]>([]);
@@ -363,7 +363,7 @@ export default function SuperProducts() {
       </div>
 
       {modalOpen && (
-        <SuperEditProductModal
+        <EditProductModal
           open={modalOpen}
           onOpenChange={setModalOpen}
           product={selectedProduct}

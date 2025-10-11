@@ -8,15 +8,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type SuperConfirmDeleteModalProps = {
+type ConfirmDeleteModalProps = {
   confirmDeleteOpen: boolean;
   setConfirmDeleteOpen: (open: boolean) => void;
 };
 
-export default function SuperConfirmDeleteModal({
+export default function ConfirmDeleteModal({
   confirmDeleteOpen,
   setConfirmDeleteOpen,
-}: SuperConfirmDeleteModalProps) {
+}: ConfirmDeleteModalProps) {
   const handleDeleteCompany = () => {
     // if (companyToDelete.id) {
     //   deleteCompany(companyToDelete.id);

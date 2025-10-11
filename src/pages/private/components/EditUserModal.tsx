@@ -85,7 +85,7 @@ const initialFormState: UserFormState = {
   status: "active",
 };
 
-export default function SuperEditUserModal({
+export default function EditUserModal({
   open,
   setModalOpen,
   user,

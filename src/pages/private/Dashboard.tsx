@@ -15,7 +15,7 @@ import { logsService } from "@/services/factories/logServiceFactory";
 const { getPaginatedLogs } = logsService;
 import useAuth from "@/hooks/useAuth";
 
-export default function SuperDashboard() {
+export default function Dashboard() {
   const navigate = useNavigate();
   const { getAccessToken } = useAuth();
 

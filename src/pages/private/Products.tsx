@@ -189,7 +189,7 @@ export default function Products() {
         return (b.quantity || 0) - (a.quantity || 0); // mayor a menor
       case "latest":
       default:
-        return 0; // keep original fetched order
+        return 0;
     }
   });
 

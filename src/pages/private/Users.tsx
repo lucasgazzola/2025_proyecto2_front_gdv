@@ -88,7 +88,7 @@ export default function SuperUsers() {
     setCurrentPage(1);
   }, [search, orderBy]);
 
-  // Filter users by search across name, lastname, email and phone
+  // Filtro de usuarios por nombre, apellido, correo electrónico y teléfono
   const filteredUsers = users.filter((user) => {
     const q = search.toLowerCase().trim();
     if (!q) return true;
@@ -106,15 +106,7 @@ export default function SuperUsers() {
     );
   });
 
-  // Helper to parse phone to number for numeric sorting (strip non-digits)
-  const phoneToNumber = (p?: string) => {
-    if (!p) return 0;
-    const digits = p.replace(/\D/g, "");
-    const n = parseInt(digits, 10);
-    return Number.isFinite(n) ? n : 0;
-  };
-
-  // Sort according to orderBy: name/lastname/email A-Z, phone ASC, latest = as-is
+  // Ordenar por: nombre/apellido/correo electrónico de A-Z, teléfono ASC, latest = as-is
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     switch (orderBy) {
       case "name":
@@ -125,8 +117,9 @@ export default function SuperUsers() {
         return (a.email || "").localeCompare(b.email || "");
       case "phone":
         return (
-          phoneToNumber(((a as unknown) as { phone?: string }).phone) -
-          phoneToNumber(((b as unknown) as { phone?: string }).phone)
+          (((a as unknown) as { phone?: string }).phone || "").localeCompare(
+            ((b as unknown) as { phone?: string }).phone || ""
+          )
         );
       case "latest":
       default:
@@ -147,42 +140,7 @@ export default function SuperUsers() {
     }
   };
 
-  const toggleBlockUser = async (user: User) => {
-    if (!token) {
-      toast.error("Por favor, inicia sesión para realizar esta acción.");
-      logout();
-      return;
-    }
-    // Intercambiar el estado de bloqueo del usuario por el contrario al actual
-    setBlockLoading(true);
-    const {
-      success,
-      message,
-      user: updatedUser,
-    } = await updateUserByEmail(token, user.email, {
-      active: !user.active,
-    });
-    setBlockLoading(false);
-    if (!success) {
-      toast.error(message || "Error al bloquear/desbloquear el usuario.");
-      return;
-    }
-
-    setUsers((prevUsers) =>
-      prevUsers.map((u) =>
-        u.email === updatedUser?.email
-          ? { ...u, active: updatedUser.active }
-          : u
-      )
-    );
-
-    // TODO: Extraer a un archivo de traducciones
-    toast.success(
-      `Usuario ${updatedUser?.email} ${
-        updatedUser?.active ? "activado" : "desactivado"
-      } correctamente`
-    );
-  };
+  
 
   // Soft-delete user by email (backend may not provide hard delete).
   const handleDeleteUser = async (user: User) => {

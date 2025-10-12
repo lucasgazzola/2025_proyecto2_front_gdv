@@ -28,7 +28,7 @@ export default function Dashboard() {
     if (!token) return;
 
     getAllUsers(token).then((res) => {
-      if (res.success && res.users) setUserCount(res.users.length - 1); // Exclude the superadmin user
+      if (res.success && res.users) setUserCount(res.users.length - 1); // Exclude the auditor user
     });
 
     getPaginatedLogs({ token, page: 0, size: 1 }).then((res) => {

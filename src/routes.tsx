@@ -78,7 +78,7 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
     },
   ],
 
-  [Role.SUPERADMIN]: [
+  [Role.AUDITOR]: [
     {
       label: "Perfil",
       to: "/profile",

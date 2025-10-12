@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { InfoIcon, Lock, MailCheck } from "lucide-react";
+import { Search, Lock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,8 +43,7 @@ export default function SuperUsers() {
   const { logout, email, getAccessToken } = useAuth();
 
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
-  const [activeFilter, setActiveFilter] = useState("");
+  const [orderBy, setOrderBy] = useState<string>("latest");
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -86,23 +85,48 @@ export default function SuperUsers() {
   // para evitar que el usuario se quede en una página que no tiene resultados
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, roleFilter, activeFilter]);
+  }, [search, orderBy]);
 
   const filtered = users.filter((user) => {
-    const matchesSearch =
-      user.email !== email && // Excluir el usuario actual
-      (user.name.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase()));
+    // Excluir el usuario actual
+    // if (user.email === email) return false;
 
-    const matchesRole =
-      roleFilter === "" || roleFilter === "all" || user.role === roleFilter;
-    const matchesActive =
-      activeFilter === "" ||
-      activeFilter === "all" ||
-      (activeFilter === "active" && user.active) ||
-      (activeFilter === "inactive" && !user.active);
+    const q = search.toLowerCase().trim();
 
-    return matchesSearch && matchesRole && matchesActive;
+    let matchesSearch = true;
+    if (q) {
+      switch (orderBy) {
+        case "name":
+          matchesSearch = user.name.toLowerCase().includes(q);
+          break;
+        case "lastname":
+          matchesSearch = user.lastname.toLowerCase().includes(q);
+          break;
+        case "email":
+          matchesSearch = user.email.toLowerCase().includes(q);
+          break;
+        case "phone":
+          matchesSearch = (
+            (((user as unknown) as { phone?: string }).phone ?? "")
+          )
+            .toLowerCase()
+            .includes(q);
+          break;
+        case "role":
+          matchesSearch = user.role.toLowerCase().includes(q);
+          break;
+        case "state":
+          // compare against 'activo'/'inactivo' textual search
+          matchesSearch = (user.active ? "activo" : "inactivo").includes(q);
+          break;
+        default:
+          matchesSearch =
+            user.name.toLowerCase().includes(q) ||
+            user.email.toLowerCase().includes(q);
+      }
+    }
+
+    return matchesSearch;
   });
 
   const handleSave = (user: User, isEdit: boolean) => {
@@ -165,198 +189,182 @@ export default function SuperUsers() {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-2">Usuarios</h1>
-        <p className="text-muted-foreground mb-6">
+    <>
+      <div className="p-6 space-y-6">
+        <h1 className="text-4xl font-bold">Usuarios</h1>
+        <p className="text-muted-foreground">
           Sección donde se gestionan los usuarios del sistema.
         </p>
-      </div>
-      <Card className="mb-6">
-        <CardContent className="p-6 flex flex-col items-center justify-between gap-4">
-          <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
-            <Input
-              id="user-search"
-              name="user-search"
-              autoComplete="search-users"
-              placeholder="Buscar usuarios..."
-              value={search}
-              type="text"
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full lg:w-1/4"
-            />
+        <Card className="mb-6 border-0 rounded-none">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="text-start">
+                <h3 className="text-2xl font-semibold">Todos los usuarios</h3>
+                <p className="text-md text-green-500">
+                  Usuarios activos ({users.filter(user => user.active).length})
+                </p>
+              </div>
+              <div className="relative w-full max-w-60 md:w-1/3 ml-auto bg-gray-50">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Search size={16} />
+                </span>
+                <Input
+                aria-label="Buscar usuarios"
+                placeholder="Buscar"
+                value={search}
+                type="text"
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 border-none"
+                />
+              </div>
 
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-full lg:w-1/4">
-                <SelectValue placeholder="Filtrar por rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="user">Usuario</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select value={orderBy} onValueChange={(v) => setOrderBy(v)}>
+                <SelectTrigger className="w-full lg:w-1/4 max-w-60 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Ordenar por:</span>
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="latest">Más reciente</SelectItem>
+                  <SelectItem value="name">Nombre</SelectItem>
+                  <SelectItem value="lastname">Apellido</SelectItem>
+                  <SelectItem value="email">Correo</SelectItem>
+                  <SelectItem value="phone">Teléfono</SelectItem>
+                  <SelectItem value="role">Rol</SelectItem>
+                  <SelectItem value="state">Estado</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <div className="w-full md:w-auto">
+                <Button
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setModalOpen(true);
+                  }}
+                >
+                  Agregar usuario
+                </Button>
+              </div>
+            </div>
+          </CardContent>
 
-            <Select value={activeFilter} onValueChange={setActiveFilter}>
-              <SelectTrigger className="w-full lg:w-1/4">
-                <SelectValue placeholder="Filtrar por estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Activos</SelectItem>
-                <SelectItem value="inactive">Inactivos</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              onClick={() => {
-                setSelectedUser(null);
-                setModalOpen(true);
-              }}
-              className="w-full lg:max-w-36 lg:w-1/4 lg:ml-auto"
-            >
-              Agregar usuario
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="px-6 py-4">
-          <CardTitle>Usuarios ({filtered.length})</CardTitle>
-          <CardDescription>
-            Sección donde se gestionan los usuarios del sistema.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Apellido</TableHead>
-                  <TableHead>Correo electrónico</TableHead>
-                  <TableHead>Rol</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="text-center">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="text-start">
-                {loading ? (
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell
-                      colSpan={9}
-                      className="text-center text-muted-foreground py-6"
-                    >
-                      <FetchingSpinner />
-                    </TableCell>
+                    <TableHead className="text-gray-400">Nombre</TableHead>
+                    <TableHead className="text-gray-400">Apellido</TableHead>
+                    <TableHead className="text-gray-400">Correo electrónico</TableHead>
+                    <TableHead className="text-gray-400">Rol</TableHead>
+                    <TableHead className="text-gray-400">Estado</TableHead>
+                    <TableHead className="text-center text-gray-400">Acciones</TableHead>
                   </TableRow>
-                ) : paginatedUsers.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={9}
-                      className="text-center text-muted-foreground py-6"
-                    >
-                      No se encontraron usuarios
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginatedUsers.map((user) => (
-                    <TableRow
-                      key={
-                        user.email.length > 50
-                          ? user.email.slice(0, 50)
-                          : user.email
-                      }
-                    >
-                      <TableCell>
-                        {user.name.length > 50
-                          ? user.name.slice(0, 50)
-                          : user.name}
-                      </TableCell>
-                      <TableCell>
-                        {user.lastname.length > 50
-                          ? user.lastname.slice(0, 50)
-                          : user.lastname}
-                      </TableCell>
-                      <TableCell>
-                        {user.email.length > 50
-                          ? user.email.slice(0, 50)
-                          : user.email}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {user.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={`capitalize ${
-                            user.active
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {!user.active ? "Inactivo" : "Activo"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center space-x-2">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          title="Bloquear/Desbloquear"
-                          disabled={blockLoading}
-                          onClick={() => toggleBlockUser(user)}
-                        >
-                          <Lock className="w-4 h-4" />
-                        </Button>
-                        <EditButton
-                          handleEdit={() => {
-                            setSelectedUser(user);
-                            setModalOpen(true);
-                          }}
-                        />
+                </TableHeader>
+                <TableBody className="text-start">
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-6">
+                        <FetchingSpinner />
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          {/* Paginación */}
-          <div className="flex items-center justify-between pt-4">
-            <span className="text-sm text-muted-foreground">
-              Página {currentPage} de {totalPages || 1}
-            </span>
-            <div className="space-x-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                Anterior
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  setCurrentPage((p) => (p < totalPages ? p + 1 : totalPages))
-                }
-                disabled={currentPage === totalPages || totalPages === 0}
-              >
-                Siguiente
-              </Button>
+                  ) : paginatedUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-6">
+                        No se encontraron usuarios
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedUsers.map((user) => (
+                      <TableRow key={user.email.length > 50 ? user.email.slice(0, 50) : user.email}>
+                        <TableCell>
+                          {user.name.length > 50
+                            ? user.name.slice(0, 50)
+                            : user.name}
+                        </TableCell>
+                        <TableCell>
+                          {user.lastname.length > 50
+                            ? user.lastname.slice(0, 50)
+                            : user.lastname}
+                        </TableCell>
+                        <TableCell>
+                          {user.email.length > 50
+                            ? user.email.slice(0, 50)
+                            : user.email}
+                        </TableCell>
+                        <TableCell>
+                          {user.role}
+                        </TableCell>
+                        <TableCell>
+                          {user.active ? (
+                            <span className="block text-center w-24 text-emerald-700 p-4 rounded-sm bg-emerald-100 text-xs">
+                              Activo
+                            </span>
+                          ) : (
+                            <span className="block text-center w-24 text-rose-700 p-4 rounded-sm bg-rose-100 text-xs">
+                              Inactivo
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center space-x-2">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Bloquear/Desbloquear"
+                            disabled={blockLoading}
+                            onClick={() => toggleBlockUser(user)}
+                          >
+                            <Lock className="w-4 h-4" />
+                          </Button>
+                          <EditButton
+                            handleEdit={() => {
+                              setSelectedUser(user);
+                              setModalOpen(true);
+                            }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-      {modalOpen && (
-        <EditUserModal
-          open={modalOpen}
-          setModalOpen={setModalOpen}
-          user={selectedUser}
-          onSave={handleSave}
-        />
-      )}
-    </div>
+            {/* Paginación */}
+            <div className="flex items-center justify-between pt-4">
+              <span className="text-sm text-muted-foreground">
+                Página {currentPage} de {totalPages || 1}
+              </span>
+              <div className="space-x-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setCurrentPage((p) => (p < totalPages ? p + 1 : totalPages))
+                  }
+                  disabled={currentPage === totalPages || totalPages === 0}
+                >
+                  Siguiente
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        {modalOpen && (
+          <EditUserModal
+            open={modalOpen}
+            setModalOpen={setModalOpen}
+            user={selectedUser}
+            onSave={handleSave}
+          />
+        )}
+      </div>
+    </>
   );
 }

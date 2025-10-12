@@ -56,7 +56,7 @@ const userSchema = z
       .string()
       .min(6, "La confirmación de contraseña es obligatoria."),
     hash: z.string().min(1, "El hash es obligatorio."),
-    role: z.enum(["user", "superadmin"]),
+    role: z.enum(["user", "auditor"]),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Las contraseñas no coinciden.",
@@ -330,9 +330,7 @@ export default function EditUserModal({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="user">Usuario</SelectItem>
-                      <SelectItem value="superadmin">
-                        Superadministrador
-                      </SelectItem>
+                      <SelectItem value="auditor">Auditor</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.role && (

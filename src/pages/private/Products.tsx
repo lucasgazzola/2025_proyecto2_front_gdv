@@ -29,12 +29,8 @@ import useAuth from "@/hooks/useAuth";
 
 import { productService } from "@/services/factories/productServiceFactory";
 
-const {
-  getAllProducts: getAllProductsService,
-  addNewProduct: addNewProductService,
-  updateProduct: updateProductService,
-  deleteProduct: deleteProductService,
-} = productService;
+const { getAllProducts, createProduct, updateProductById, deleteProductById } =
+  productService;
 
 import EditProductModal from "@/pages/private/components/EditProductModal";
 import DeleteButton from "@/components/common/DeleteButton";
@@ -66,7 +62,7 @@ export default function Products() {
     }
 
     setLoading(true);
-    const { success, products } = await getAllProductsService(token);
+    const { success, products } = await getAllProducts(token);
     setLoading(false);
 
     if (!success) {
@@ -107,7 +103,7 @@ export default function Products() {
     }
 
     if (!isEdit) {
-      const { success, product: newProduct } = await addNewProductService(
+      const { success, product: newProduct } = await createProduct(
         token,
         product
       );
@@ -125,7 +121,7 @@ export default function Products() {
         toast.error("ID del producto es necesario para actualizar.");
         return;
       }
-      const { success, message } = await updateProductService(
+      const { success, message } = await updateProductById(
         token,
         product.id,
         product
@@ -149,7 +145,7 @@ export default function Products() {
       return;
     }
 
-    const { success } = await deleteProductService(token, id);
+    const { success } = await deleteProductById(token, id);
     if (!success) {
       toast.error("Error al eliminar el producto. Intenta nuevamente.");
       return;
@@ -213,7 +209,8 @@ export default function Products() {
               <div className="text-start">
                 <h3 className="text-2xl font-semibold">Todos los productos</h3>
                 <p className="text-md text-green-500">
-                  Productos activos ({products.filter(product => product.state).length})
+                  Productos activos (
+                  {products.filter((product) => product.state).length})
                 </p>
               </div>
               <div className="relative w-full max-w-60 md:w-1/3 ml-auto bg-gray-50">

@@ -35,7 +35,7 @@ class ProductServiceReal implements IProductService {
     }
   }
 
-  async addNewProduct(
+  async createProduct(
     token: string,
     product: ProductFormData
   ): Promise<{ success: boolean; product?: ProductDto }> {
@@ -68,7 +68,7 @@ class ProductServiceReal implements IProductService {
     }
   }
 
-  async updateProduct(
+  async updateProductById(
     token: string,
     productId: string,
     product: Partial<ProductDto>
@@ -92,7 +92,7 @@ class ProductServiceReal implements IProductService {
     }
   }
 
-  async deleteProduct(
+  async deleteProductById(
     token: string,
     id: string
   ): Promise<{ success: boolean }> {

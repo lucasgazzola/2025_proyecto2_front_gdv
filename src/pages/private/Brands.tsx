@@ -340,6 +340,10 @@ export default function Brands() {
           onOpenChange={setModalOpen}
           brand={selectedBrand}
           saveBrand={handleSaveBrand}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedBrand(null);
+          }}
         />
       )}
       {deleteModalOpen && selectedBrand && (

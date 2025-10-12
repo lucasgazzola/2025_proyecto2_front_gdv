@@ -8,16 +8,16 @@ export interface IProductService {
     token: string,
     id: string
   ): Promise<{ success: boolean; product?: ProductDto; message?: string }>;
-  addNewProduct(
+  createProduct(
     token: string,
     product: ProductFormData
   ): Promise<{ success: boolean; product?: ProductDto; message?: string }>;
-  updateProduct(
+  updateProductById(
     token: string,
     productId: string,
     product: Partial<ProductDto>
   ): Promise<{ success: boolean; message?: string; product?: ProductDto }>;
-  deleteProduct(
+  deleteProductById(
     token: string,
     id: string
   ): Promise<{ success: boolean; message?: string }>;

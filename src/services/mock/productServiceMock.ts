@@ -72,7 +72,7 @@ class ProductServiceMock implements IProductService {
       });
     }
   }
-  async addNewProduct(_token: string, product: ProductFormData) {
+  async createProduct(_token: string, product: ProductFormData) {
     const newProduct: ProductDto = {
       id: `mock-id-${PRODUCTS.length + 1}`,
       name: product.name,
@@ -86,14 +86,14 @@ class ProductServiceMock implements IProductService {
     PRODUCTS.push(newProduct);
     return Promise.resolve({ success: true, product: newProduct });
   }
-  async updateProduct(
+  async updateProductById(
     _token: string,
-    _productId: string,
-    _product: Partial<ProductDto>
-  ) {
-    const index = PRODUCTS.findIndex((p) => p.id === _productId);
+    productId: string,
+    product: Partial<ProductDto>
+  ): Promise<{ success: boolean; message?: string; product?: ProductDto }> {
+    const index = PRODUCTS.findIndex((p) => p.id === productId);
     if (index !== -1) {
-      PRODUCTS[index] = { ...PRODUCTS[index], ..._product };
+      PRODUCTS[index] = { ...PRODUCTS[index], ...product };
       return Promise.resolve({ success: true, product: PRODUCTS[index] });
     } else {
       return Promise.resolve({
@@ -102,8 +102,8 @@ class ProductServiceMock implements IProductService {
       });
     }
   }
-  async deleteProduct(_token: string, _id: string) {
-    const index = PRODUCTS.findIndex((p) => p.id === _id);
+  async deleteProductById(_token: string, id: string) {
+    const index = PRODUCTS.findIndex((p) => p.id === id);
     if (index !== -1) {
       PRODUCTS.splice(index, 1);
       return Promise.resolve({ success: true });

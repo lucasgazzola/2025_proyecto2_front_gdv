@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { authService } from "@/services/factories/authServiceFactory";
 const { forgotPassword } = authService;
-import { ArrowLeft } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -34,38 +34,53 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#c7d7e4] px-4">
-      <div>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="absolute top-10 left-10 flex items-center gap-2 px-3 py-2 bg-white text-blue-700 hover:text-blue-900 hover:bg-blue-100 transition-colors rounded-md shadow-sm"
-        >
-          <ArrowLeft className="w-96 h-96" />
-        </Button>
-      </div>
-      <div></div>
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded-lg p-8 w-full max-w-md"
+        className="bg-white shadow-md rounded-lg p-8 w-full max-w-md text-center"
       >
-        <h2 className="text-xl font-semibold mb-4">Restablecer contraseña</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Ingrese su dirección de correo electrónico para recibir un código de
-          restablecimiento.
+        {/* Logo opcional */}
+        <div className="flex justify-center mb-6">
+          <img
+            src="/logo-ati.png"
+            alt="Logo ATI"
+            className="h-12"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        </div>
+
+        <h2 className="text-xl font-semibold mb-2">Recuperar contraseña</h2>
+        <p className="text-sm text-muted-foreground mb-6">
+          Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña
         </p>
 
-        <Input
-          type="email"
-          placeholder="Ingrese su correo electrónico"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <div className="mb-4 text-left">
+          <Label htmlFor="email">Correo electrónico</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="tuli@ejemplo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
 
-        <Button type="submit" className="w-full mt-4" disabled={loading}>
-          {loading ? "Cargando..." : "Enviar código"}
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Cargando..." : "Enviar instrucciones"}
         </Button>
+
+        {/* Volver al inicio */}
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="text-blue-700 hover:underline hover:text-blue-900 transition-colors text-sm"
+          >
+            Volver al inicio
+          </button>
+        </div>
       </form>
     </div>
   );

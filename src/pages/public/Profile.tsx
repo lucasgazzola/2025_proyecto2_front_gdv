@@ -29,6 +29,10 @@ export default function Profile() {
   const [user, setUser] = useState<User>();
   const [newName, setNewName] = useState("");
   const [newLastname, setNewLastname] = useState("");
+  const [newAddress, setNewAddress] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newCity, setNewCity] = useState("");
+  const [newProvince, setNewProvince] = useState("");
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
   const token = getAccessToken();
@@ -56,6 +60,10 @@ export default function Profile() {
       setUser(user);
       setNewName(user.name);
       setNewLastname(user.lastname);
+      setNewAddress(user.address || "");
+      setNewPhone(user.phone || "");
+      setNewCity(user.city || "");
+      setNewProvince(user.province || "");
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -76,6 +84,10 @@ export default function Profile() {
       name: newName,
       lastname: newLastname,
       email: user?.email || "",
+      address: newAddress,
+      phone: newPhone,
+      city: newCity,
+      province: newProvince,
     });
 
     if (!success) {
@@ -141,20 +153,35 @@ export default function Profile() {
             </div>
 
             <div className="space-y-2">
-              <Label>Rol</Label>
+              <Label>Dirección</Label>
               <Input
-                value={
-                  user?.role
-                    ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
-                    : ""
-                }
-                disabled
+                value={newAddress}
+                onChange={(e) => setNewAddress(e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Estado</Label>
-              <Input value={user?.active ? "Activo" : "Inactivo"} disabled />
+              <Label>Teléfono</Label>
+              <Input
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Ciudad</Label>
+              <Input
+                value={newCity}
+                onChange={(e) => setNewCity(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Provincia</Label>
+              <Input
+                value={newProvince}
+                onChange={(e) => setNewProvince(e.target.value)}
+              />
             </div>
           </div>
 

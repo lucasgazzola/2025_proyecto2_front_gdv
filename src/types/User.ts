@@ -7,6 +7,9 @@ export type User = {
   active: boolean;
   role: Role;
   phone: string;
+  address?: string;
+  city?: string;
+  province?: string;
 };
 
 // TODO: Ver cual es la mejor manera de hacerlo
@@ -18,6 +21,9 @@ export type UserDto = {
   active: boolean;
   role: Array<"ROLE_USER" | "ROLE_AUDITOR">;
   phone: string;
+  address?: string;
+  city?: string;
+  province?: string;
 };
 
 export function mapUserDtoRoleToRole(role: UserDto["role"]): Role {
@@ -35,4 +41,7 @@ export const userDtoToUser = (userDto: UserDto): User => ({
   active: userDto.active,
   role: mapUserDtoRoleToRole(userDto.role),
   phone: userDto.phone,
+  address: userDto.address,
+  city: userDto.city,
+  province: userDto.province,
 });

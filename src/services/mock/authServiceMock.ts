@@ -11,12 +11,13 @@ const mockUser: User = {
   email: "mock@user.com",
   name: "Mock User",
   lastname: "MockLastname",
+  phone: "1234567890",
   active: true,
   role: Role.AUDITOR,
 };
 
 class AuthServiceMock implements IAuthService {
-  async login(data: LoginFormDto): Promise<LoginResponseDto> {
+  async login(_data: LoginFormDto): Promise<LoginResponseDto> {
     return {
       success: true,
       message: "Mock login",
@@ -24,7 +25,7 @@ class AuthServiceMock implements IAuthService {
       user: mockUser,
     };
   }
-  async register(data: RegisterFormDto) {
+  async register(_data: RegisterFormDto) {
     return {
       success: true,
       message: "Mock register",
@@ -37,7 +38,7 @@ class AuthServiceMock implements IAuthService {
     };
   }
 
-  async logout(token: string) {
+  async logout(_token: string) {
     return {
       success: true,
       message: "Mock logout",

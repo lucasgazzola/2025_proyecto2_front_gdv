@@ -44,9 +44,9 @@ export default function ConfirmDeleteModal({
 
             <div className="text-start">
               <CardHeader className="p-0">
-                <CardTitle className="text-xl">Eliminar producto</CardTitle>
+                <CardTitle className="text-xl">Eliminar registro</CardTitle>
                 <CardDescription>
-                  ¿Está seguro que desea eliminar este producto? Esta acción no
+                  ¿Está seguro que desea eliminar este registro? Esta acción no
                   puede deshacerse.
                 </CardDescription>
               </CardHeader>

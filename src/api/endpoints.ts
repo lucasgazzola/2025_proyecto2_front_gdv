@@ -44,6 +44,14 @@ export const API_ENDPOINTS = {
     UPDATE_PROFILE: "/users/profile",
   },
 
+  locations: {
+    GET_PROVINCES: "/locations/provinces",
+    GET_CITIES: (province?: string) =>
+      province
+        ? `/locations/cities?province=${encodeURIComponent(province)}`
+        : `/locations/cities`,
+  },
+
   logs: {
     GET_ALL_BY_LEVEL_PAGINATED: (level: string, params: string) =>
       `/log/getLogsByLevel/${level}?${params}`,

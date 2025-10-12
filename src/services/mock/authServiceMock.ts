@@ -3,15 +3,9 @@ import type { LoginFormDto, LoginResponseDto } from "@/dto/LoginFormDto";
 import type { RegisterFormDto } from "@/dto/RegisterFormDto";
 import type { User } from "@/types/User";
 import { Role } from "@/types/Role";
+import { USERS } from "./userServiceMock";
 
-const mockUser: User = {
-  email: "mock@user.com",
-  name: "Mock User",
-  lastname: "MockLastname",
-  phone: "1234567890",
-  active: true,
-  role: Role.AUDITOR,
-};
+const mockUser: User = USERS[0];
 
 class AuthServiceMock implements IAuthService {
   async login(_data: LoginFormDto): Promise<LoginResponseDto> {

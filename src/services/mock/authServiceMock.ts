@@ -1,9 +1,6 @@
 import type { IAuthService } from "@/services/interfaces/IAuthService";
 import type { LoginFormDto, LoginResponseDto } from "@/dto/LoginFormDto";
-import type {
-  RegisterFormDto,
-  RegisterAdminFormDto,
-} from "@/dto/RegisterFormDto";
+import type { RegisterFormDto } from "@/dto/RegisterFormDto";
 import type { User } from "@/types/User";
 import { Role } from "@/types/Role";
 
@@ -55,13 +52,7 @@ class AuthServiceMock implements IAuthService {
       message: "Mock resetPassword",
     };
   }
-  async registerAdmin(token: string, user: RegisterAdminFormDto) {
-    return {
-      success: true,
-      user: mockUser,
-      message: "Mock registerAdmin",
-    };
-  }
+
   async changePassword(
     token: string,
     email: string,

@@ -14,7 +14,6 @@ export const API_ENDPOINTS = {
     REGENERATE_OTP: (email: string) =>
       `/auth/regenerate-otp?email=${encodeURIComponent(email)}`,
     VALIDATE_TOKEN: "/auth/validate-token",
-    REGISTER_ADMIN: "/auth/register-admin",
     CHANGE_PASSWORD: "/auth/change-password",
   },
 

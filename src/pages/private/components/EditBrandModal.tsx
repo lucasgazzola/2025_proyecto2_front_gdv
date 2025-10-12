@@ -21,6 +21,8 @@ type Props = {
   onOpenChange: (val: boolean) => void;
   brand: Brand | null;
   saveBrand: (brand: Brand | BrandFormData, isEdit: boolean) => void;
+  // Optional callback invoked whenever the modal actually closes (cancel or after save)
+  onClose?: () => void;
 };
 
 export default function EditBrandModal({
@@ -28,6 +30,7 @@ export default function EditBrandModal({
   onOpenChange,
   brand,
   saveBrand,
+  onClose,
 }: Props) {
   const isEdit = brand !== null;
 
@@ -165,6 +168,13 @@ export default function EditBrandModal({
       } as Brand;
 
       saveBrand(toSave, isEdit);
+      // Close the dialog and notify parent
+      try {
+        onOpenChange(false);
+      } catch (err) {
+        /* noop */
+      }
+      onClose && onClose();
     } else {
       // SI ES UNA NUEVA MARCA
       const parsed = brandSchema.safeParse({
@@ -203,6 +213,13 @@ export default function EditBrandModal({
         logo: parsed.data.logo || imagePreview,
       } as BrandFormData;
       saveBrand(toSave, isEdit);
+      // Close the dialog and notify parent
+      try {
+        onOpenChange(false);
+      } catch (err) {
+        /* noop */
+      }
+      onClose && onClose();
     }
   };
 

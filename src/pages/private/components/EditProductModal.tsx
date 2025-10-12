@@ -574,12 +574,14 @@ export default function EditProductModal({
           </div>
         </form>
       </DialogContent>
+      {brandModalOpen && (
         <EditBrandModal
           open={brandModalOpen}
           onOpenChange={(v: boolean) => setBrandModalOpen(v)}
           brand={null}
           saveBrand={saveBrand}
         />
+      )}
     </Dialog>
   );
 }

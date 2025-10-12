@@ -158,29 +158,43 @@ export default function Products() {
     toast.success("Producto eliminado correctamente.");
   };
 
+  // Filtro de productos
   const filteredProducts = products.filter((product) => {
     const q = search.toLowerCase().trim();
     if (!q) return true;
 
-    // TODO: VER
+    const name = (product.name || "").toLowerCase();
+    const brand = (product.brand || "").toLowerCase();
+    const category = (product.category || "").toLowerCase();
+    const quantity = String(product.quantity || "");
+
+    return (
+      name.includes(q) ||
+      brand.includes(q) ||
+      category.includes(q) ||
+      quantity.includes(q)
+    );
+  });
+
+  // Ordenar por: nombre/marca/categoria de A-Z, cantidad DESC, latest = as-is
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (orderBy) {
-      case "latest":
-        return product.name.toLowerCase().includes(q);
       case "name":
-        return product.name.toLowerCase().includes(q);
+        return (a.name || "").localeCompare(b.name || "");
       case "brand":
-        return product.brand.toLowerCase().includes(q);
+        return (a.brand || "").localeCompare(b.brand || "");
       case "category":
-        return product.category.toLowerCase().includes(q);
+        return (a.category || "").localeCompare(b.category || "");
       case "quantity":
-        return String(product.quantity).includes(q);
+        return (b.quantity || 0) - (a.quantity || 0); // mayor a menor
+      case "latest":
       default:
-        return product.name.toLowerCase().includes(q);
+        return 0; // keep original fetched order
     }
   });
 
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-  const paginatedProducts = filteredProducts.slice(
+  const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
+  const paginatedProducts = sortedProducts.slice(
     (currentPage - 1) * productsPerPage,
     currentPage * productsPerPage
   );
@@ -199,7 +213,7 @@ export default function Products() {
               <div className="text-start">
                 <h3 className="text-2xl font-semibold">Todos los productos</h3>
                 <p className="text-md text-green-500">
-                  Productos activos ({products.length})
+                  Productos activos ({products.filter(product => product.state).length})
                 </p>
               </div>
               <div className="relative w-full max-w-60 md:w-1/3 ml-auto bg-gray-50">

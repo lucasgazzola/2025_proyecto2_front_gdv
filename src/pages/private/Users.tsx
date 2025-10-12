@@ -88,43 +88,50 @@ export default function SuperUsers() {
     setCurrentPage(1);
   }, [search, orderBy]);
 
-  const filtered = users.filter((user) => {
-    // Excluir el usuario actual
-    // if (user.email === email) return false;
-
+  // Filter users by search across name, lastname, email and phone
+  const filteredUsers = users.filter((user) => {
     const q = search.toLowerCase().trim();
+    if (!q) return true;
 
-    let matchesSearch = true;
-    if (q) {
-      switch (orderBy) {
-        case "name":
-          matchesSearch = user.name.toLowerCase().includes(q);
-          break;
-        case "lastname":
-          matchesSearch = user.lastname.toLowerCase().includes(q);
-          break;
-        case "email":
-          matchesSearch = user.email.toLowerCase().includes(q);
-          break;
-        case "phone":
-          matchesSearch = (
-            (((user as unknown) as { phone?: string }).phone ?? "")
-          )
-            .toLowerCase()
-            .includes(q);
-          break;
-        case "state":
-          // compare against 'activo'/'inactivo' textual search
-          matchesSearch = (user.active ? "activo" : "inactivo").includes(q);
-          break;
-        default:
-          matchesSearch =
-            user.name.toLowerCase().includes(q) ||
-            user.email.toLowerCase().includes(q);
-      }
+    const name = (user.name || "").toLowerCase();
+    const lastname = (user.lastname || "").toLowerCase();
+    const email = (user.email || "").toLowerCase();
+    const phone = (((user as unknown) as { phone?: string }).phone ?? "").toLowerCase();
+
+    return (
+      name.includes(q) ||
+      lastname.includes(q) ||
+      email.includes(q) ||
+      phone.includes(q)
+    );
+  });
+
+  // Helper to parse phone to number for numeric sorting (strip non-digits)
+  const phoneToNumber = (p?: string) => {
+    if (!p) return 0;
+    const digits = p.replace(/\D/g, "");
+    const n = parseInt(digits, 10);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  // Sort according to orderBy: name/lastname/email A-Z, phone ASC, latest = as-is
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    switch (orderBy) {
+      case "name":
+        return (a.name || "").localeCompare(b.name || "");
+      case "lastname":
+        return (a.lastname || "").localeCompare(b.lastname || "");
+      case "email":
+        return (a.email || "").localeCompare(b.email || "");
+      case "phone":
+        return (
+          phoneToNumber(((a as unknown) as { phone?: string }).phone) -
+          phoneToNumber(((b as unknown) as { phone?: string }).phone)
+        );
+      case "latest":
+      default:
+        return 0;
     }
-
-    return matchesSearch;
   });
 
   const handleSave = (user: User, isEdit: boolean) => {
@@ -208,8 +215,8 @@ export default function SuperUsers() {
   // Paginación
   const USERS_PER_PAGE = 5;
 
-  const totalPages = Math.ceil(filtered.length / USERS_PER_PAGE);
-  const paginatedUsers = filtered.slice(
+  const totalPages = Math.ceil(sortedUsers.length / USERS_PER_PAGE);
+  const paginatedUsers = sortedUsers.slice(
     (currentPage - 1) * USERS_PER_PAGE,
     currentPage * USERS_PER_PAGE
   );
@@ -255,7 +262,6 @@ export default function SuperUsers() {
                   <SelectItem value="lastname">Apellido</SelectItem>
                   <SelectItem value="email">Correo</SelectItem>
                   <SelectItem value="phone">Teléfono</SelectItem>
-                  <SelectItem value="state">Estado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -288,7 +294,7 @@ export default function SuperUsers() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    paginatedUsers.map((user) => (
+                    paginatedUsers.map((user: User) => (
                       <TableRow key={user.email.length > 50 ? user.email.slice(0, 50) : user.email}>
                         <TableCell>
                           {user.name.length > 50

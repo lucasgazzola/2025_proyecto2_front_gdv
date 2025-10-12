@@ -26,6 +26,9 @@ import {
 
 import FetchingSpinner from "@/components/common/FetchingSpinner";
 import EditButton from "@/components/common/EditButton";
+import DeleteButton from "@/components/common/DeleteButton";
+import MoreDetailsButton from "@/components/common/MoreDetailsButton";
+import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
 
 import EditUserModal from "./components/EditUserModal";
 
@@ -43,9 +46,11 @@ export default function SuperUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
+  
 
   const token = getAccessToken();
 
@@ -172,6 +177,34 @@ export default function SuperUsers() {
     );
   };
 
+  // Soft-delete user by email (backend may not provide hard delete).
+  const handleDeleteUser = async (user: User) => {
+    if (!token) {
+      toast.error("Por favor, inicia sesión para realizar esta acción.");
+      logout();
+      return;
+    }
+
+    setBlockLoading(true);
+    try {
+      const { success, message } = await updateUserByEmail(token, user.email, {
+        active: false,
+      });
+      setBlockLoading(false);
+      if (!success) {
+        toast.error(message || "Error al eliminar el usuario.");
+        return;
+      }
+
+      // Remove user from list (simulate delete) or you could just mark inactive
+      setUsers((prev) => prev.filter((u) => u.email !== user.email));
+      toast.success("Usuario eliminado correctamente.");
+    } catch {
+      setBlockLoading(false);
+      toast.error("Error al eliminar el usuario.");
+    }
+  };
+
   // Paginación
   const USERS_PER_PAGE = 5;
 
@@ -225,17 +258,6 @@ export default function SuperUsers() {
                   <SelectItem value="state">Estado</SelectItem>
                 </SelectContent>
               </Select>
-              
-              <div className="w-full md:w-auto">
-                <Button
-                  onClick={() => {
-                    setSelectedUser(null);
-                    setModalOpen(true);
-                  }}
-                >
-                  Agregar usuario
-                </Button>
-              </div>
             </div>
           </CardContent>
 
@@ -298,19 +320,22 @@ export default function SuperUsers() {
                           )}
                         </TableCell>
                         <TableCell className="text-center space-x-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            title="Bloquear/Desbloquear"
-                            disabled={blockLoading}
-                            onClick={() => toggleBlockUser(user)}
-                          >
-                            <Lock className="w-4 h-4" />
-                          </Button>
+                          <MoreDetailsButton
+                            handleViewDetails={() => {
+                              setSelectedUser(user);
+                              setModalOpen(true);
+                            }}
+                          />
                           <EditButton
                             handleEdit={() => {
                               setSelectedUser(user);
                               setModalOpen(true);
+                            }}
+                          />
+                          <DeleteButton
+                            handleDelete={() => {
+                              setSelectedUser(user);
+                              setDeleteModalOpen(true);
                             }}
                           />
                         </TableCell>
@@ -354,6 +379,22 @@ export default function SuperUsers() {
             setModalOpen={setModalOpen}
             user={selectedUser}
             onSave={handleSave}
+          />
+        )}
+        {deleteModalOpen && selectedUser && (
+          <ConfirmDeleteModal
+            isOpen={deleteModalOpen}
+            onClose={() => {
+              setDeleteModalOpen(false);
+              setSelectedUser(null);
+            }}
+            onConfirm={async () => {
+              if (selectedUser) {
+                await handleDeleteUser(selectedUser);
+              }
+              setDeleteModalOpen(false);
+              setSelectedUser(null);
+            }}
           />
         )}
       </div>

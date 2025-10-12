@@ -31,6 +31,8 @@ import useAuth from "@/hooks/useAuth";
 import { productService } from "@/services/factories/productServiceFactory";
 
 import { z } from "zod";
+import EditBrandModal from "./EditBrandModal";
+import type { Brand, BrandFormData } from "@/types/Brand";
 
 type Props = {
   open: boolean;
@@ -75,6 +77,9 @@ export default function EditProductModal({
   const { getAccessToken } = useAuth();
   const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
+
+  // Brand modal state
+  const [brandModalOpen, setBrandModalOpen] = useState(false);
 
   // For multi-category selection UI
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -267,6 +272,17 @@ export default function EditProductModal({
       saveProduct(toSave, isEdit);
     }
   };
+  //Para guardar cuando se crea una marca desde el modal de marcas
+  const saveBrand = (b: Brand | BrandFormData, _isEdit: boolean) => {
+    const name = (b as Brand | BrandFormData).name || "";
+    if (!name) {
+      setBrandModalOpen(false);
+      return;
+    }
+    setBrands((prev) => (prev.includes(name) ? prev : [...prev, name]));
+    setFormFields((prev) => ({ ...prev, brand: name }));
+    setBrandModalOpen(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -339,7 +355,11 @@ export default function EditProductModal({
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button variant="default" onClick={() => {}} type="button">
+                  <Button
+                    variant="default"
+                    onClick={() => setBrandModalOpen(true)}
+                    type="button"
+                  >
                     Agregar Marca
                   </Button>
                 </div>
@@ -554,6 +574,12 @@ export default function EditProductModal({
           </div>
         </form>
       </DialogContent>
+        <EditBrandModal
+          open={brandModalOpen}
+          onOpenChange={(v: boolean) => setBrandModalOpen(v)}
+          brand={null}
+          saveBrand={saveBrand}
+        />
     </Dialog>
   );
 }

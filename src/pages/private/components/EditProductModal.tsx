@@ -4,13 +4,27 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Package, Upload, ChevronDown } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 import type { ProductDto, ProductFormData } from "@/types/Product";
 import useAuth from "@/hooks/useAuth";
@@ -61,7 +75,6 @@ export default function EditProductModal({
   const { getAccessToken } = useAuth();
   const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
-  const [_addBrandOpen, setAddBrandOpen] = useState(false);
 
   // For multi-category selection UI
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -165,11 +178,7 @@ export default function EditProductModal({
     setSelectedCategories((prev) => prev.filter((c) => c !== cat));
   };
 
-  const _handleAddBrand = (brand: string) => {
-    if (!brand) return;
-    setBrands((prev) => (prev.includes(brand) ? prev : [...prev, brand]));
-    setFormFields((prev) => ({ ...prev, brand }));
-  };
+  // Nota: la creación de marca se abre desde el botón y actualmente no necesita lógica adicional aquí.
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -261,216 +270,288 @@ export default function EditProductModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-center text-black text-xl font-semibold mb-1">
-            {isEdit ? "Editar producto" : "Crear producto"}
-          </DialogTitle>
-          <DialogDescription className="text-center text-white text-sm">
-            {isEdit
-              ? "Modifica los datos generales del producto."
-              : "Completa los campos para registrar un nuevo producto."}
-          </DialogDescription>
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-primary/10 p-3">
+              <Package className="h-6 w-6 text-gray-600" />
+            </div>
+            <div className="flex-1">
+              <DialogTitle className="text-gray-800 text-lg font-semibold">
+                {isEdit ? "Editar producto" : "Agrega un nuevo producto"}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground">
+                {isEdit
+                  ? "Modifica los datos generales del producto."
+                  : "Este formulario permitirá añadir un nuevo producto a la base de datos"}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
+
         <form onSubmit={handleSave}>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre del producto</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                value={name}
-                onChange={handleChange}
-                placeholder="Nombre del producto"
-                autoComplete="off"
-              />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="brand">Marca</Label>
-              <div className="flex gap-2 items-center">
-                <select
-                  id="brand"
-                  name="brand"
-                  value={brand}
-                  onChange={(e) =>
-                    setFormFields((prev) => ({
-                      ...prev,
-                      brand: e.target.value,
-                    }))
-                  }
-                  className="flex-1 rounded-md border px-3 py-2 bg-white"
+          <div className="grid gap-4 py-4 w-full">
+            <div className="space-y-6">
+              <div className="flex">
+                <Label
+                  htmlFor="name"
+                  className="text-nowrap text-gray-500 w-2/5"
                 >
-                  <option value="">Marca</option>
-                  {brands.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
-                <Button onClick={() => setAddBrandOpen(true)}>
-                  Crear marca
-                </Button>
-              </div>
-              {errors.brand && (
-                <p className="text-sm text-red-500">{errors.brand}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category">Categoría</Label>
-              <div className="flex gap-2">
-                <select
-                  id="categorySelect"
-                  className="flex-1 rounded-md border px-3 py-2 bg-white"
-                  onChange={(e) => handleAddCategory(e.target.value)}
-                  defaultValue=""
-                >
-                  <option value="">Categoría</option>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                  Nombre del producto*
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={name}
+                  className="w-3/5"
+                  onChange={handleChange}
+                  placeholder="e.g. Core I9 14900K"
+                  autoComplete="off"
+                />
+                {errors.name && (
+                  <p className="text-sm text-red-500">{errors.name}</p>
+                )}
               </div>
 
-              <div className="flex flex-wrap gap-2 mt-2">
-                {selectedCategories.map((c) => (
-                  <span
-                    key={c}
-                    className="inline-flex items-center gap-2 bg-primary/10 px-2 py-1 rounded-full text-sm"
+              <div className="flex">
+                <Label
+                  htmlFor="brand"
+                  className="text-nowrap text-gray-500 w-2/5"
+                >
+                  Marca*
+                </Label>
+                <div className="flex gap-2 items-center w-3/5">
+                  <Select
+                    value={brand}
+                    onValueChange={(val: string) =>
+                      setFormFields((prev) => ({ ...prev, brand: val }))
+                    }
                   >
-                    {c}
-                    <button
-                      type="button"
-                      className="text-xs text-muted-foreground"
-                      onClick={() => removeCategory(c)}
-                    >
-                      x
-                    </button>
-                  </span>
-                ))}
+                    <SelectTrigger className="flex-1 rounded-md border px-3 py-2 bg-white">
+                      <SelectValue placeholder="Marca" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {brands.map((b) => (
+                        <SelectItem key={b} value={b}>
+                          {b}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="default" onClick={() => {}} type="button">
+                    Agregar Marca
+                  </Button>
+                </div>
+                {errors.brand && (
+                  <p className="text-sm text-red-500">{errors.brand}</p>
+                )}
               </div>
-              {errors.category && (
-                <p className="text-sm text-red-500">{errors.category}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="image">Imagen</Label>
-              <input
-                ref={fileInputRef}
-                id="image"
-                name="image"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
+              <div className="flex">
+                <Label
+                  htmlFor="image"
+                  className="text-nowrap text-gray-500 w-2/5"
                 >
-                  {imagePreview ? "Cambiar archivo" : "Elegir archivo"}
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  {_imageFile?.name ||
-                    (imagePreview
-                      ? "Archivo seleccionado"
-                      : "No hay archivo seleccionado")}
-                </span>
+                  Imagen del producto*
+                </Label>
+                <input
+                  ref={fileInputRef}
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {/* Upload card */}
+                <div className="w-3/5 flex flex-col">
+                  <div
+                    className="border-dashed border-2 border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center gap-3 cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <div className="w-16 h-16 rounded-full bg-purple-50 flex items-center justify-center">
+                      <Upload className="h-8 w-8 text-primary" />
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Click para cargar o arrastra y suelta
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      SVG, PNG, JPG or GIF (max. 800x400px)
+                    </div>
+                  </div>
+
+                  {/* TODO: Agregar que tenga más imagenes */}
+                  {imagePreview && (
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <img
+                        src={imagePreview}
+                        alt="preview"
+                        className="w-28 h-28 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        className="text-xs text-rose-600"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview("");
+                        }}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {errors.imageUrl && (
+                  <p className="text-sm text-red-500">{errors.imageUrl}</p>
+                )}
               </div>
 
-              {imagePreview && (
-                <div className="mt-2 flex items-center gap-2">
-                  <img
-                    src={imagePreview}
-                    alt="preview"
-                    className="w-20 h-20 object-cover rounded"
-                  />
-                  <div>
-                    <div className="text-sm">Preview</div>
-                    <button
-                      type="button"
-                      className="text-xs text-rose-600"
-                      onClick={() => {
-                        setImageFile(null);
-                        setImagePreview("");
-                      }}
-                    >
-                      Eliminar
-                    </button>
+              <div className="flex">
+                <Label
+                  className="text-nowrap text-gray-500 w-2/5"
+                  htmlFor="quantity"
+                >
+                  Stock*
+                </Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  name="quantity"
+                  step="1"
+                  min={0}
+                  value={quantity}
+                  onChange={handleChange}
+                  placeholder="Ingrese cantidad"
+                  className="w-3/5"
+                />
+                {errors.quantity && (
+                  <p className="text-sm text-red-500">{errors.quantity}</p>
+                )}
+              </div>
+
+              <div className="flex">
+                <Label
+                  className="text-nowrap text-gray-500 w-2/5"
+                  htmlFor="category"
+                >
+                  Categorías*
+                </Label>
+                <div className="flex flex-col w-3/5 items-start">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="flex w-full items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                        type="button"
+                      >
+                        Seleccionar categorías
+                        <ChevronDown className="ml-2 size-4 opacity-60" />
+                      </Button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent className="w-[300px]">
+                      {categories.map((c) => (
+                        <DropdownMenuCheckboxItem
+                          key={c}
+                          checked={selectedCategories.includes(c)}
+                          onCheckedChange={(v: boolean) => {
+                            if (v) handleAddCategory(c);
+                            else removeCategory(c);
+                          }}
+                        >
+                          {c}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedCategories.map((c) => (
+                      <span
+                        key={c}
+                        className="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-sm"
+                      >
+                        <span className="text-[#5932EA] font-medium">{c}</span>
+                        <button
+                          type="button"
+                          className="text-xs text-gray-500 hover:text-gray-700"
+                          onClick={() => removeCategory(c)}
+                          aria-label={`Eliminar categoría ${c}`}
+                        >
+                          <span className="text-[#5932EA]">×</span>
+                        </button>
+                      </span>
+                    ))}
                   </div>
                 </div>
-              )}
 
-              {errors.imageUrl && (
-                <p className="text-sm text-red-500">{errors.imageUrl}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Cantidad</Label>
-              <Input
-                id="quantity"
-                type="number"
-                name="quantity"
-                step="1"
-                min={0}
-                value={quantity}
-                onChange={handleChange}
-                placeholder="Cantidad del producto"
-              />
-              {errors.quantity && (
-                <p className="text-sm text-red-500">{errors.quantity}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Estado</Label>
-              <div className="flex gap-4 items-center">
-                <label className="inline-flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="state"
-                    value="active"
-                    checked={formFields.state === true}
-                    onChange={() =>
-                      setFormFields((prev) => ({ ...prev, state: true }))
-                    }
-                  />
-                  <span>Activo</span>
-                </label>
-                <label className="inline-flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="state"
-                    value="inactive"
-                    checked={formFields.state === false}
-                    onChange={() =>
-                      setFormFields((prev) => ({ ...prev, state: false }))
-                    }
-                  />
-                  <span>Inactivo</span>
-                </label>
+                {errors.category && (
+                  <p className="text-sm text-red-500">{errors.category}</p>
+                )}
+              </div>
+              {/* descripción o espacio extra */}
+              <div className="flex">
+                <Label
+                  className="text-nowrap text-gray-500 w-2/5"
+                  htmlFor="description"
+                >
+                  Descripción
+                </Label>
+                <Textarea
+                  name="description"
+                  className="w-3/5 min-h-[120px]"
+                  placeholder="Descripción del nuevo producto"
+                />
+              </div>
+              <div className="flex">
+                <Label
+                  className="text-nowrap text-gray-500 w-2/5"
+                  htmlFor="state"
+                >
+                  Estado*
+                </Label>
+                <div className="flex gap-10 justify-center w-3/5">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="state"
+                      value="active"
+                      checked={formFields.state === true}
+                      onChange={() =>
+                        setFormFields((prev) => ({ ...prev, state: true }))
+                      }
+                    />
+                    <span>Activo</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="state"
+                      value="inactive"
+                      checked={formFields.state === false}
+                      onChange={() =>
+                        setFormFields((prev) => ({ ...prev, state: false }))
+                      }
+                    />
+                    <span>Inactivo</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex w-full items-center gap-3">
+                <Button
+                  variant="outline"
+                  className="w-1/2"
+                  type="button"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button className="w-1/2" type="submit" variant="default">
+                  {isEdit ? "Guardar cambios" : "Confirmar"}
+                </Button>
               </div>
             </div>
           </div>
-
-          <DialogFooter>
-            <Button type="submit">
-              {isEdit ? "Guardar cambios" : "Crear"}
-            </Button>
-          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

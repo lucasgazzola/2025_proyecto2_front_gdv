@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 
 import Header from "@/components/common/Header";
 import Sidebar from "@/components/common/Sidebar";
-import Footer from "@/components/common/Footer";
 
 export default function MainLayout() {
   document.title = `Bienvenidos | InvoIQ`;
@@ -45,7 +44,6 @@ export default function MainLayout() {
         <main className="flex-1 bg-[#f7f9ff] pt-14">
           <Outlet />
         </main>
-        <Footer />
       </div>
     </div>
   );

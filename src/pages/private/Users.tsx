@@ -88,43 +88,43 @@ export default function SuperUsers() {
     setCurrentPage(1);
   }, [search, orderBy]);
 
-  const filtered = users.filter((user) => {
-    // Excluir el usuario actual
-    // if (user.email === email) return false;
-
+  // Filtro de usuarios por nombre, apellido, correo electrónico y teléfono
+  const filteredUsers = users.filter((user) => {
     const q = search.toLowerCase().trim();
+    if (!q) return true;
 
-    let matchesSearch = true;
-    if (q) {
-      switch (orderBy) {
-        case "name":
-          matchesSearch = user.name.toLowerCase().includes(q);
-          break;
-        case "lastname":
-          matchesSearch = user.lastname.toLowerCase().includes(q);
-          break;
-        case "email":
-          matchesSearch = user.email.toLowerCase().includes(q);
-          break;
-        case "phone":
-          matchesSearch = (
-            (((user as unknown) as { phone?: string }).phone ?? "")
+    const name = (user.name || "").toLowerCase();
+    const lastname = (user.lastname || "").toLowerCase();
+    const email = (user.email || "").toLowerCase();
+    const phone = (((user as unknown) as { phone?: string }).phone ?? "").toLowerCase();
+
+    return (
+      name.includes(q) ||
+      lastname.includes(q) ||
+      email.includes(q) ||
+      phone.includes(q)
+    );
+  });
+
+  // Ordenar por: nombre/apellido/correo electrónico de A-Z, teléfono ASC, latest = as-is
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    switch (orderBy) {
+      case "name":
+        return (a.name || "").localeCompare(b.name || "");
+      case "lastname":
+        return (a.lastname || "").localeCompare(b.lastname || "");
+      case "email":
+        return (a.email || "").localeCompare(b.email || "");
+      case "phone":
+        return (
+          (((a as unknown) as { phone?: string }).phone || "").localeCompare(
+            ((b as unknown) as { phone?: string }).phone || ""
           )
-            .toLowerCase()
-            .includes(q);
-          break;
-        case "state":
-          // compare against 'activo'/'inactivo' textual search
-          matchesSearch = (user.active ? "activo" : "inactivo").includes(q);
-          break;
-        default:
-          matchesSearch =
-            user.name.toLowerCase().includes(q) ||
-            user.email.toLowerCase().includes(q);
-      }
+        );
+      case "latest":
+      default:
+        return 0;
     }
-
-    return matchesSearch;
   });
 
   const handleSave = (user: User, isEdit: boolean) => {
@@ -140,42 +140,7 @@ export default function SuperUsers() {
     }
   };
 
-  const toggleBlockUser = async (user: User) => {
-    if (!token) {
-      toast.error("Por favor, inicia sesión para realizar esta acción.");
-      logout();
-      return;
-    }
-    // Intercambiar el estado de bloqueo del usuario por el contrario al actual
-    setBlockLoading(true);
-    const {
-      success,
-      message,
-      user: updatedUser,
-    } = await updateUserByEmail(token, user.email, {
-      active: !user.active,
-    });
-    setBlockLoading(false);
-    if (!success) {
-      toast.error(message || "Error al bloquear/desbloquear el usuario.");
-      return;
-    }
-
-    setUsers((prevUsers) =>
-      prevUsers.map((u) =>
-        u.email === updatedUser?.email
-          ? { ...u, active: updatedUser.active }
-          : u
-      )
-    );
-
-    // TODO: Extraer a un archivo de traducciones
-    toast.success(
-      `Usuario ${updatedUser?.email} ${
-        updatedUser?.active ? "activado" : "desactivado"
-      } correctamente`
-    );
-  };
+  
 
   // Soft-delete user by email (backend may not provide hard delete).
   const handleDeleteUser = async (user: User) => {
@@ -208,8 +173,8 @@ export default function SuperUsers() {
   // Paginación
   const USERS_PER_PAGE = 5;
 
-  const totalPages = Math.ceil(filtered.length / USERS_PER_PAGE);
-  const paginatedUsers = filtered.slice(
+  const totalPages = Math.ceil(sortedUsers.length / USERS_PER_PAGE);
+  const paginatedUsers = sortedUsers.slice(
     (currentPage - 1) * USERS_PER_PAGE,
     currentPage * USERS_PER_PAGE
   );
@@ -255,7 +220,6 @@ export default function SuperUsers() {
                   <SelectItem value="lastname">Apellido</SelectItem>
                   <SelectItem value="email">Correo</SelectItem>
                   <SelectItem value="phone">Teléfono</SelectItem>
-                  <SelectItem value="state">Estado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -288,7 +252,7 @@ export default function SuperUsers() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    paginatedUsers.map((user) => (
+                    paginatedUsers.map((user: User) => (
                       <TableRow key={user.email.length > 50 ? user.email.slice(0, 50) : user.email}>
                         <TableCell>
                           {user.name.length > 50

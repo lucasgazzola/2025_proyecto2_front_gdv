@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { z } from "zod";
+// zod removed; modal is edit/view-only
 
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { UsersIcon } from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -20,11 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import ShowPasswordButton from "@/components/common/ShowPasswordButton";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
-
-import { authService } from "@/services/factories/authServiceFactory";
-const { register } = authService;
 
 import { userService } from "@/services/factories/userServiceFactory";
 const { updateUserByEmail } = userService;
@@ -41,27 +36,7 @@ type Props = {
   onSave: (user: User, isEdit: boolean) => void;
 };
 
-const userSchema = z
-  .object({
-    name: z.string().min(1, "El nombre es obligatorio."),
-    lastname: z.string().min(1, "El apellido es obligatorio."),
-    email: z.string().email("Email inválido"),
-    password: z
-      .string()
-      .min(6, "La contraseña debe tener al menos 6 caracteres.")
-      .regex(/[A-Z]/, "La contraseña debe tener al menos una letra mayúscula.")
-      .regex(/[a-z]/, "La contraseña debe tener al menos una letra minúscula.")
-      .regex(/\d/, "La contraseña debe tener al menos un número."),
-    confirmPassword: z
-      .string()
-      .min(6, "La confirmación de contraseña es obligatoria."),
-    hash: z.string().min(1, "El hash es obligatorio."),
-    role: z.enum(["user", "auditor"]),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Las contraseñas no coinciden.",
-    path: ["confirmPassword"],
-  });
+// Modal is edit/view-only; creation and password fields removed.
 
 type UserFormState = {
   name: string;
@@ -95,12 +70,8 @@ export default function EditUserModal({
   const isEdit = user !== null;
 
   const [form, setForm] = useState<UserFormState>(initialFormState);
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof z.infer<typeof userSchema>, string>>
-  >({});
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const token = getAccessToken();
 
@@ -117,6 +88,7 @@ export default function EditUserModal({
         status: user.active ? "active" : "inactive",
       });
     } else {
+      // For view-only (no creation), keep form empty but do not allow saving
       setForm(initialFormState);
     }
     setErrors({});
@@ -162,36 +134,14 @@ export default function EditUserModal({
       logout();
       return;
     }
-
+    // We only support editing existing users in this modal
     if (!isEdit) {
-      const parsed = userSchema.safeParse(form);
-      if (!parsed.success) {
-        const fieldErrors: typeof errors = {};
-        for (const err of parsed.error.issues) {
-          const field = err.path[0] as keyof typeof fieldErrors;
-          if (!fieldErrors[field]) fieldErrors[field] = err.message;
-        }
-        setErrors(fieldErrors);
-        return;
-      }
-      setLoading(true);
-      const { success, message } = await register({
-        name: form.name,
-        lastname: form.lastname,
-        email: form.email,
-        password: form.password,
-      });
-      setLoading(false);
+      toast.info("Crear usuarios no está disponible desde este modal.");
+      return;
+    }
 
-      if (!success) {
-        toast.error(
-          "Error al crear el usuario. Por favor, intentá nuevamente."
-        );
-        return;
-      }
-      // if (createdUser) onSave(createdUser, isEdit);
-      setModalOpen(false);
-    } else {
+    // Edit flow
+    {
       if (!form.name || !form.lastname || !form.status) {
         toast.error("Por favor completá todos los campos obligatorios.");
         return;
@@ -219,154 +169,110 @@ export default function EditUserModal({
 
   return (
     <Dialog open={open} onOpenChange={setModalOpen}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="bg-[#2C638B] rounded-t-xl pt-6 pb-5 px-6">
-          <DialogTitle className="text-white text-lg font-semibold mb-1">
-            {isEdit ? "Editar usuario" : "Crear nuevo usuario"}
-          </DialogTitle>
-          <DialogDescription className="text-white text-sm">
-            {isEdit
-              ? "Modifica los datos del usuario seleccionado."
-              : "Completa los campos para crear un nuevo usuario."}
-          </DialogDescription>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-primary/10 p-3">
+              <UsersIcon className="h-6 w-6 text-gray-600" />
+            </div>
+            <div className="flex-1">
+              <DialogTitle className="text-gray-800 text-lg font-semibold">
+                Gestionar rol de usuario
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground">
+                Este formulario permitirá gestionar el rol de un usuario del sistema.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <form onSubmit={handleSave}>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
-              <Input id="name" value={form.name} onChange={handleChange} />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name}</p>
-              )}
-            </div>
+          <div className="grid gap-4 py-4 w-full">
+            <div className="space-y-6">
+              <div className="flex">
+                <Label htmlFor="name" className="w-1/3 text-gray-600">
+                  Nombre del usuario*
+                </Label>
+                <Input id="name" value={form.name} readOnly className="w-2/3" />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="lastname">Apellido</Label>
-              <Input
-                id="lastname"
-                value={form.lastname}
-                onChange={handleChange}
-                placeholder="Ingresa el apellido"
-              />
-              {errors.lastname && (
-                <p className="text-sm text-red-500">{errors.lastname}</p>
-              )}
-            </div>
+              <div className="flex">
+                <Label htmlFor="lastname" className="w-1/3 text-gray-600">
+                  Apellido del usuario*
+                </Label>
+                <Input id="lastname" value={form.lastname} readOnly className="w-2/3" />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input
-                id="email"
-                type="email"
-                value={form.email}
-                disabled={isEdit}
-                onChange={handleChange}
-                placeholder="Ingresa el correo electrónico"
-              />
-              {errors.email && (
-                <p className="text-sm text-red-500">{errors.email}</p>
-              )}
-            </div>
+              <div className="flex">
+                <Label htmlFor="email" className="w-1/3 text-gray-600">
+                  Correo electrónico*
+                </Label>
+                <Input id="email" value={form.email} readOnly className="w-2/3" />
+              </div>
 
-            {!isEdit && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete="new-password"
-                      value={form.password}
-                      onChange={handleChange}
-                      placeholder="Ingresa la contraseña"
-                    />
-                    <ShowPasswordButton
-                      togglePasswordVisibility={() =>
-                        setShowPassword((v) => !v)
-                      }
-                    />
-                  </div>
-                  {errors.password && (
-                    <p className="text-sm text-red-500">{errors.password}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      autoComplete="new-confirm-password"
-                      value={form.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Confirma la contraseña"
-                    />
-                    <ShowPasswordButton
-                      togglePasswordVisibility={() =>
-                        setShowConfirmPassword((v) => !v)
-                      }
-                    />
-                  </div>
-                  {errors.confirmPassword && (
-                    <p className="text-sm text-red-500">
-                      {errors.confirmPassword}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="role">Rol</Label>
-                  <Select
-                    value={form.role}
-                    onValueChange={(val) =>
-                      handleSelectChange("role", val as Role)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar rol" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">Usuario</SelectItem>
-                      <SelectItem value="auditor">Auditor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.role && (
-                    <p className="text-sm text-red-500">{errors.role}</p>
-                  )}
-                </div>
-              </>
-            )}
-
-            {isEdit && (
-              <div className="space-y-2">
-                <Label htmlFor="status">Estado</Label>
+              <div className="flex">
+                <Label htmlFor="role" className="w-1/3 text-gray-600">
+                  Rol*
+                </Label>
                 <Select
-                  value={form.status}
-                  onValueChange={(val) =>
-                    handleSelectChange("status", val as "active" | "inactive")
-                  }
+                  value={form.role}
+                  onValueChange={(val) => handleSelectChange("role", val)}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar estado" />
+                  <SelectTrigger className="w-2/3">
+                    <SelectValue placeholder="Seleccionar rol" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Activo</SelectItem>
-                    <SelectItem value="inactive">Inactivo</SelectItem>
+                    <SelectItem value="user">Usuario</SelectItem>
+                    <SelectItem value="auditor">Auditor</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            )}
-          </div>
 
-          <DialogFooter>
-            <Button disabled={loading} type="submit">
-              {isEdit ? "Guardar cambios" : "Agregar usuario"}
-              {loading && <LoadingSpinner />}
+              <div className="flex">
+                <Label
+                  className="text-nowrap text-gray-500 w-2/5"
+                  htmlFor="state"
+                >
+                  Estado*
+                </Label>
+                <div className="flex gap-10 justify-center w-3/5">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="active"
+                      checked={form.status === "active"}
+                      onChange={() => handleSelectChange("status", "active")}
+                    />
+                    <span>Activo</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="inactive"
+                      checked={form.status === "inactive"}
+                      onChange={() => handleSelectChange("status", "inactive")}
+                    />
+                    <span>Inactivo</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex w-full items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setModalOpen(false)}
+              className="w-1/2"
+            >
+              Cancelar
             </Button>
-          </DialogFooter>
+            <Button type="submit" className="w-1/2">
+              Confirmar
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

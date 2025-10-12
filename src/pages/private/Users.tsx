@@ -2,14 +2,10 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Search, Lock } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Table,
@@ -111,9 +107,6 @@ export default function SuperUsers() {
           )
             .toLowerCase()
             .includes(q);
-          break;
-        case "role":
-          matchesSearch = user.role.toLowerCase().includes(q);
           break;
         case "state":
           // compare against 'activo'/'inactivo' textual search
@@ -229,7 +222,6 @@ export default function SuperUsers() {
                   <SelectItem value="lastname">Apellido</SelectItem>
                   <SelectItem value="email">Correo</SelectItem>
                   <SelectItem value="phone">Teléfono</SelectItem>
-                  <SelectItem value="role">Rol</SelectItem>
                   <SelectItem value="state">Estado</SelectItem>
                 </SelectContent>
               </Select>
@@ -255,7 +247,7 @@ export default function SuperUsers() {
                     <TableHead className="text-gray-400">Nombre</TableHead>
                     <TableHead className="text-gray-400">Apellido</TableHead>
                     <TableHead className="text-gray-400">Correo electrónico</TableHead>
-                    <TableHead className="text-gray-400">Rol</TableHead>
+                    <TableHead className="text-gray-400">Telefono</TableHead>
                     <TableHead className="text-gray-400">Estado</TableHead>
                     <TableHead className="text-center text-gray-400">Acciones</TableHead>
                   </TableRow>
@@ -292,7 +284,7 @@ export default function SuperUsers() {
                             : user.email}
                         </TableCell>
                         <TableCell>
-                          {user.role}
+                          {user.phone}
                         </TableCell>
                         <TableCell>
                           {user.active ? (

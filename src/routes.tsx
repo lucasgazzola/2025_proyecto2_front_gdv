@@ -111,7 +111,7 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Brands />,
     },
     {
-      label: "Usuario",
+      label: "Usuarios",
       to: "/users",
       icon: UsersIcon,
       element: <Users />,

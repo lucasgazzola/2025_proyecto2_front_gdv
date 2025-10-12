@@ -26,6 +26,16 @@ export const API_ENDPOINTS = {
     DELETE_BRAND: (id: string) => `/brands/${id}`,
   },
 
+  providers: {
+    GET_ALL: "/providers",
+    GET_PROVIDER: (id: string) => `/providers/${id}`,
+  },
+
+  categories: {
+    GET_ALL: "/categories",
+    GET_CATEGORY: (id: string) => `/categories/${id}`,
+  },
+
   users: {
     GET_ALL: "/users",
     GET_PROFILE: "/users/profile",

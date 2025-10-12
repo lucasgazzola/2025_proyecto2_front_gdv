@@ -56,7 +56,7 @@ const initialFormState: UserFormState = {
   password: "",
   confirmPassword: "",
   hash: "",
-  role: "user",
+  role: "USER",
   status: "active",
 };
 
@@ -84,7 +84,7 @@ export default function EditUserModal({
         password: "",
         confirmPassword: "",
         hash: "",
-        role: user.role || "user",
+        role: user.role || "USER",
         status: user.active ? "active" : "inactive",
       });
     } else {
@@ -180,7 +180,8 @@ export default function EditUserModal({
                 Gestionar rol de usuario
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
-                Este formulario permitirá gestionar el rol de un usuario del sistema.
+                Este formulario permitirá gestionar el rol de un usuario del
+                sistema.
               </DialogDescription>
             </div>
           </div>
@@ -200,14 +201,24 @@ export default function EditUserModal({
                 <Label htmlFor="lastname" className="w-1/3 text-gray-600">
                   Apellido del usuario*
                 </Label>
-                <Input id="lastname" value={form.lastname} readOnly className="w-2/3" />
+                <Input
+                  id="lastname"
+                  value={form.lastname}
+                  readOnly
+                  className="w-2/3"
+                />
               </div>
 
               <div className="flex">
                 <Label htmlFor="email" className="w-1/3 text-gray-600">
                   Correo electrónico*
                 </Label>
-                <Input id="email" value={form.email} readOnly className="w-2/3" />
+                <Input
+                  id="email"
+                  value={form.email}
+                  readOnly
+                  className="w-2/3"
+                />
               </div>
 
               <div className="flex">
@@ -222,8 +233,8 @@ export default function EditUserModal({
                     <SelectValue placeholder="Seleccionar rol" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="user">Usuario</SelectItem>
-                    <SelectItem value="auditor">Auditor</SelectItem>
+                    <SelectItem value="USER">Usuario</SelectItem>
+                    <SelectItem value="AUDITOR">Auditor</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

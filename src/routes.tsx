@@ -76,6 +76,30 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Profile />,
       hiddenOnSidebar: true,
     },
+    {
+      label: "Dashboard",
+      to: "/dashboard",
+      icon: LayoutDashboard,
+      element: <Dashboard />,
+    },
+    {
+      label: "Facturas",
+      to: "/new-invoice",
+      icon: FilePlus,
+      element: <Invoices />,
+    },
+    {
+      label: "Productos",
+      to: "/products",
+      icon: Package,
+      element: <Products />,
+    },
+    {
+      label: "Marcas",
+      to: "/brands",
+      icon: Tag,
+      element: <Brands />,
+    },
   ],
 
   [Role.AUDITOR]: [

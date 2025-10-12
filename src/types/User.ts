@@ -15,12 +15,12 @@ export type UserDto = {
   name: string;
   lastname: string;
   active: boolean;
-  role: Array<"ROLE_USER" | "ROLE_SUPERADMIN">;
+  role: Array<"ROLE_USER" | "ROLE_AUDITOR">;
 };
 
 export function mapUserDtoRoleToRole(role: UserDto["role"]): Role {
   if (Array.isArray(role)) {
-    if (role.includes("ROLE_SUPERADMIN")) return Role.SUPERADMIN;
+    if (role.includes("ROLE_AUDITOR")) return Role.AUDITOR;
     return Role.USER;
   }
   return Role.USER;

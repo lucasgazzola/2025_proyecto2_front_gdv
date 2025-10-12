@@ -12,7 +12,14 @@ class UserServiceMock implements IUserService {
           name: "Mock User",
           lastname: "MockLastname",
           active: true,
-          role: Role.SUPERADMIN,
+          role: Role.AUDITOR,
+        },
+        {
+          email: "comun@user.com",
+          name: "Comun User",
+          lastname: "MockLastname",
+          active: false,
+          role: Role.USER,
         },
       ],
     };
@@ -27,7 +34,7 @@ class UserServiceMock implements IUserService {
         name: "Mock User",
         lastname: "MockLastname",
         active: true,
-        role: Role.SUPERADMIN,
+        role: Role.AUDITOR,
       },
     };
   }
@@ -41,7 +48,7 @@ class UserServiceMock implements IUserService {
         name: "Mock User",
         lastname: "MockLastname",
         active: true,
-        role: Role.SUPERADMIN,
+        role: Role.AUDITOR,
       },
     };
   }
@@ -62,7 +69,7 @@ class UserServiceMock implements IUserService {
         name: "Mock User",
         lastname: "MockLastname",
         active: true,
-        role: Role.SUPERADMIN,
+        role: Role.AUDITOR,
       },
     };
   }

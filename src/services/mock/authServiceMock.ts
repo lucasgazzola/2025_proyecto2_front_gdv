@@ -12,7 +12,7 @@ const mockUser: User = {
   name: "Mock User",
   lastname: "MockLastname",
   active: true,
-  role: Role.SUPERADMIN,
+  role: Role.AUDITOR,
 };
 
 class AuthServiceMock implements IAuthService {
@@ -86,7 +86,7 @@ class AuthServiceMock implements IAuthService {
     };
   }
   jwtDecode(token: string) {
-    return { email: "mock@user.com", role: Role.SUPERADMIN };
+    return { email: "mock@user.com", role: Role.AUDITOR };
   }
 }
 

@@ -18,14 +18,21 @@ export const API_ENDPOINTS = {
     CHANGE_PASSWORD: "/auth/change-password",
   },
 
+  brands: {
+    GET_ALL: "/brands",
+    GET_BRAND: (id: string) => `/brands/${id}`,
+    CREATE_BRAND: "/brands",
+    UPDATE_BRAND: (id: string) => `/brands/${id}`,
+    DELETE_BRAND: (id: string) => `/brands/${id}`,
+  },
+
   users: {
-    GET_ALL: "/users/getAllUsers",
+    GET_ALL: "/users",
     GET_PROFILE: "/users/profile",
-    GET_USER_BY_EMAIL: (email: string) =>
-      `/users/profileByEmail/${encodeURIComponent(email)}`,
-    UPDATE_PROFILE: "/users/update-profile",
-    UPDATE_USER_BY_EMAIL: (email: string) => `/users/editUserByEmail/${email}`,
-    DELETE_ACCOUNT: "/users/delete-account",
+    GET_USER_BY_EMAIL: (email: string) => `/users/${encodeURIComponent(email)}`,
+    UPDATE_USER_BY_EMAIL: (email: string) => `/users/${email}`,
+    DELETE_USER_BY_EMAIL: (email: string) => `/users/${email}`,
+    UPDATE_PROFILE: "/users/profile",
   },
 
   logs: {

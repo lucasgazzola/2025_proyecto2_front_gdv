@@ -11,10 +11,6 @@ export interface IUserService {
   getUserProfile(
     token: string
   ): Promise<{ success: boolean; message?: string; user?: User }>;
-  updateUserProfile(
-    token: string,
-    user: { email: string } & Partial<Omit<User, "email">>
-  ): Promise<{ success: boolean; message?: string }>;
   updateUserByEmail(
     token: string,
     userEmail: string,

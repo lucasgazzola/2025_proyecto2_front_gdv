@@ -94,36 +94,6 @@ class UserServiceReal implements IUserService {
     }
   }
 
-  async updateUserProfile(
-    token: string,
-    user: { email: string } & Partial<Omit<User, "email">>
-  ): Promise<{ success: boolean; message?: string }> {
-    try {
-      const response = await fetch(apiEndpoints.auth.CHANGE_DATA, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(user),
-      });
-      if (!response.ok) {
-        throw new Error("Error al actualizar el perfil del usuario");
-      }
-      return {
-        success: true,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Error desconocido al actualizar el perfil del usuario",
-      };
-    }
-  }
-
   async updateUserByEmail(
     token: string,
     userEmail: string,

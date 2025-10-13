@@ -83,16 +83,16 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Dashboard />,
     },
     {
-      label: "Historial de Facturas",
-      to: "/invoice-history",
-      icon: FileSearch,
-      element: <InvoiceHistory />,
-    },
-    {
-      label: "Facturas",
+      label: "Nueva factura",
       to: "/new-invoice",
       icon: FilePlus,
       element: <Invoices />,
+    },
+    {
+      label: "Historial de facturas",
+      to: "/invoice-history",
+      icon: FileSearch,
+      element: <InvoiceHistory />,
     },
     {
       label: "Productos",
@@ -123,16 +123,16 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Dashboard />,
     },
     {
-      label: "Historial de Facturas",
-      to: "/invoice-history",
-      icon: FileSearch,
-      element: <InvoiceHistory />,
-    },
-    {
-      label: "Facturas",
+      label: "Nueva factura",
       to: "/new-invoice",
       icon: FilePlus,
       element: <Invoices />,
+    },
+    {
+      label: "Historial de facturas",
+      to: "/invoice-history",
+      icon: FileSearch,
+      element: <InvoiceHistory />,
     },
     {
       label: "Productos",

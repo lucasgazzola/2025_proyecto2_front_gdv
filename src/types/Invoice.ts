@@ -1,22 +1,22 @@
+import type { ProductDto } from "./Product";
+import type { Provider } from "./Provider";
+import type { User } from "./User";
+
 // Invoice.ts
-export interface Added {
+export interface InvoiceDetail {
   id: string;
-  name: string;
-  provider: string;
+  product: ProductDto;
+  provider: Provider;
   quantity: number;
   unitPrice: number;
   subtotal: number;
 }
 
-// En este caso, una línea de factura es exactamente igual a un "Added"
-export type InvoiceLine = Added;
-
 // Factura completa
 export interface Invoice {
-  id?: string;
-  lines: InvoiceLine[];
+  id: string;
+  creator: User;
+  invoiceDetails: InvoiceDetail[];
   priceTotal: number;
   createdAt?: string;
 }
-
-

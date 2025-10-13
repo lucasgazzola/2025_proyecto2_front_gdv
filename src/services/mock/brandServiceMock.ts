@@ -3,42 +3,42 @@ import type { Brand, BrandFormData } from "@/types/Brand";
 
 export const BRANDS: Brand[] = [
   {
-    id: "mock-id-1",
-    name: "Marca Mock 1",
+    id: "brand-acer",
+    name: "Acer",
     logo: "/favicon/favicon-96x96.png",
-    description: "Descripción de la Marca Mock 1",
+    description: "Acer - equipos y accesos",
+    productsCount: 12,
+    state: true,
+  },
+  {
+    id: "brand-dell",
+    name: "Dell",
+    logo: "/favicon/favicon-96x96.png",
+    description: "Dell - computadoras y servidores",
+    productsCount: 18,
+    state: true,
+  },
+  {
+    id: "brand-asus",
+    name: "ASUS",
+    logo: "/favicon/favicon-96x96.png",
+    description: "ASUS - hardware y componentes",
+    productsCount: 14,
+    state: true,
+  },
+  {
+    id: "brand-lenovo",
+    name: "Lenovo",
+    logo: "/favicon/favicon-96x96.png",
+    description: "Lenovo - laptops y desktops",
     productsCount: 10,
     state: true,
   },
   {
-    id: "mock-id-2",
-    name: "Marca Mock 2",
+    id: "brand-corsair",
+    name: "Corsair",
     logo: "/favicon/favicon-96x96.png",
-    description: "Descripción de la Marca Mock 2",
-    productsCount: 5,
-    state: false,
-  },
-  {
-    id: "mock-id-3",
-    name: "Marca Mock 3",
-    logo: "/favicon/favicon-96x96.png",
-    description: "Descripción de la Marca Mock 3",
-    productsCount: 8,
-    state: true,
-  },
-  {
-    id: "mock-id-4",
-    name: "Marca Mock 4",
-    logo: "/favicon/favicon-96x96.png",
-    description: "Descripción de la Marca Mock 4",
-    productsCount: 12,
-    state: false,
-  },
-  {
-    id: "mock-id-5",
-    name: "Marca Mock 5",
-    logo: "/favicon/favicon-96x96.png",
-    description: "Descripción de la Marca Mock 5",
+    description: "Corsair - periféricos y componentes",
     productsCount: 20,
     state: true,
   },
@@ -97,7 +97,14 @@ class BrandServiceMock implements IBrandService {
     }
   }
   async getAllBrands(_token: string) {
-    return { success: true, brands: BRANDS };
+    const PRODUCTS = (await import("./productServiceMock")).PRODUCTS;
+
+    // Calcular dinámicamente la cantidad de productos por marca para mantener consistencia
+    const brandsWithCounts = BRANDS.map((b) => ({
+      ...b,
+      productsCount: PRODUCTS.filter((p) => p.brand?.id === b.id).length,
+    }));
+    return { success: true, brands: brandsWithCounts };
   }
 }
 export const brandServiceMock = new BrandServiceMock();

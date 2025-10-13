@@ -37,7 +37,7 @@ class InvoiceServiceReal implements IInvoiceService {
 
   async createInvoice(
     token: string,
-    invoice: Invoice
+    invoice: Omit<Invoice, "id" | "creator" | "createdAt">
   ): Promise<{ success: boolean; invoice?: Invoice; message?: string }> {
     try {
       const response = await fetch(apiEndpoints.invoices.CREATE_INVOICE, {

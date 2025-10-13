@@ -1,7 +1,7 @@
 import type { IBrandService } from "@/services/interfaces/IBrandService";
 import type { Brand, BrandFormData } from "@/types/Brand";
 
-const BRANDS: Brand[] = [
+export const BRANDS: Brand[] = [
   {
     id: "mock-id-1",
     name: "Marca Mock 1",

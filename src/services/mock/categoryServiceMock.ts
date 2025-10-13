@@ -1,27 +1,12 @@
 import type { Category } from "@/types/Category";
 import type { ICategoryService } from "../interfaces/ICategoryService";
 
-const CATEGORIES: Category[] = [
-  {
-    id: "mock-id-1",
-    name: "Categoría Mock 1",
-  },
-  {
-    id: "mock-id-2",
-    name: "Categoría Mock 2",
-  },
-  {
-    id: "mock-id-3",
-    name: "Categoría Mock 3",
-  },
-  {
-    id: "mock-id-4",
-    name: "Categoría Mock 4",
-  },
-  {
-    id: "mock-id-5",
-    name: "Categoría Mock 5",
-  },
+export const CATEGORIES: Category[] = [
+  { id: "cat-1", name: "Categoria 1" },
+  { id: "cat-2", name: "Categoria 2" },
+  { id: "cat-3", name: "Categoria 3" },
+  { id: "cat-4", name: "Categoria 4" },
+  { id: "cat-5", name: "Categoria 5" },
 ];
 
 class CategoryServiceMock implements ICategoryService {

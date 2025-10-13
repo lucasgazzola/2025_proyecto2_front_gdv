@@ -23,7 +23,6 @@ import {
 
 import type { ProductDto, ProductFormData } from "@/types/Product";
 import EditButton from "@/components/common/EditButton";
-// import DeleteButton from "@/components/common/DeleteButton";
 import FetchingSpinner from "@/components/common/FetchingSpinner";
 import useAuth from "@/hooks/useAuth";
 
@@ -89,7 +88,7 @@ export default function Products() {
     if (
       !product.name ||
       !("brand" in product) ||
-      !("category" in product) ||
+      !("categories" in product) ||
       product.quantity === undefined
     ) {
       toast.error("Por favor, completa todos los campos obligatorios.");
@@ -111,7 +110,7 @@ export default function Products() {
         toast.error("Error al crear el producto. Intenta nuevamente.");
         return;
       }
-      fetchProducts();
+      setProducts((prev) => [...prev, newProduct]);
     } else {
       if (!product) {
         toast.error("Producto no encontrado.");
@@ -130,7 +129,10 @@ export default function Products() {
         toast.error(message);
         return;
       }
-      fetchProducts();
+      setProducts((prev) =>
+        prev.map((p) => (p.id === product.id ? { ...p, ...product } : p))
+      );
+      toast.success("Producto actualizado correctamente.");
     }
 
     setModalOpen(false);
@@ -160,14 +162,16 @@ export default function Products() {
     if (!q) return true;
 
     const name = (product.name || "").toLowerCase();
-    const brand = (product.brand || "").toLowerCase();
-    const category = (product.category || "").toLowerCase();
+    const brand = (product.brand.name || "").toLowerCase();
+
     const quantity = String(product.quantity || "");
 
     return (
       name.includes(q) ||
       brand.includes(q) ||
-      category.includes(q) ||
+      (product.categories || []).some((category) =>
+        category.name.toLowerCase().includes(q)
+      ) ||
       quantity.includes(q)
     );
   });
@@ -178,11 +182,11 @@ export default function Products() {
       case "name":
         return (a.name || "").localeCompare(b.name || "");
       case "brand":
-        return (a.brand || "").localeCompare(b.brand || "");
-      case "category":
-        return (a.category || "").localeCompare(b.category || "");
+        return (a.brand.name || "").localeCompare(b.brand.name || "");
       case "quantity":
         return (b.quantity || 0) - (a.quantity || 0); // mayor a menor
+      case "price":
+        return (b.price || 0) - (a.price || 0); // mayor a menor
       case "latest":
       default:
         return 0;
@@ -235,8 +239,8 @@ export default function Products() {
                   <SelectItem value="latest">Más reciente</SelectItem>
                   <SelectItem value="name">Nombre</SelectItem>
                   <SelectItem value="brand">Marca</SelectItem>
-                  <SelectItem value="category">Categoría</SelectItem>
                   <SelectItem value="quantity">Cantidad</SelectItem>{" "}
+                  <SelectItem value="price">Precio</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -287,8 +291,12 @@ export default function Products() {
                     paginatedProducts.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell>{product.name}</TableCell>
-                        <TableCell>{product.brand}</TableCell>
-                        <TableCell>{product.category}</TableCell>
+                        <TableCell>{product.brand.name}</TableCell>
+                        <TableCell>
+                          {product.categories
+                            .map((category) => category.name)
+                            .join(", ")}
+                        </TableCell>
                         <TableCell>
                           <img
                             src={product.imageUrl}

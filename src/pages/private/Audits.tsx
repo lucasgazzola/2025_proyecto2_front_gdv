@@ -95,9 +95,9 @@ export default function Audits() {
   );
 
   const levelBadgeStyle: Record<string, string> = {
-    success: "bg-emerald-100 text-emerald-800",
-    failure: "bg-red-100 text-red-800",
-    info: "bg-slate-100 text-slate-800",
+    SUCCESS: "bg-emerald-100 text-emerald-800",
+    FAILURE: "bg-red-100 text-red-800",
+    INFO: "bg-slate-100 text-slate-800",
   };
 
   return (
@@ -136,9 +136,9 @@ export default function Audits() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="success">Success</SelectItem>
-                <SelectItem value="failure">Failure</SelectItem>
-                <SelectItem value="info">Info</SelectItem>
+                <SelectItem value="SUCCESS">Success</SelectItem>
+                <SelectItem value="FAILURE">Failure</SelectItem>
+                <SelectItem value="INFO">Info</SelectItem>
               </SelectContent>
             </Select>
           </div>

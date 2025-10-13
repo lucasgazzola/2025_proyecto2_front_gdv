@@ -1,5 +1,5 @@
 // Simple audit log type for the app's Audits page
-export type LogStatus = "success" | "failure" | "info";
+export type LogStatus = "SUCCESS" | "FAILURE" | "INFO";
 
 export type AuditLog = {
   id: string; // uuid or unique string
@@ -22,6 +22,6 @@ export const makeAudit = (
   action,
   timestamp: opts?.timestamp ?? new Date().toISOString(),
   user: opts?.user,
-  status: opts?.status ?? "info",
+  status: opts?.status ?? "INFO",
   details: opts?.details,
 });

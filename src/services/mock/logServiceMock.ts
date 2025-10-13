@@ -8,7 +8,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-07T12:00:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Login",
-    status: "success",
+    status: "SUCCESS",
     details: "Inicio de sesión exitoso desde 192.168.1.10",
   },
   {
@@ -16,7 +16,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-07T12:05:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Create product",
-    status: "success",
+    status: "SUCCESS",
     details:
       "Producto 'Laptop Pro 15' creado (sku: LAP-1501, RAM:16GB, SSD:512GB, CPU: i7)",
   },
@@ -25,7 +25,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-07T12:10:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Update product",
-    status: "success",
+    status: "SUCCESS",
     details:
       "Actualizó precio de 'SSD NVMe 1TB' (sku: SSD-1000) de $120 a $105",
   },
@@ -34,7 +34,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-08T09:20:00Z",
     user: { email: "comun@user.com", role: "USER" },
     action: "Login",
-    status: "success",
+    status: "SUCCESS",
     details: "Inicio de sesión exitoso desde 172.16.0.4",
   },
   {
@@ -42,7 +42,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-08T09:25:00Z",
     user: { email: "comun@user.com", role: "USER" },
     action: "Create invoice",
-    status: "success",
+    status: "SUCCESS",
     details: "Factura #F-2025-0001 creada por comun@user.com (3 líneas)",
   },
   {
@@ -50,7 +50,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-09T14:02:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Delete product",
-    status: "failure",
+    status: "FAILURE",
     details:
       "Intento de borrar producto 'GPU-RX999' fallido: producto con SKU GPU-RX999 no existe",
   },
@@ -59,7 +59,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-09T14:10:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Export logs",
-    status: "success",
+    status: "SUCCESS",
     details: "Exportó 120 entradas al archivo exports/logs_2025-10-09.csv",
   },
   {
@@ -67,7 +67,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-10T08:30:00Z",
     user: { email: "comun@user.com", role: "USER" },
     action: "Reset password",
-    status: "success",
+    status: "SUCCESS",
     details: "Solicitud de reseteo de contraseña enviada por comun@user.com",
   },
   {
@@ -75,7 +75,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-10T08:35:30Z",
     user: { email: "comun@user.com", role: "USER" },
     action: "Change password",
-    status: "success",
+    status: "SUCCESS",
     details: "Usuario cambió su contraseña correctamente",
   },
   {
@@ -83,7 +83,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-11T11:11:11Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Create user",
-    status: "success",
+    status: "SUCCESS",
     details: "Usuario 'nuevo@cliente.com' creado con rol USER",
   },
   {
@@ -91,7 +91,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-11T11:15:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Update user",
-    status: "success",
+    status: "SUCCESS",
     details: "Actualizó datos de 'nuevo@cliente.com' (teléfono, dirección)",
   },
   {
@@ -99,7 +99,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-12T16:45:00Z",
     user: { email: "comun@user.com", role: "USER" },
     action: "Access denied",
-    status: "failure",
+    status: "FAILURE",
     details: "Intento de acceso a /admin/reportes desde IP 10.0.0.7",
   },
   {
@@ -107,7 +107,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-12T17:00:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Create invoice",
-    status: "success",
+    status: "SUCCESS",
     details:
       "Factura #F-2025-0002 creada (cliente: TechDistribuciones) total: $4.250 — incluye 1x Laptop Pro 15 y 2x SSD NVMe 1TB",
   },
@@ -116,7 +116,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-13T09:00:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Login failed",
-    status: "failure",
+    status: "FAILURE",
     details: "Intento de login fallido para usuario unknown@bad.com",
   },
   {
@@ -124,7 +124,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-13T09:05:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "Permission granted",
-    status: "info",
+    status: "INFO",
     details:
       "Se concedió acceso temporal al módulo 'reportes' para mock@user.com",
   },
@@ -133,7 +133,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-13T09:15:00Z",
     user: { email: "comun@user.com", role: "USER" },
     action: "Update invoice",
-    status: "success",
+    status: "SUCCESS",
     details:
       "Editó la factura #F-2025-0001: cambió cantidad de 'SSD NVMe 1TB' de 1 a 2",
   },
@@ -142,7 +142,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-13T09:30:00Z",
     user: { email: "mock@user.com", role: "AUDITOR" },
     action: "System check",
-    status: "info",
+    status: "INFO",
     details: "Chequeo programado completado: 0 errores críticos",
   },
   {
@@ -150,7 +150,7 @@ const LOGS: AuditLog[] = [
     timestamp: "2025-10-13T10:00:00Z",
     user: { email: "comun@user.com", role: "USER" },
     action: "Logout",
-    status: "info",
+    status: "INFO",
     details: "Cerró sesión",
   },
 ];

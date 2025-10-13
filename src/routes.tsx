@@ -21,7 +21,6 @@ export type RouteItem = {
 
 import { Role } from "./types/Role";
 
-// Lazy-loaded pages
 const Login = lazy(() => import("@/pages/public/Login"));
 const Register = lazy(() => import("@/pages/public/Register"));
 const ForgotPassword = lazy(() => import("@/pages/public/ForgotPassword"));
@@ -30,10 +29,11 @@ const Profile = lazy(() => import("@/pages/public/Profile"));
 const NotFound = lazy(() => import("@/pages/public/NotFound"));
 
 const Dashboard = lazy(() => import("@/pages/private/Dashboard"));
+const InvoiceHistory = lazy(() => import("@/pages/private/InvoiceHistory"));
+const Invoices = lazy(() => import("@/pages/private/Invoices"));
 const Users = lazy(() => import("@/pages/private/Users"));
 const Audits = lazy(() => import("@/pages/private/Audits"));
 const Products = lazy(() => import("@/pages/private/Products"));
-const Invoices = lazy(() => import("@/pages/private/Invoices"));
 const Brands = lazy(() => import("@/pages/private/Brands"));
 
 export const publicRoutes: RouteItem[] = [
@@ -83,6 +83,12 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Dashboard />,
     },
     {
+      label: "Historial de Facturas",
+      to: "/invoice-history",
+      icon: FileSearch,
+      element: <InvoiceHistory />,
+    },
+    {
       label: "Facturas",
       to: "/new-invoice",
       icon: FilePlus,
@@ -115,6 +121,12 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       to: "/dashboard",
       icon: LayoutDashboard,
       element: <Dashboard />,
+    },
+    {
+      label: "Historial de Facturas",
+      to: "/invoice-history",
+      icon: FileSearch,
+      element: <InvoiceHistory />,
     },
     {
       label: "Facturas",

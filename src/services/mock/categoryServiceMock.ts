@@ -2,11 +2,13 @@ import type { Category } from "@/types/Category";
 import type { ICategoryService } from "../interfaces/ICategoryService";
 
 export const CATEGORIES: Category[] = [
-  { id: "cat-1", name: "Categoria 1" },
-  { id: "cat-2", name: "Categoria 2" },
-  { id: "cat-3", name: "Categoria 3" },
-  { id: "cat-4", name: "Categoria 4" },
-  { id: "cat-5", name: "Categoria 5" },
+  { id: "cat-laptops", name: "Laptops" },
+  { id: "cat-desktops", name: "Desktops" },
+  { id: "cat-monitores", name: "Monitores" },
+  { id: "cat-accesorios", name: "Accesorios" },
+  { id: "cat-componentes", name: "Componentes" },
+  { id: "cat-redes", name: "Redes" },
+  { id: "cat-software", name: "Software" },
 ];
 
 class CategoryServiceMock implements ICategoryService {

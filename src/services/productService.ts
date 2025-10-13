@@ -5,7 +5,7 @@ import type { IProductService } from "@/services/interfaces/IProductService";
 class ProductServiceReal implements IProductService {
   async getAllProducts(
     token: string
-  ): Promise<{ success: boolean; products?: ProductDto[] }> {
+  ): Promise<{ success: boolean; products?: ProductDto[]; message?: string }> {
     try {
       const response = await fetch(apiEndpoints.products.GET_ALL, {
         method: "GET",
@@ -21,7 +21,7 @@ class ProductServiceReal implements IProductService {
   async getProductById(
     token: string,
     id: string
-  ): Promise<{ success: boolean; product?: ProductDto }> {
+  ): Promise<{ success: boolean; product?: ProductDto; message?: string }> {
     try {
       const url = apiEndpoints.products.GET_PRODUCT(id);
       const response = await fetch(url, {
@@ -38,7 +38,7 @@ class ProductServiceReal implements IProductService {
   async createProduct(
     token: string,
     product: ProductFormData
-  ): Promise<{ success: boolean; product?: ProductDto }> {
+  ): Promise<{ success: boolean; product?: ProductDto; message?: string }> {
     try {
       const response = await fetch(apiEndpoints.products.ADD_PRODUCT, {
         method: "POST",
@@ -54,17 +54,17 @@ class ProductServiceReal implements IProductService {
         success: true,
         product: {
           id: productId,
-          name: (product as ProductFormData).name,
-          brand: (product as ProductFormData).brand,
-          category: (product as ProductFormData).category,
-          imageUrl: (product as ProductFormData).imageUrl,
-          quantity: (product as ProductFormData).quantity,
-          price: (product as ProductFormData).price,
-          state: (product as ProductFormData).state,
+          name: product.name,
+          brand: product.brand,
+          categories: product.categories,
+          imageUrl: product.imageUrl,
+          quantity: product.quantity,
+          price: product.price,
+          state: product.state,
         } as ProductDto,
       };
     } catch (error) {
-      return { success: false };
+      return { success: false, message: "Error al crear el producto." };
     }
   }
 
@@ -95,7 +95,7 @@ class ProductServiceReal implements IProductService {
   async deleteProductById(
     token: string,
     id: string
-  ): Promise<{ success: boolean }> {
+  ): Promise<{ success: boolean; message?: string }> {
     try {
       const response = await fetch(apiEndpoints.products.DELETE_PRODUCT(id), {
         method: "DELETE",

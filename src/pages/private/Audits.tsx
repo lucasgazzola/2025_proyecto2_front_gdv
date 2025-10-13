@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableHeader,
@@ -26,22 +20,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateByLocale } from "@/utils/dates";
 import useAuth from "@/hooks/useAuth";
-import type { LogEntry, LogLevel } from "@/types/Logs";
+import type { AuditLog } from "@/types/Logs";
 import { logsService } from "@/services/factories/logServiceFactory";
-const { getPaginatedLogs } = logsService;
 import { toast } from "react-toastify";
 
 import FetchingSpinner from "@/components/common/FetchingSpinner";
+import { Search } from "lucide-react";
 
 export default function Audits() {
   const { logout, getAccessToken } = useAuth();
 
   const [search, setSearch] = useState("");
-  const [levelFilter, setLevelFilter] = useState("");
-  const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [logEntries, setLogEntries] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [expandedLogs, setExpandedLogs] = useState<Record<number, boolean>>({});
   const [logsPerPage, setLogsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -53,194 +46,161 @@ export default function Audits() {
       logout();
       return;
     }
-
     const fetchLogs = async () => {
       setLoading(true);
-      // TODO: VER COMO MEJORAR LA BUSQUEDA PORQUE SOLO BUSCA ENTRE LOS QUE ESTÁN EN EL ESTADO Y SON LOS 5, 10 QUE SELECCIONA EL USER
-      const { success, logs, totalPages, message } = await getPaginatedLogs({
-        page: currentPage - 1,
-        size: logsPerPage,
-        token,
-        level: levelFilter,
-      });
+      const { success, logs, message } = await logsService.getAllLogs(token);
       setLoading(false);
-
       if (!success) {
-        toast.error("Error al obtener logs");
-        console.error(message);
+        toast.error(message || "Error al cargar los registros.");
         return;
       }
-
       setLogEntries(logs || []);
-      setTotalPages(totalPages || 1);
+      setTotalPages(Math.ceil((logs?.length || 0) / logsPerPage));
     };
-
     fetchLogs();
-  }, [currentPage, levelFilter, logout, logsPerPage, token]);
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [search, levelFilter, logsPerPage]);
 
-  const filteredLogs = logEntries.filter((log: LogEntry) => {
-    const matchSearch =
-      log.description.toLowerCase().includes(search.toLowerCase()) ||
-      log.file.toLowerCase().includes(search.toLowerCase()) ||
-      log.method.toLowerCase().includes(search.toLowerCase()) ||
-      log.user.toLowerCase().includes(search.toLowerCase());
-    // const matchLevel =
-    //   levelFilter === "" ||
-    //   levelFilter === "all" ||
-    //   log.logLevel === levelFilter;
-    return matchSearch;
-  });
+  // Filter all logs first, then paginate the filtered result (same pattern as Products.tsx)
+  const filteredAll = logEntries
+    .filter((log: AuditLog) => {
+      const q = search.toLowerCase().trim();
+      if (!q) return true;
+      const inAction = log.action?.toLowerCase().includes(q);
+      const inDetails = (log.details || "").toLowerCase().includes(q);
+      const inUser = (log.user?.email || "").toLowerCase().includes(q);
+      return inAction || inDetails || inUser;
+    })
+    .filter((log) => {
+      if (levelFilter === "all") return true;
+      return log.status === levelFilter;
+    });
 
-  const toggleExpand = (id: number) => {
-    setExpandedLogs((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+  const totalFiltered = filteredAll.length;
+  const computedTotalPages = Math.max(
+    1,
+    Math.ceil(totalFiltered / logsPerPage)
+  );
+  // Update totalPages whenever the filtered set or page size changes
+  useEffect(() => {
+    setTotalPages(computedTotalPages);
+  }, [computedTotalPages]);
 
-  const levelBadgeStyle: Record<LogLevel, string> = {
-    INFO: "bg-blue-100 text-blue-800",
-    ERROR: "bg-red-100 text-red-800",
-    WARN: "bg-yellow-100 text-yellow-800",
+  const paginatedLogs = filteredAll.slice(
+    (currentPage - 1) * logsPerPage,
+    currentPage * logsPerPage
+  );
+
+  const levelBadgeStyle: Record<string, string> = {
+    success: "bg-emerald-100 text-emerald-800",
+    failure: "bg-red-100 text-red-800",
+    info: "bg-slate-100 text-slate-800",
   };
 
   return (
     <div className="p-6 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Auditoría</CardTitle>
-          <CardDescription></CardDescription>
-        </CardHeader>
+      <h1 className="text-4xl font-bold">Auditoría</h1>
+      <p className="text-muted-foreground">
+        Historial de acciones y eventos del sistema. Filtra por usuario, nivel o
+        busca por texto para inspeccionar registros.
+      </p>
 
-        <CardContent className="space-y-4">
-          {/* Filtros */}
+      <Card className="mb-6 border-0 rounded-none">
+        <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-4 items-center">
-            <Input
-              placeholder="Buscar..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full md:w-1/2"
-            />
+            <div className="text-start">
+              <h3 className="text-2xl font-semibold">Registros de auditoría</h3>
+              <p className="text-md text-green-500">
+                Entradas totales ({logEntries.length})
+              </p>
+            </div>
+            <div className="relative w-full max-w-60 md:w-1/3 ml-auto bg-gray-50">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <Search size={16} />
+              </span>
+              <Input
+                aria-label="Buscar productos"
+                placeholder="Buscar"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 border-none"
+              />
+            </div>
             <Select value={levelFilter} onValueChange={setLevelFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filtrar por nivel" />
+              <SelectTrigger className="w-full lg:w-1/4 max-w-60 bg-gray-50 border-none font-semibold">
+                <span className="font-normal">Estado:</span>
+                <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="INFO">Información</SelectItem>
-                <SelectItem value="ERROR">Error</SelectItem>
+                <SelectItem value="success">Success</SelectItem>
+                <SelectItem value="failure">Failure</SelectItem>
+                <SelectItem value="info">Info</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex items-center gap-2">
-              <span>Mostrar:</span>
-              <Select
-                value={String(logsPerPage)}
-                onValueChange={(value) => setLogsPerPage(Number(value))}
-              >
-                <SelectTrigger className="w-20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectContent>
-              </Select>
-              <span>por página</span>
-            </div>
           </div>
+        </CardContent>
 
-          {/* Tabla */}
+        <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-20">Fecha</TableHead>
-                  <TableHead>Mensaje</TableHead>
-                  <TableHead>Archivo</TableHead>
-                  <TableHead className="text-center">Nivel</TableHead>
-                  <TableHead>Método</TableHead>
-                  <TableHead>Usuario</TableHead>
+                  <TableHead className="text-gray-400">Usuario</TableHead>
+                  <TableHead className="text-gray-400">Rol</TableHead>
+                  <TableHead className="text-gray-400">Acción</TableHead>
+                  <TableHead className="w-48 text-gray-400">
+                    Fecha y Hora
+                  </TableHead>
+                  <TableHead className="text-center text-gray-400">
+                    Estado
+                  </TableHead>
+                  <TableHead className="text-gray-400">Detalles</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-start">
                 {loading ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center text-muted-foreground py-6"
-                    >
+                    <TableCell colSpan={6} className="text-center py-6">
                       <FetchingSpinner />
                     </TableCell>
                   </TableRow>
-                ) : filteredLogs.length === 0 ? (
+                ) : paginatedLogs.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center text-muted-foreground py-6"
-                    >
+                    <TableCell colSpan={6} className="text-center py-6">
                       No se encontraron registros.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredLogs.map((log) => {
-                    const isExpanded = expandedLogs[log.id];
-                    const isShortText = log.description.length <= 70;
-
-                    const formatDescriptionByLength = (
-                      description: string,
-                      isExpanded: boolean,
-                      isShortText: boolean
-                    ) => {
-                      if (isShortText) return description;
-                      return isExpanded
-                        ? description
-                        : description.slice(0, 70) + "...";
-                    };
-
+                  paginatedLogs.map((log) => {
                     return (
                       <TableRow key={log.id}>
-                        <TableCell className="text-nowrap">
-                          {formatDateByLocale(log.date, "es-AR")}
+                        <TableCell className="px-2 py-4 text-start">
+                          {log.user?.email || "—"}
                         </TableCell>
-                        <TableCell className="whitespace-pre-line break-words min-w-sm">
-                          <span>
-                            {formatDescriptionByLength(
-                              log.description,
-                              isExpanded,
-                              isShortText
-                            )}
-                          </span>
-
-                          {!isShortText && (
-                            <Button
-                              onClick={() => toggleExpand(log.id)}
-                              variant="ghost"
-                              className="self-start px-2 text-sm text-slate-800  h-auto hover:bg-transparent hover:underline"
-                            >
-                              {isExpanded ? "Ver menos" : "Ver más"}
-                            </Button>
-                          )}
+                        <TableCell className="px-2 py-4 text-start">
+                          {log.user?.role || "—"}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {log.file}
+                        <TableCell className="px-2 py-4 text-start">
+                          {log.action}
+                        </TableCell>
+                        <TableCell className="px-2 py-4 text-start">
+                          {formatDateByLocale(log.timestamp, "es-AR")}
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge
-                            className={levelBadgeStyle[log.logLevel]}
+                            className={levelBadgeStyle[log.status || "info"]}
                             variant="outline"
                           >
-                            {log.logLevel}
+                            {log.status || "info"}
                           </Badge>
                         </TableCell>
-                        <TableCell>{log.method}</TableCell>
-                        <TableCell>{log.user}</TableCell>
+                        <TableCell className="whitespace-pre-line break-words min-w-sm">
+                          <span>{log.details}</span>
+                        </TableCell>
                       </TableRow>
                     );
                   })

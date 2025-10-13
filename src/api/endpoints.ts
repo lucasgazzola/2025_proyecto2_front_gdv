@@ -53,13 +53,7 @@ export const API_ENDPOINTS = {
   },
 
   logs: {
-    GET_ALL_BY_LEVEL_PAGINATED: (level: string, params: string) =>
-      `/log/getLogsByLevel/${level}?${params}`,
-    GET_ALL_PAGINATED: (params: string) => `/log/getAllLogs?${params}`,
-    GET_ALL_BY_USER_PAGINATED: (params: string) =>
-      `/log/getLogsByUser?${params}`,
-    GET_ALL_BY_LEVEL_BY_USER_PAGINATED: (level: string, params: string) =>
-      `/log/getLogsByUser/${level}?${params}`,
+    GET_ALL_LOGS: "/logs",
   },
 
   products: {

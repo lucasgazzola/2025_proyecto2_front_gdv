@@ -601,20 +601,6 @@ export default function EditProductModal({
                   )}
                 </div>
               </div>
-              {/* descripción o espacio extra */}
-              <div className="flex">
-                <Label
-                  className="text-nowrap text-gray-500 w-2/5"
-                  htmlFor="description"
-                >
-                  Descripción
-                </Label>
-                <Textarea
-                  name="description"
-                  className="w-3/5 min-h-[120px]"
-                  placeholder="Descripción del nuevo producto"
-                />
-              </div>
               <div className="flex">
                 <Label
                   className="text-nowrap text-gray-500 w-2/5"

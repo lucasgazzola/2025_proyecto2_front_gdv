@@ -4,12 +4,10 @@ import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
+  CardContent
 } from "@/components/ui/card";
 
 import ShowPasswordIcon from "@/components/common/ShowPasswordIcon";
@@ -63,6 +61,8 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [submittedOnce, setSubmittedOnce] = useState(false);
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof z.infer<typeof registerSchema>, string>>
@@ -81,6 +81,12 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmittedOnce(true);
+
+    // Validación extra: asegurarnos que el usuario aceptó los términos
+    if (!acceptTerms) {
+      return; // el botón está deshabilitado normalmente, pero protegemos la ruta de submit
+    }
 
     const parsed = registerSchema.safeParse(formData);
     if (!parsed.success) {
@@ -101,46 +107,17 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center font-inter bg-[#c7d7e4]">
+    <div className="min-h-screen w-full flex items-center justify-center font-inter bg-[#6C94FF]/80">
+      <div className="absolute top-6 left-6">
+        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-md">
+          <img src="/logo/InvoIQLogo.png" alt="Logo" className="w-10 h-10" />
+        </div>
+      </div>
       <Card className="w-full max-w-md rounded-xl shadow-lg p-6">
-        <CardHeader className="bg-[#2C638B] rounded-t-xl pt-6 pb-5 px-6">
-          <div className="flex items-start text-start">
-            <div>
-              <CardTitle className="text-white text-lg font-semibold mb-1">
-                Registrarse
-              </CardTitle>
-              <CardDescription className="text-white text-sm">
-                Crea tu cuenta para comenzar a gestionar tus ventas.
-              </CardDescription>
-            </div>
-            <img
-              src="/logo-login.png"
-              alt="Logo Login"
-              className="h-16 ml-4 mt-10"
-            />
-          </div>
-        </CardHeader>
+        <h1 className="text-4xl font-bold pt-10">Crear Cuenta</h1>
 
         <CardContent className="px-6 py-6">
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <Label>Correo electrónico</Label>
-              <Input
-                required
-                className="mt-1"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder={"Ingresa tu correo electrónico"}
-              />
-              {errors.email && (
-                <p className="text-sm text-start text-red-500 mt-1">
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
             <div>
               <Label>Nombre</Label>
               <Input
@@ -171,6 +148,23 @@ export default function Register() {
               {errors.lastname && (
                 <p className="text-sm text-start text-red-500 mt-1">
                   {errors.lastname}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label>Correo electrónico</Label>
+              <Input
+                required
+                className="mt-1"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder={"Ingresa tu correo electrónico"}
+              />
+              {errors.email && (
+                <p className="text-sm text-start text-red-500 mt-1">
+                  {errors.email}
                 </p>
               )}
             </div>
@@ -228,22 +222,30 @@ export default function Register() {
                 </p>
               )}
             </div>
+            <div className="flex items-start gap-3 mt-2">
+              <Checkbox checked={acceptTerms} onCheckedChange={(v) => setAcceptTerms(Boolean(v))} />
+              <p className="text-xs text-muted-foreground">
+                Al registrarte aceptas nuestros {" "}
+                <a href="#" className="underline font-medium text-blue-600">
+                  Términos y condiciones
+                </a>
+              </p>
+            </div>
+            {submittedOnce && !acceptTerms && (
+              <p className="text-sm text-start text-red-500 mt-1">
+                Debes aceptar los términos y condiciones para crear una cuenta.
+              </p>
+            )}
 
             <Button
               type="submit"
-              className="w-full mt-4 bg-[#2C638B] text-white"
-              disabled={isLoading}
+              className="w-full h-13"
+              disabled={isLoading || !acceptTerms}
             >
-              Registrarse
+              Crear Cuenta
               {isLoading && <LoadingSpinner />}
             </Button>
 
-            <p className="text-center text-xs mt-2 text-muted-foreground">
-              Al registrarte aceptas nuestros{" "}
-              <a href="#" className="underline font-medium text-blue-600">
-                Términos y condiciones
-              </a>
-            </p>
           </form>
 
           <div className="text-center text-sm mt-4">

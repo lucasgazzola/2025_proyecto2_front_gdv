@@ -57,6 +57,7 @@ export default function EditProductModal({
     quantity: 0,
     state: true,
   });
+  
 
   const { name, brand, category, imageUrl, quantity } = formFields;
 
@@ -75,8 +76,9 @@ export default function EditProductModal({
   >({});
 
   const { getAccessToken } = useAuth();
-  const [categories, setCategories] = useState<string[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
+  const [brands, setBrands] = useState<BrandDto[]>([]);
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
+
 
   // Brand modal state
   const [brandModalOpen, setBrandModalOpen] = useState(false);
@@ -91,22 +93,44 @@ export default function EditProductModal({
 
   // obtener categorías únicas desde los productos registrados
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       const token = getAccessToken();
       if (!token) return;
-      const { success, products } = await productService.getAllProducts(token);
-      if (!success || !products) return;
-      const uniqueCats = Array.from(
-        new Set(products.map((p) => p.category).filter(Boolean))
-      );
-      setCategories(uniqueCats);
-      const uniqueBrands = Array.from(
-        new Set(products.map((p) => p.brand).filter(Boolean))
-      );
-      setBrands(uniqueBrands);
+
+      try {
+        const [brandsRes, categoriesRes] = await Promise.all([
+          axios.get(apiEndpoints.brands.GET_ALL, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(apiEndpoints.categories.GET_ALL, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        setBrands(brandsRes.data);
+        setCategories(categoriesRes.data);
+      } catch (err) {
+        console.warn("Backend no disponible, usando datos mock");
+
+        // Datos simulados para desarrollo
+        setBrands([
+          { id: "mock1", name: "Intel" },
+          { id: "mock2", name: "AMD" },
+          { id: "mock3", name: "NVIDIA" },
+        ]);
+
+        setCategories([
+          { id: "cat1", name: "Procesadores" },
+          { id: "cat2", name: "Placas madre" },
+          { id: "cat3", name: "Tarjetas gráficas" },
+        ]);
+      }
     };
-    fetchCategories();
+
+    fetchData();
   }, []);
+
+
 
   useEffect(() => {
     if (isEdit && product) {
@@ -221,13 +245,13 @@ export default function EditProductModal({
 
       const toSave = {
         ...parsed.data,
-        id: product!.id,
-        brand: parsed.data.brand,
-        category: selectedCategories.join(", ") || parsed.data.category,
+        brand: formFields.brand, // ← ID de marca
+        category: selectedCategories.join(","), // ← IDs de categorías separados por coma
         imageUrl: imagePreview,
         quantity: parsed.data.quantity,
         state: formFields.state,
-      } as ProductDto;
+      } as ProductFormData;
+
 
       saveProduct(toSave, isEdit);
     } else {
@@ -349,8 +373,8 @@ export default function EditProductModal({
                     </SelectTrigger>
                     <SelectContent>
                       {brands.map((b) => (
-                        <SelectItem key={b} value={b}>
-                          {b}
+                        <SelectItem key={b.id} value={b.id}>
+                          {b.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -473,36 +497,38 @@ export default function EditProductModal({
                     <DropdownMenuContent className="w-[300px]">
                       {categories.map((c) => (
                         <DropdownMenuCheckboxItem
-                          key={c}
-                          checked={selectedCategories.includes(c)}
+                          key={c.id}
+                          checked={selectedCategories.includes(c.id)}
                           onCheckedChange={(v: boolean) => {
-                            if (v) handleAddCategory(c);
-                            else removeCategory(c);
+                            if (v) handleAddCategory(c.id);
+                            else removeCategory(c.id);
                           }}
                         >
-                          {c}
+                          {c.name}
                         </DropdownMenuCheckboxItem>
                       ))}
+
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedCategories.map((c) => (
-                      <span
-                        key={c}
-                        className="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-sm"
-                      >
-                        <span className="text-[#5932EA] font-medium">{c}</span>
-                        <button
-                          type="button"
-                          className="text-xs text-gray-500 hover:text-gray-700"
-                          onClick={() => removeCategory(c)}
-                          aria-label={`Eliminar categoría ${c}`}
-                        >
-                          <span className="text-[#5932EA]">×</span>
-                        </button>
-                      </span>
-                    ))}
+                    {selectedCategories.map((id) => {
+                      const cat = categories.find((c) => c.id === id);
+                      return (
+                        <span key={id} className="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-sm">
+                          <span className="text-[#5932EA] font-medium">{cat?.name}</span>
+                          <button
+                            type="button"
+                            className="text-xs text-gray-500 hover:text-gray-700"
+                            onClick={() => removeCategory(id)}
+                            aria-label={`Eliminar categoría ${cat?.name}`}
+                          >
+                            <span className="text-[#5932EA]">×</span>
+                          </button>
+                        </span>
+                      );
+                    })}
                   </div>
+
                 </div>
 
                 {errors.category && (

@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { authService } from "@/services/factories/authServiceFactory";
 const { resetPassword: resetPasswordService } = authService;
 import { ArrowLeft } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -60,35 +61,32 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-[#c7d7e4] px-4">
+    <div className="relative min-h-screen flex items-center justify-center bg-[#6C94FF]/80 px-4">
       <div>
         <Button
           type="button"
           variant="ghost"
           onClick={() => navigate(-1)}
-          className="absolute top-10 left-10 flex items-center gap-2 px-3 py-2 bg-white text-blue-700 hover:text-blue-900 hover:bg-blue-100 transition-colors rounded-md shadow-sm"
+          className="absolute top-10 left-30 flex items-center gap-2 px-3 py-2 bg-white text-blue-700 hover:text-blue-900 hover:bg-blue-100 transition-colors rounded-md shadow-sm"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-medium">Volver</span>
+          <ArrowLeft className="w-96 h-96" />
         </Button>
+      </div>
+      <div className="absolute top-6 left-6">
+        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-md">
+          <img src="/logo/InvoIQLogo.png" alt="Logo" className="w-10 h-10" />
+        </div>
       </div>
       <div className="w-full max-w-md">
         <form
           onSubmit={handleSubmit}
           className="bg-white shadow-md rounded-lg p-8 w-full"
         >
-          <h2 className="text-xl font-semibold mb-4">Restablecer contraseña</h2>
+          <h1 className="text-3xl font-bold pt-8 pb-10">Ingresar Nueva Contraseña</h1>
 
-          <Input
-            type="text"
-            name="tokenPass"
-            placeholder={"Ingresa el código de recuperación"}
-            value={formData.tokenPass}
-            onChange={handleChange}
-            className="mb-3"
-            required
-          />
-
+          <Label htmlFor="password" className="text-sm font-medium pb-2">
+            Nueva Contraseña
+          </Label>
           <Input
             type="password"
             name="newPassword"
@@ -99,6 +97,9 @@ export default function ResetPassword() {
             required
           />
 
+          <Label htmlFor="password" className="text-sm font-medium pb-2">
+            Confirmar Nueva Contraseña
+          </Label>
           <Input
             type="password"
             name="confirmPassword"
@@ -109,8 +110,8 @@ export default function ResetPassword() {
             required
           />
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Cargando..." : "Restablecer contraseña"}
+          <Button type="submit" className="w-full h-13 mt-5" disabled={loading}>
+            {loading ? "Cargando..." : "Guardar Cambio"}
           </Button>
         </form>
       </div>

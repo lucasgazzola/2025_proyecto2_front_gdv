@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
+  CardContent
 } from "@/components/ui/card";
 
 import useAuth from "@/hooks/useAuth";
@@ -71,25 +68,14 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center font-inter bg-[#c7d7e4]">
+    <div className="min-h-screen w-full flex items-center justify-center font-inter bg-[#6C94FF]/80 relative">
+      <div className="absolute top-6 left-6">
+        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-md">
+          <img src="/logo/InvoIQLogo.png" alt="Logo" className="w-10 h-10" />
+        </div>
+      </div>
       <Card className="w-full max-w-md rounded-xl shadow-lg p-6">
-        <CardHeader className="bg-[#2C638B] rounded-t-xl pt-6 pb-5 px-6">
-          <div className="flex items-start text-start">
-            <div>
-              <CardTitle className="text-white text-lg font-semibold mb-1">
-                Bienvenido a InvoIQ
-              </CardTitle>
-              <CardDescription className="text-white text-sm">
-                Inicie sesión para continuar
-              </CardDescription>
-            </div>
-            <img
-              src="/logo-login.png"
-              alt="Logo Login"
-              className="h-16 ml-4 mt-10"
-            />
-          </div>
-        </CardHeader>
+        <h1 className="text-4xl font-bold pt-10">Iniciar Sesión</h1>
 
         <CardContent className="px-6 py-6">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -138,24 +124,23 @@ const Login = () => {
                 </p>
               )}
             </div>
+            <div className="text-right mt-2">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
 
             <Button
               type="submit"
-              className="w-full bg-[#2C638B] hover:bg-[#25597e] active:bg-[#1e4d6e] text-white font-semibold mt-4"
+              className="w-full h-13"
               disabled={isLoading}
             >
               Iniciar Sesión
               {isLoading && <LoadingSpinner />}
             </Button>
-
-            <div className="text-center mt-2">
-              <Link
-                to="/forgot-password"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Olvidé mi contraseña
-              </Link>
-            </div>
 
             <div className="text-center text-sm mt-4">
               No tengo una cuenta{" "}

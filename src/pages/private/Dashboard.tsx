@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { userService } from "@/services/factories/userServiceFactory";
 const { getAllUsers } = userService;
 import { logsService } from "@/services/factories/logServiceFactory";
-const { getPaginatedLogs } = logsService;
+const { getAllLogs } = logsService;
 import useAuth from "@/hooks/useAuth";
 
 export default function Dashboard() {
@@ -31,9 +31,9 @@ export default function Dashboard() {
       if (res.success && res.users) setUserCount(res.users.length - 1); // Exclude the auditor user
     });
 
-    getPaginatedLogs({ token, page: 0, size: 1 }).then((res) => {
-      if (res.success && typeof res.totalElements === "number") {
-        setLogCount(res.totalElements);
+    getAllLogs(token).then((res) => {
+      if (res.success && Array.isArray(res.logs)) {
+        setLogCount(res.logs.length);
       }
     });
   }, [token]);

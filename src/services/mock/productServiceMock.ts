@@ -1,12 +1,14 @@
 import type { IProductService } from "@/services/interfaces/IProductService";
 import type { ProductDto, ProductFormData } from "@/types/Product";
+import { BRANDS } from "./brandServiceMock";
+import { CATEGORIES } from "./categoryServiceMock";
 
 const PRODUCTS: ProductDto[] = [
   {
     id: "mock-id-1",
     name: "Producto Mock",
-    brand: "Marca Mock",
-    category: "Categoria Mock",
+    brand: BRANDS[0],
+    categories: [CATEGORIES[0], CATEGORIES[1]],
     imageUrl: "/favicon/favicon-96x96.png",
     quantity: 100,
     price: 10.99,
@@ -15,8 +17,8 @@ const PRODUCTS: ProductDto[] = [
   {
     id: "mock-id-2",
     name: "2 Mock",
-    brand: "3 Mock",
-    category: "Categoria Kcom",
+    brand: BRANDS[1],
+    categories: [CATEGORIES[2]],
     imageUrl: "/favicon/favicon-96x96.png",
     quantity: 2,
     price: 5.49,
@@ -25,8 +27,8 @@ const PRODUCTS: ProductDto[] = [
   {
     id: "mock-id-3",
     name: "Producto Mock 3",
-    brand: "Marca Mock 3",
-    category: "Categoria Mock 3",
+    brand: BRANDS[2],
+    categories: [CATEGORIES[2]],
     imageUrl: "/favicon/favicon-96x96.png",
     quantity: 50,
     price: 15.99,
@@ -35,8 +37,8 @@ const PRODUCTS: ProductDto[] = [
   {
     id: "mock-id-4",
     name: "Producto Mock 4",
-    brand: "Marca Mock 4",
-    category: "Categoria Mock 4",
+    brand: BRANDS[3],
+    categories: [CATEGORIES[3]],
     imageUrl: "/favicon/favicon-96x96.png",
     quantity: 25,
     price: 8.49,
@@ -45,8 +47,8 @@ const PRODUCTS: ProductDto[] = [
   {
     id: "mock-id-5",
     name: "Producto Mock 5",
-    brand: "Marca Mock 5",
-    category: "Categoria Mock 5",
+    brand: BRANDS[4],
+    categories: [CATEGORIES[0], CATEGORIES[3]],
     imageUrl: "/favicon/favicon-96x96.png",
     quantity: 75,
     price: 12.99,
@@ -77,7 +79,7 @@ class ProductServiceMock implements IProductService {
       id: `mock-id-${PRODUCTS.length + 1}`,
       name: product.name,
       brand: product.brand,
-      category: product.category,
+      categories: product.categories || [],
       imageUrl: product.imageUrl || "/favicon/favicon-96x96.png",
       quantity: product.quantity,
       price: product.price,

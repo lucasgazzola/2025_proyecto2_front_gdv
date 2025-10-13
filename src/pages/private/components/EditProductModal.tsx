@@ -28,11 +28,14 @@ import {
 
 import type { ProductDto, ProductFormData } from "@/types/Product";
 import useAuth from "@/hooks/useAuth";
-import { productService } from "@/services/factories/productServiceFactory";
 
 import { z } from "zod";
 import EditBrandModal from "./EditBrandModal";
 import type { Brand, BrandFormData } from "@/types/Brand";
+import { categoryService } from "@/services/factories/categoryServiceFactory";
+import { toast } from "react-toastify";
+import type { Category } from "@/types/Category";
+import { brandService } from "@/services/factories/brandServiceFactory";
 
 type Props = {
   open: boolean;
@@ -51,21 +54,20 @@ export default function EditProductModal({
 
   const [formFields, setFormFields] = useState({
     name: "",
-    brand: "",
-    category: "",
+    brand: {} as Brand,
+    categories: [] as Category[],
     imageUrl: "",
     quantity: 0,
     state: true,
   });
 
-  const { name, brand, category, imageUrl, quantity } = formFields;
+  const { name, brand, imageUrl, quantity } = formFields;
 
   const productSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, "El nombre es obligatorio"),
     brand: z.string().min(1, "La marca es obligatoria"),
-    category: z.string().min(1, "La categoría es obligatoria"),
-    // imageUrl handled separately (we allow data URLs or remote URLs), keep optional here
+    categories: z.array(z.string()).min(1, "Selecciona al menos una categoría"),
     imageUrl: z.string().optional(),
     quantity: z.number().min(0, "La cantidad es obligatoria"),
   });
@@ -75,14 +77,14 @@ export default function EditProductModal({
   >({});
 
   const { getAccessToken } = useAuth();
-  const [categories, setCategories] = useState<string[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
+  const [categoriesList, setCategoriesList] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
 
   // Brand modal state
   const [brandModalOpen, setBrandModalOpen] = useState(false);
 
   // For multi-category selection UI
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
 
   // Image upload handling
   const [_imageFile, setImageFile] = useState<File | null>(null);
@@ -93,18 +95,50 @@ export default function EditProductModal({
   useEffect(() => {
     const fetchCategories = async () => {
       const token = getAccessToken();
-      if (!token) return;
-      const { success, products } = await productService.getAllProducts(token);
-      if (!success || !products) return;
-      const uniqueCats = Array.from(
-        new Set(products.map((p) => p.category).filter(Boolean))
+      if (!token) {
+        toast.error("Por favor, inicia sesión para acceder a esta sección.");
+        return;
+      }
+
+      const { success, categories } = await categoryService.getAllCategories(
+        token
       );
-      setCategories(uniqueCats);
-      const uniqueBrands = Array.from(
-        new Set(products.map((p) => p.brand).filter(Boolean))
-      );
-      setBrands(uniqueBrands);
+
+      if (!success) {
+        toast.error("Error al cargar las categorías. Intenta nuevamente.");
+        return;
+      }
+
+      if (!categories || categories.length === 0) {
+        toast.info("No hay categorías registradas.");
+        return;
+      }
+
+      setCategoriesList(categories);
     };
+    const fetchBrands = async () => {
+      const token = getAccessToken();
+      if (!token) {
+        toast.error("Por favor, inicia sesión para acceder a esta sección.");
+        return;
+      }
+
+      const { success, brands } = await brandService.getAllBrands(token);
+
+      if (!success) {
+        toast.error("Error al cargar las marcas. Intenta nuevamente.");
+        return;
+      }
+
+      if (!brands || brands.length === 0) {
+        toast.info("No hay marcas registradas.");
+        return;
+      }
+
+      setBrands(brands);
+    };
+    fetchBrands();
+
     fetchCategories();
   }, []);
 
@@ -113,25 +147,18 @@ export default function EditProductModal({
       setFormFields({
         name: product.name,
         brand: product.brand,
-        category: product.category,
+        categories: product.categories,
         imageUrl: product.imageUrl || "",
         quantity: product.quantity,
         state: product.state,
       });
-      // populate multi-category selection from joined string
-      const catsSelected = product.category
-        ? product.category
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [];
-      setSelectedCategories(catsSelected);
+      setSelectedCategories(product.categories);
       setImagePreview(product.imageUrl || "");
     } else {
       setFormFields({
         name: "",
-        brand: "",
-        category: "",
+        brand: {} as Brand,
+        categories: [],
         imageUrl: "",
         quantity: 0,
         state: true,
@@ -172,15 +199,25 @@ export default function EditProductModal({
     });
   };
 
-  const handleAddCategory = (cat: string) => {
+  const handleAddCategory = (cat: Category) => {
     if (!cat) return;
     setSelectedCategories((prev) =>
       prev.includes(cat) ? prev : [...prev, cat]
     );
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.categories;
+      return copy;
+    });
   };
 
-  const removeCategory = (cat: string) => {
-    setSelectedCategories((prev) => prev.filter((c) => c !== cat));
+  const removeCategory = (cat: Category) => {
+    setSelectedCategories((prev) => prev.filter((c) => c.id !== cat.id));
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.categories;
+      return copy;
+    });
   };
 
   // Nota: la creación de marca se abre desde el botón y actualmente no necesita lógica adicional aquí.
@@ -193,8 +230,9 @@ export default function EditProductModal({
       const parsed = productSchema.safeParse({
         id: product.id,
         name,
-        brand,
-        category,
+        // pasar brand.id (string) para la validación
+        brand: (formFields.brand as Brand).id || "",
+        categories: selectedCategories.map((c) => c.id),
         imageUrl,
         quantity,
       });
@@ -222,10 +260,12 @@ export default function EditProductModal({
       const toSave = {
         ...parsed.data,
         id: product!.id,
-        brand: parsed.data.brand,
-        category: selectedCategories.join(", ") || parsed.data.category,
+        // El DTO espera un objeto Brand, no el id string validado por Zod
+        brand: formFields.brand,
+        categories: selectedCategories,
         imageUrl: imagePreview,
         quantity: parsed.data.quantity,
+        price: product!.price, // Ensure price is included
         state: formFields.state,
       } as ProductDto;
 
@@ -233,8 +273,10 @@ export default function EditProductModal({
     } else {
       const parsed = productSchema.safeParse({
         name,
-        brand,
-        category,
+        // pasar brand.id (string) para la validación
+        brand: (formFields.brand as Brand).id || "",
+        // Zod espera un array de strings (ids), no objetos Category
+        categories: selectedCategories.map((c) => c.id),
         imageUrl,
         quantity,
       });
@@ -262,10 +304,13 @@ export default function EditProductModal({
       // parsed.data coincide con ProductFormData
       const toSave = {
         ...parsed.data,
-        brand: parsed.data.brand,
-        category: selectedCategories.join(", ") || parsed.data.category,
+        // El DTO/Form espera un objeto Brand
+        brand: formFields.brand,
+        categories: selectedCategories,
         imageUrl: imagePreview,
         quantity: parsed.data.quantity,
+        // Price no se captura en el formulario actual; usar 0 por defecto al crear
+        price: 0,
         state: formFields.state,
       } as ProductFormData;
 
@@ -279,8 +324,10 @@ export default function EditProductModal({
       setBrandModalOpen(false);
       return;
     }
-    setBrands((prev) => (prev.includes(name) ? prev : [...prev, name]));
-    setFormFields((prev) => ({ ...prev, brand: name }));
+    if (!brands.find((br) => br.name === name)) {
+      setBrands((prev) => [...prev, b as Brand]);
+    }
+    setFormFields((prev) => ({ ...prev, brand: b as Brand }));
     setBrandModalOpen(false);
   };
 
@@ -308,206 +355,251 @@ export default function EditProductModal({
         <form onSubmit={handleSave}>
           <div className="grid gap-4 py-4 w-full">
             <div className="space-y-6">
-              <div className="flex">
-                <Label
-                  htmlFor="name"
-                  className="text-nowrap text-gray-500 w-2/5"
-                >
-                  Nombre del producto*
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={name}
-                  className="w-3/5"
-                  onChange={handleChange}
-                  placeholder="e.g. Core I9 14900K"
-                  autoComplete="off"
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-500">{errors.name}</p>
-                )}
-              </div>
-
-              <div className="flex">
-                <Label
-                  htmlFor="brand"
-                  className="text-nowrap text-gray-500 w-2/5"
-                >
-                  Marca*
-                </Label>
-                <div className="flex gap-2 items-center w-3/5">
-                  <Select
-                    value={brand}
-                    onValueChange={(val: string) =>
-                      setFormFields((prev) => ({ ...prev, brand: val }))
-                    }
+              <div className="flex gap-1 flex-col">
+                <div className="flex w-full">
+                  <Label
+                    htmlFor="name"
+                    className="text-nowrap text-gray-500 w-2/5"
                   >
-                    <SelectTrigger className="flex-1 rounded-md border px-3 py-2 bg-white">
-                      <SelectValue placeholder="Marca" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {brands.map((b) => (
-                        <SelectItem key={b} value={b}>
-                          {b}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="default"
-                    onClick={() => setBrandModalOpen(true)}
-                    type="button"
-                  >
-                    Agregar Marca
-                  </Button>
+                    Nombre del producto*
+                  </Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={name}
+                    className="w-3/5"
+                    onChange={handleChange}
+                    placeholder="e.g. Core I9 14900K"
+                    autoComplete="off"
+                  />
                 </div>
-                {errors.brand && (
-                  <p className="text-sm text-red-500">{errors.brand}</p>
-                )}
-              </div>
-              <div className="flex">
-                <Label
-                  htmlFor="image"
-                  className="text-nowrap text-gray-500 w-2/5"
-                >
-                  Imagen del producto*
-                </Label>
-                <input
-                  ref={fileInputRef}
-                  id="image"
-                  name="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-
-                {/* Upload card */}
-                <div className="w-3/5 flex flex-col">
-                  <div
-                    className="border-dashed border-2 border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center gap-3 cursor-pointer"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <div className="w-16 h-16 rounded-full bg-purple-50 flex items-center justify-center">
-                      <Upload className="h-8 w-8 text-primary" />
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Click para cargar o arrastra y suelta
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      SVG, PNG, JPG or GIF (max. 800x400px)
-                    </div>
-                  </div>
-
-                  {/* TODO: Agregar que tenga más imagenes */}
-                  {imagePreview && (
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <img
-                        src={imagePreview}
-                        alt="preview"
-                        className="w-28 h-28 object-cover rounded"
-                      />
-                      <button
-                        type="button"
-                        className="text-xs text-rose-600"
-                        onClick={() => {
-                          setImageFile(null);
-                          setImagePreview("");
-                        }}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
+                <div className="w-3/5 ml-auto">
+                  {errors.name && (
+                    <p className="text-sm text-start text-red-500">
+                      {errors.name}
+                    </p>
                   )}
                 </div>
-                {errors.imageUrl && (
-                  <p className="text-sm text-red-500">{errors.imageUrl}</p>
-                )}
               </div>
 
-              <div className="flex">
-                <Label
-                  className="text-nowrap text-gray-500 w-2/5"
-                  htmlFor="quantity"
-                >
-                  Stock*
-                </Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  name="quantity"
-                  step="1"
-                  min={0}
-                  value={quantity}
-                  onChange={handleChange}
-                  placeholder="Ingrese cantidad"
-                  className="w-3/5"
-                />
-                {errors.quantity && (
-                  <p className="text-sm text-red-500">{errors.quantity}</p>
-                )}
-              </div>
-
-              <div className="flex">
-                <Label
-                  className="text-nowrap text-gray-500 w-2/5"
-                  htmlFor="category"
-                >
-                  Categorías*
-                </Label>
-                <div className="flex flex-col w-3/5 items-start">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="flex w-full items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                        type="button"
-                      >
-                        Seleccionar categorías
-                        <ChevronDown className="ml-2 size-4 opacity-60" />
-                      </Button>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent className="w-[300px]">
-                      {categories.map((c) => (
-                        <DropdownMenuCheckboxItem
-                          key={c}
-                          checked={selectedCategories.includes(c)}
-                          onCheckedChange={(v: boolean) => {
-                            if (v) handleAddCategory(c);
-                            else removeCategory(c);
-                          }}
-                        >
-                          {c}
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedCategories.map((c) => (
-                      <span
-                        key={c}
-                        className="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-sm"
-                      >
-                        <span className="text-[#5932EA] font-medium">{c}</span>
-                        <button
-                          type="button"
-                          className="text-xs text-gray-500 hover:text-gray-700"
-                          onClick={() => removeCategory(c)}
-                          aria-label={`Eliminar categoría ${c}`}
-                        >
-                          <span className="text-[#5932EA]">×</span>
-                        </button>
-                      </span>
-                    ))}
+              <div className="flex gap-1 flex-col">
+                <div className="flex w-full">
+                  <Label
+                    htmlFor="brand"
+                    className="text-nowrap text-gray-500 w-2/5"
+                  >
+                    Marca*
+                  </Label>
+                  <div className="flex gap-2 items-center w-3/5">
+                    <Select
+                      value={brand.id}
+                      onValueChange={(val: string) => {
+                        const selectedBrand = brands.find((b) => b.id === val);
+                        setFormFields((prev) => ({
+                          ...prev,
+                          brand: selectedBrand ?? ({} as Brand),
+                        }));
+                        setErrors((prev) => {
+                          const copy = { ...prev };
+                          delete copy.brand;
+                          return copy;
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="flex-1 rounded-md border px-3 py-2 bg-white">
+                        <SelectValue placeholder="Selecciona una marca" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {brands.map((brand) => (
+                          <SelectItem key={brand.id} value={brand.id}>
+                            {brand.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="default"
+                      onClick={() => setBrandModalOpen(true)}
+                      type="button"
+                    >
+                      Agregar Marca
+                    </Button>
                   </div>
                 </div>
+                <div className="w-3/5 ml-auto">
+                  {errors.brand && (
+                    <p className="text-sm text-start text-red-500">
+                      {errors.brand}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-1 flex-col">
+                <div className="flex w-full">
+                  <Label
+                    htmlFor="image"
+                    className="text-nowrap text-gray-500 w-2/5"
+                  >
+                    Imagen del producto*
+                  </Label>
+                  <input
+                    ref={fileInputRef}
+                    id="image"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
 
-                {errors.category && (
-                  <p className="text-sm text-red-500">{errors.category}</p>
-                )}
+                  {/* Upload card */}
+                  <div className="w-3/5 flex flex-col">
+                    <div
+                      className="border-dashed border-2 border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center gap-3 cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <div className="w-16 h-16 rounded-full bg-purple-50 flex items-center justify-center">
+                        <Upload className="h-8 w-8 text-primary" />
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Click para cargar o arrastra y suelta
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        SVG, PNG, JPG or GIF (max. 800x400px)
+                      </div>
+                    </div>
+
+                    {/* TODO: Agregar que tenga más imagenes */}
+                    {imagePreview && (
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <img
+                          src={imagePreview}
+                          alt="preview"
+                          className="w-28 h-28 object-cover rounded"
+                        />
+                        <button
+                          type="button"
+                          className="text-xs text-rose-600"
+                          onClick={() => {
+                            setImageFile(null);
+                            setImagePreview("");
+                            setErrors((prev) => {
+                              const copy = { ...prev };
+                              delete copy.imageUrl;
+                              return copy;
+                            });
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="w-3/5 ml-auto">
+                  {errors.imageUrl && (
+                    <p className="text-sm text-start text-red-500">
+                      {errors.imageUrl}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-1 flex-col">
+                <div className="flex w-full">
+                  <Label
+                    className="text-nowrap text-gray-500 w-2/5"
+                    htmlFor="quantity"
+                  >
+                    Stock*
+                  </Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    name="quantity"
+                    step="1"
+                    min={0}
+                    value={quantity}
+                    onChange={handleChange}
+                    placeholder="Ingrese cantidad"
+                    className="w-3/5"
+                  />
+                </div>
+                <div className="w-3/5 ml-auto">
+                  {errors.quantity && (
+                    <p className="text-sm text-start text-red-500">
+                      {errors.quantity}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-1 flex-col">
+                <div className="flex w-full">
+                  <Label
+                    className="text-nowrap text-gray-500 w-2/5"
+                    htmlFor="category"
+                  >
+                    Categorías*
+                  </Label>
+                  <div className="flex flex-col w-3/5 items-start">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="flex w-full items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                          type="button"
+                        >
+                          Seleccionar categorías
+                          <ChevronDown className="ml-2 size-4 opacity-60" />
+                        </Button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent className="w-[300px]">
+                        {categoriesList.map((category) => (
+                          <DropdownMenuCheckboxItem
+                            key={category.id}
+                            checked={selectedCategories.includes(category)}
+                            onCheckedChange={(checked: boolean) => {
+                              if (checked) handleAddCategory(category);
+                              else removeCategory(category);
+                            }}
+                          >
+                            {category.name}
+                          </DropdownMenuCheckboxItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedCategories.map((selectedCategory) => (
+                        <span
+                          key={selectedCategory.id}
+                          className="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-sm"
+                        >
+                          <span className="text-[#5932EA] font-medium">
+                            {selectedCategory.name}
+                          </span>
+                          <button
+                            type="button"
+                            className="text-xs text-gray-500 hover:text-gray-700"
+                            onClick={() => removeCategory(selectedCategory)}
+                            aria-label={`Eliminar categoría ${selectedCategory.name}`}
+                          >
+                            <span className="text-[#5932EA]">×</span>
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="w-3/5 ml-auto">
+                  {errors.categories && (
+                    <p className="text-sm text-start text-red-500">
+                      {errors.categories}
+                    </p>
+                  )}
+                </div>
               </div>
               {/* descripción o espacio extra */}
               <div className="flex">

@@ -22,9 +22,11 @@ import { providerService } from "@/services/factories/providerServiceFactory";
 import { toast } from "react-toastify";
 import useAuth from "@/hooks/useAuth";
 import type { ProductDto } from "@/types/Product";
-import type { Added } from "@/types/Added";
 import DeleteButton from "@/components/common/DeleteButton";
 import { Card, CardContent } from "@/components/ui/card";
+import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
+import { invoiceService } from "@/services/factories/invoiceServiceFactory";
+import type { InvoiceLine, Invoice, Added } from "@/types/Invoice";
 
 
 export default function AgregarFactura() {
@@ -36,6 +38,8 @@ export default function AgregarFactura() {
   const [providers, setProviders] = useState<string[]>([]);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [providersSelected, setProvidersSelected] = useState<Record<string, string>>({});
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
 
   const handleAgregar = (product: ProductDto, qty: number, provider: string) => {
     // prevent adding without provider
@@ -44,23 +48,22 @@ export default function AgregarFactura() {
       return;
     }
 
-    const existing = added.find((a) => a.id === product.id && a.proveedor === provider);
     const lineSubtotal = (product.price || 0) * qty;
+    const existing = added.find((a) => a.id === product.id && a.provider === provider);
     if (existing) {
       setAdded((prev) =>
         prev.map((a) =>
-          a.id === product.id && a.proveedor === provider
-            ? { ...a, cantidad: (a.cantidad || 0) + qty, subtotal: (a.subtotal || 0) + lineSubtotal }
+          a.id === product.id && a.provider === provider
+            ? { ...a, quantity: (a.quantity || 0) + qty, subtotal: (a.subtotal || 0) + lineSubtotal }
             : a
         )
       );
     } else {
-      const toAdd = {
+      const toAdd: Added = {
         id: product.id,
-        nombre: product.name,
-        codigo: product.id,
-        proveedor: provider,
-        cantidad: qty,
+        name: product.name,
+        provider: provider,
+        quantity: qty,
         unitPrice: product.price || 0,
         subtotal: lineSubtotal,
       };
@@ -97,6 +100,53 @@ export default function AgregarFactura() {
     };
     load();
   }, []);
+
+
+  // 🟩 INICIO MODIFICACIÓN: mover lógica del botón "Confirmar" a una función aparte
+  const handleConfirmInvoice = async () => {
+    if (added.length === 0) return;
+
+    const token = getAccessToken();
+    if (!token) {
+      toast.error("Por favor inicia sesión.");
+      logout();
+      return;
+    }
+
+    // Construir la factura
+    const lines: InvoiceLine[] = added.map((a) => ({
+      // Added already tiene la forma requerida por InvoiceLine
+      id: a.id,
+      name: a.name,
+      provider: a.provider,
+      quantity: a.quantity,
+      unitPrice: a.unitPrice,
+      subtotal: a.subtotal,
+    } as unknown as InvoiceLine));
+
+    const invoice: Invoice = {
+      lines: lines as unknown as InvoiceLine[],
+      priceTotal: lines.reduce((s, l) => s + (l.subtotal || 0), 0),
+    };
+
+    try {
+      setIsCreatingInvoice(true);
+      const res = await invoiceService.createInvoice(token, invoice);
+      if (res.success) {
+        toast.success("Factura creada correctamente.");
+        setAdded([]); // opcional: limpiar
+      } else {
+        const resultWithMessage = res as { message?: string };
+        toast.error(resultWithMessage.message || "Error al crear la factura.");
+      }
+    } catch {
+      toast.error("Ocurrió un error al enviar la factura.");
+    } finally {
+      setIsCreatingInvoice(false);
+    }
+  };
+  // 🟩 FIN MODIFICACIÓN
+
 
   const total = added.reduce((acc, p) => acc + (p.subtotal || 0), 0);
 
@@ -224,16 +274,16 @@ export default function AgregarFactura() {
                       </TableRow>
                     ) : (
                       added.map((p) => (
-                        <TableRow key={`${p.id}-${p.proveedor}`}>
-                          <TableCell>{p.nombre}</TableCell>
-                          <TableCell>{p.codigo}</TableCell>
-                          <TableCell>{p.proveedor || "—"}</TableCell>
-                          <TableCell>{p.cantidad ?? 1}</TableCell>
+                        <TableRow key={`${p.id}-${p.provider}`}>
+                          <TableCell>{p.name}</TableCell>
+                          <TableCell>{p.id}</TableCell>
+                          <TableCell>{p.provider || "—"}</TableCell>
+                          <TableCell>{p.quantity ?? 1}</TableCell>
                           <TableCell>${(p.subtotal || 0).toLocaleString()}</TableCell>
                           <TableCell className="text-center">
                             <DeleteButton
                               handleDelete={() =>
-                                setAdded((prev) => prev.filter((x) => !(x.id === p.id && x.proveedor === p.proveedor)))
+                                setAdded((prev) => prev.filter((x) => !(x.id === p.id && x.provider === p.provider)))
                               }
                             />
                           </TableCell>
@@ -253,13 +303,28 @@ export default function AgregarFactura() {
               <strong>Total:</strong> ${total.toLocaleString()}
             </div>
             <div className="flex gap-4">
-              <Button variant="destructive">Borrar Factura</Button>
-              <Button variant="outline">Ver Factura</Button>
-              <Button>Confirmar</Button>
+                <Button variant="destructive" onClick={() => setDeleteModalOpen(true)} disabled={added.length === 0}>
+                  Borrar Factura
+                </Button>
+                <Button
+                  onClick={handleConfirmInvoice}
+                  disabled={added.length === 0 || isCreatingInvoice}
+                >
+                  {isCreatingInvoice ? "Enviando..." : "Confirmar"}
+                </Button>
             </div>
           </div>
         </CardContent>
       </Card>
+      <ConfirmDeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={() => {
+          setAdded([]);
+          setDeleteModalOpen(false);
+          toast.success("Se han eliminado todos los productos de la factura.");
+        }}
+      />
     </div>
   );
 }

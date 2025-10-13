@@ -71,6 +71,13 @@ export const API_ENDPOINTS = {
     // UPDATE_PRODUCT: "/product/updateProduct",
     DELETE_PRODUCT: (id: string) => `/product/${id}`,
   },
+  //Facturas
+  invoices: {
+    GET_ALL: "/invoices",
+    GET_INVOICE: (id: string) => `/invoices/${id}`,
+    CREATE_INVOICE: "/invoices",
+    DELETE_INVOICE: (id: string) => `/invoices/${id}`,
+  },
 };
 
 const API_BASE_URL =

@@ -27,7 +27,7 @@ const { updateUserByEmail } = userService;
 import useAuth from "@/hooks/useAuth";
 
 import type { User } from "@/types/User";
-import { Role } from "@/types/Role";
+import type { UserWithPassword } from "@/services/mock/userServiceMock";
 
 type Props = {
   open: boolean;
@@ -37,17 +37,7 @@ type Props = {
 };
 
 // Modal is edit/view-only; creation and password fields removed.
-
-type UserFormState = {
-  name: string;
-  lastname: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  hash: string;
-  role: Role;
-  status: "active" | "inactive";
-};
+type UserFormState = UserWithPassword & { confirmPassword?: string };
 
 const initialFormState: UserFormState = {
   name: "",
@@ -55,9 +45,8 @@ const initialFormState: UserFormState = {
   email: "",
   password: "",
   confirmPassword: "",
-  hash: "",
   role: "USER",
-  status: "active",
+  active: true,
 };
 
 export default function EditUserModal({
@@ -83,36 +72,14 @@ export default function EditUserModal({
         email: user.email || "",
         password: "",
         confirmPassword: "",
-        hash: "",
         role: user.role || "USER",
-        status: user.active ? "active" : "inactive",
+        active: user.active,
       });
     } else {
-      // For view-only (no creation), keep form empty but do not allow saving
       setForm(initialFormState);
     }
     setErrors({});
   }, [isEdit, user, open]);
-
-  const handleChange = (
-    e:
-      | React.ChangeEvent<HTMLInputElement>
-      | React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const { id, value, type, checked } = e.target as HTMLInputElement;
-    setForm((prev) => ({
-      ...prev,
-      [id]:
-        type === "checkbox"
-          ? checked
-          : id === "isDemo"
-          ? Boolean(checked)
-          : value,
-    }));
-    if (errors[id as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [id]: undefined }));
-    }
-  };
 
   const handleSelectChange = (
     field: keyof UserFormState,
@@ -134,15 +101,12 @@ export default function EditUserModal({
       logout();
       return;
     }
-    // We only support editing existing users in this modal
     if (!isEdit) {
       toast.info("Crear usuarios no está disponible desde este modal.");
       return;
     }
-
-    // Edit flow
     {
-      if (!form.name || !form.lastname || !form.status) {
+      if (!form.name || !form.lastname) {
         toast.error("Por favor completá todos los campos obligatorios.");
         return;
       }
@@ -153,7 +117,8 @@ export default function EditUserModal({
         {
           name: form.name,
           lastname: form.lastname,
-          active: form.status === "active",
+          role: form.role,
+          active: form.active,
         }
       );
       setLoading(false);
@@ -194,7 +159,12 @@ export default function EditUserModal({
                 <Label htmlFor="name" className="w-1/3 text-gray-600">
                   Nombre del usuario*
                 </Label>
-                <Input id="name" value={form.name} readOnly className="w-2/3" />
+                <Input
+                  id="name"
+                  value={form.name}
+                  onChange={(e) => handleSelectChange("name", e.target.value)}
+                  className="w-2/3"
+                />
               </div>
 
               <div className="flex">
@@ -204,7 +174,9 @@ export default function EditUserModal({
                 <Input
                   id="lastname"
                   value={form.lastname}
-                  readOnly
+                  onChange={(e) =>
+                    handleSelectChange("lastname", e.target.value)
+                  }
                   className="w-2/3"
                 />
               </div>
@@ -216,6 +188,7 @@ export default function EditUserModal({
                 <Input
                   id="email"
                   value={form.email}
+                  disabled
                   readOnly
                   className="w-2/3"
                 />
@@ -252,8 +225,8 @@ export default function EditUserModal({
                       type="radio"
                       name="status"
                       value="active"
-                      checked={form.status === "active"}
-                      onChange={() => handleSelectChange("status", "active")}
+                      checked={form.active}
+                      onChange={() => handleSelectChange("active", true)}
                     />
                     <span>Activo</span>
                   </label>
@@ -262,8 +235,8 @@ export default function EditUserModal({
                       type="radio"
                       name="status"
                       value="inactive"
-                      checked={form.status === "inactive"}
-                      onChange={() => handleSelectChange("status", "inactive")}
+                      checked={!form.active}
+                      onChange={() => handleSelectChange("active", false)}
                     />
                     <span>Inactivo</span>
                   </label>
@@ -275,12 +248,13 @@ export default function EditUserModal({
             <Button
               type="button"
               variant="outline"
+              disabled={loading}
               onClick={() => setModalOpen(false)}
               className="w-1/2"
             >
               Cancelar
             </Button>
-            <Button type="submit" className="w-1/2">
+            <Button type="submit" className="w-1/2" disabled={loading}>
               Confirmar
             </Button>
           </div>

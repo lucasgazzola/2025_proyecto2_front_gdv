@@ -6,7 +6,7 @@ export type User = {
   lastname: string;
   active: boolean;
   role: Role;
-  phone: string;
+  phone?: string;
   address?: string;
   city?: string;
   province?: string;
@@ -20,7 +20,7 @@ export type UserDto = {
   lastname: string;
   active: boolean;
   role: Array<"ROLE_USER" | "ROLE_AUDITOR">;
-  phone: string;
+  phone?: string;
   address?: string;
   city?: string;
   province?: string;

@@ -8,8 +8,6 @@ export interface IAuthService {
     data: RegisterFormDto
   ): Promise<{ success: boolean; message?: string }>;
 
-  validateToken(token: string): Promise<{ success: boolean; message?: string }>;
-
   logout(token: string): Promise<{ success: boolean; message?: string }>;
   resetPassword(
     email: string,
@@ -34,6 +32,4 @@ export interface IAuthService {
     token: string;
     email: string;
   }): Promise<{ success: boolean; message?: string }>;
-
-  jwtDecode(token: string): { [key: string]: any };
 }

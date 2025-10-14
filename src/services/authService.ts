@@ -10,7 +10,6 @@ const { getUserProfile } = userService;
 
 class AuthServiceReal implements IAuthService {
   async login({ email, password }: LoginFormDto): Promise<LoginResponseDto> {
-    // ...existing code...
     try {
       const response = await fetch(apiEndpoints.auth.LOGIN, {
         method: "POST",
@@ -35,9 +34,8 @@ class AuthServiceReal implements IAuthService {
       if (response.status === 200) {
         const data = (await response.json()) as {
           access_token: string;
-          refresh_token: string;
         };
-        const { access_token, refresh_token } = data;
+        const { access_token } = data;
         const { success, user, message } = await getUserProfile(access_token);
         if (!success) {
           return {
@@ -54,7 +52,6 @@ class AuthServiceReal implements IAuthService {
         return {
           success: true,
           accessToken: access_token,
-          user: user,
         };
       }
       return {
@@ -96,30 +93,6 @@ class AuthServiceReal implements IAuthService {
         success: false,
         message: "Error al conectar con el servidor",
       };
-    }
-  }
-
-  async validateToken(
-    accessToken: string
-  ): Promise<{ success: boolean; message?: string }> {
-    // ...existing code...
-    try {
-      const response = await fetch(
-        `${apiEndpoints.auth.VALIDATE_TOKEN}?token=${accessToken}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      if (response.ok) {
-        return { success: true };
-      }
-      return { success: false, message: "Token inválido" };
-    } catch (error) {
-      return { success: false, message: "Error al conectar con el servidor" };
     }
   }
 
@@ -174,15 +147,6 @@ class AuthServiceReal implements IAuthService {
       };
     } catch (error) {
       return { success: false, message: "Error al conectar con el servidor" };
-    }
-  }
-
-  jwtDecode(token: string): { [key: string]: any } {
-    // ...existing code...
-    try {
-      return jwtDecodeService(token);
-    } catch (error) {
-      throw error;
     }
   }
 

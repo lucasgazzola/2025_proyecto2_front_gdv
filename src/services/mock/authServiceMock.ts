@@ -148,7 +148,7 @@ class AuthServiceMock implements IAuthService {
       otp: "123456", // OTP simulado
     } as any);
   }
-  async regenerateOtp(data: { token: string; email: string }) {
+  async regenerateOtp(_data: { token: string; email: string }) {
     // Simular regeneración de OTP
     return {
       success: true,

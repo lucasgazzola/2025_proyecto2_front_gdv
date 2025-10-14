@@ -1,6 +1,6 @@
 import { apiEndpoints } from "@/api/endpoints";
 import type { LoginFormDto, LoginResponseDto } from "@/dto/LoginFormDto";
-import { jwtDecode as jwtDecodeService } from "jwt-decode";
+// import { jwtDecode as jwtDecodeService } from "jwt-decode";
 import type { RegisterFormDto } from "@/dto/RegisterFormDto";
 
 import type { IAuthService } from "@/services/interfaces/IAuthService";

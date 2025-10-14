@@ -45,7 +45,9 @@ export const USERS: UserWithPassword[] = [
 ];
 
 class UserServiceMock implements IUserService {
-  async getAllUsers(_token: string) {
+  async getAllUsers(
+    _token: string
+  ): Promise<{ success: boolean; users?: User[]; message?: string }> {
     return {
       success: true,
       users: USERS,

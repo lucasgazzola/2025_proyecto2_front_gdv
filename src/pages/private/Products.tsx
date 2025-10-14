@@ -41,7 +41,6 @@ export default function Products() {
 
   const [products, setProducts] = useState<ProductDto[]>([]);
   const [orderBy, setOrderBy] = useState<string>("latest");
-  const [productsPerPage, setProductsPerPage] = useState<number>(10);
   const [selectedProduct, setSelectedProduct] = useState<ProductDto | null>(
     null
   );
@@ -50,6 +49,7 @@ export default function Products() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 10;
 
   const token = getAccessToken();
 

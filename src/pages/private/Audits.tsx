@@ -35,9 +35,8 @@ export default function Audits() {
   const [logEntries, setLogEntries] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [logsPerPage, setLogsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-
+  const logsPerPage = 10;
   const token = getAccessToken();
 
   useEffect(() => {

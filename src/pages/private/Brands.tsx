@@ -41,13 +41,13 @@ export default function Brands() {
 
   const [brands, setBrands] = useState<Brand[]>([]);
   const [orderBy, setOrderBy] = useState<string>("latest");
-  const [brandsPerPage, setBrandsPerPage] = useState<number>(10);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const brandsPerPage = 10;
 
   const token = getAccessToken();
 

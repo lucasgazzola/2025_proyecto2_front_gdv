@@ -31,6 +31,9 @@ import Sparkline from "@/components/ui/Sparkline";
 import { Users, Box, FileText } from "lucide-react";
 import type { Invoice } from "@/types/Invoice";
 import type { ProductDto } from "@/types/Product";
+import MetabaseComponent from "./components/MetabaseComponent";
+
+const useMetabaseGraph = import.meta.env.VITE_USE_METABASE_GRAPH === "true";
 
 export default function Dashboard() {
   const { getAccessToken, logout } = useAuth();
@@ -134,6 +137,10 @@ export default function Dashboard() {
     });
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [allProducts]);
+
+  if (useMetabaseGraph) {
+    return <MetabaseComponent />;
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -309,7 +316,6 @@ export default function Dashboard() {
                   </li>
                 )}
                 {recentInvoices.map((inv: Invoice) => {
-                  console.log({ inv });
                   const customerLabel =
                     typeof inv.creator.name === "string"
                       ? inv.creator.name

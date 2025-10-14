@@ -229,7 +229,13 @@ export default function Profile() {
             <div className="flex gap-6">
               <div className="space-y-2 w-full">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" value={user?.email || ""} />
+                <Input
+                  id="email"
+                  disabled
+                  name="email"
+                  readOnly
+                  value={user?.email || ""}
+                />
               </div>
 
               <div className="space-y-2 w-full">
@@ -263,6 +269,7 @@ export default function Profile() {
                 <Input
                   id="address"
                   name="address"
+                  autoComplete="address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Av. Universidad 450"

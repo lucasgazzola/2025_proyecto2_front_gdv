@@ -9,7 +9,6 @@ import { authService } from "@/services/factories/authServiceFactory";
 const {
   login: loginService,
   register: registerService,
-  // validateToken: validateTokenService,
   logout: logoutService,
 } = authService;
 import { userService } from "@/services/factories/userServiceFactory";
@@ -21,6 +20,8 @@ import {
 } from "@/utils/localStorage";
 import { isPublicRoute } from "@/routes";
 import { AuthContext } from "../AuthContext";
+import { tokenService } from "@/services/factories/tokenServiceFactory";
+const { validateToken } = tokenService;
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -42,77 +43,81 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     (async () => {
       setAuthLoading(true);
 
-      //TODO: TOKEN NECESITA SER VALIDADO
-      const validAccessToken = getAccessToken();
-
-      if (validAccessToken) {
-        const { success, user } = await getUserProfile(validAccessToken);
-
-        if (!success) {
-          setIsLoggedIn(false);
-          setAuthLoading(false);
-          removeLoggedUserData();
-          toast.error("Error al obtener el perfil del usuario");
-          navigate("/login");
-          return;
-        }
-        if (!user) {
-          setIsLoggedIn(false);
-          setAuthLoading(false);
-          removeLoggedUserData();
-          toast.error("Error al decodificar el token de acceso");
-          navigate("/login");
-          return;
-        }
-        setName(user.name);
-        setLastname(user.lastname);
-        setEmail(user.email);
-        setRole(user.role);
-
-        storeLoggedUserData({
-          email: user.email,
-          name: user.name,
-          lastname: user.lastname,
-          role: user.role,
-        });
-
-        setIsLoggedIn(true);
-        setAuthLoading(false);
-
-        // Si está en login o register y ya está autenticado, lo sacamos
-        if (isPublicPathname) {
-          navigate("/dashboard", { replace: true });
-        } else {
-          navigate(pathname);
-        }
-      } else {
+      const accessToken = getAccessToken();
+      if (!accessToken) {
         setIsLoggedIn(false);
         setAuthLoading(false);
-        setName("");
-        setLastname("");
-        setEmail("");
-        setRole("");
+
+        removeLoggedUserData();
+
+        // Si no está logueado, llevar a login salvo que ya esté ahí
+        if (!isPublicPathname) {
+          navigate("/login", { replace: true });
+        }
+        return;
+      }
+
+      const { success: isValidAccessToken } = await validateToken(accessToken);
+
+      if (!isValidAccessToken) {
+        setIsLoggedIn(false);
+        setAuthLoading(false);
 
         removeLoggedUserData();
 
         // Mostrar el toast solo si no está en ruta pública
         if (!isPublicPathname) {
-          toast.error(
-            "Sesión expirada o no válida. Por favor, inicia sesión de nuevo."
-          );
+          toast.error("Sesión expirada. Por favor, inicia sesión nuevamente.");
         }
 
         // Si no está logueado, llevar a login salvo que ya esté ahí
         if (!isPublicPathname) {
           navigate("/login", { replace: true });
         }
+        return;
+      }
+
+      const { success, user, message } = await getUserProfile(accessToken);
+
+      if (!success) {
+        setIsLoggedIn(false);
+        setAuthLoading(false);
+        removeLoggedUserData();
+        toast.error(message || "Error al obtener el perfil del usuario");
+        navigate("/login");
+        return;
+      }
+      if (!user) {
+        setIsLoggedIn(false);
+        setAuthLoading(false);
+        removeLoggedUserData();
+        toast.error(message || "Error al decodificar el token");
+        navigate("/login");
+        return;
+      }
+      setName(user.name);
+      setLastname(user.lastname);
+      setEmail(user.email);
+      setRole(user.role);
+
+      storeLoggedUserData({
+        email: user.email,
+        name: user.name,
+        lastname: user.lastname,
+        role: user.role,
+      });
+
+      setIsLoggedIn(true);
+      setAuthLoading(false);
+
+      if (isPublicPathname) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate(pathname);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Lógica para validar el token de acceso actual
-  // y, si es necesario, refrescarlo usando el token de refresco.
 
   const register = async ({
     name,
@@ -132,28 +137,40 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       return;
     }
     toast.success(
-      "Usuario registrado correctamente. Revisa tu email para activar la cuenta."
+      "Usuario registrado correctamente. Inicia sesión para continuar."
     );
     navigate("/login");
   };
 
   const login = async ({ email, password }: LoginFormDto): Promise<void> => {
     setAuthLoading(true);
-    const {
-      success,
-      message,
-      accessToken,
-      user: loggedUser,
-    } = await loginService({
+    const { success, message, accessToken } = await loginService({
       email,
       password,
     });
 
     setAuthLoading(false);
-    if (!success || !loggedUser || !accessToken) {
+    if (!success || !accessToken) {
       toast.error(message || "Credenciales inválidas");
       return;
     }
+
+    const {
+      success: profileSuccess,
+      user: loggedUser,
+      message: profileMessage,
+    } = await getUserProfile(accessToken);
+
+    if (!profileSuccess) {
+      toast.error(profileMessage || "Error al obtener el perfil del usuario");
+      return;
+    }
+    if (!loggedUser) {
+      toast.error("Error al decodificar el token");
+      return;
+    }
+
+    // Si todo va bien, seteamos los datos del usuario
 
     setName(loggedUser.name);
     setLastname(loggedUser.lastname);

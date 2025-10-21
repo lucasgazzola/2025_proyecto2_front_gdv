@@ -95,15 +95,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         navigate("/login");
         return;
       }
-      setName(user.name);
-      setLastname(user.lastname);
+      setName(user.firstName);
+      setLastname(user.lastName);
       setEmail(user.email);
       setRole(user.role);
 
       storeLoggedUserData({
         email: user.email,
-        name: user.name,
-        lastname: user.lastname,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
       });
 
@@ -120,14 +120,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const register = async ({
-    name,
-    lastname,
+    firstName,
+    lastName,
     email,
     password,
-  }: RegisterFormDto): Promise<void> => {
+  }: Omit<RegisterFormDto, "confirmPassword">): Promise<void> => {
     const { success, message } = await registerService({
-      name,
-      lastname,
+      firstName,
+      lastName,
       email,
       password,
     });
@@ -172,8 +172,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     // Si todo va bien, seteamos los datos del usuario
 
-    setName(loggedUser.name);
-    setLastname(loggedUser.lastname);
+    setName(loggedUser.firstName);
+    setLastname(loggedUser.lastName);
     setRole(loggedUser.role);
     setEmail(loggedUser.email);
     setIsLoggedIn(true);
@@ -182,8 +182,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     storeLoggedUserData({
       email: loggedUser.email,
-      name: loggedUser.name,
-      lastname: loggedUser.lastname,
+      firstName: loggedUser.firstName,
+      lastName: loggedUser.lastName,
       role: loggedUser.role,
     });
 
@@ -192,7 +192,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const getAccessToken = (): string | null => {
-    return window.localStorage.getItem("access_token") || null;
+    return window.localStorage.getItem("accessToken") || null;
   };
 
   const logout = async () => {

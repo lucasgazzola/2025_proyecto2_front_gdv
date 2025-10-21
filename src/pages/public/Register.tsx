@@ -5,29 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import ShowPasswordIcon from "@/components/common/ShowPasswordIcon";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 import useAuth from "@/hooks/useAuth";
 import { z } from "zod";
-
-type RegisterForm = {
-  name: string;
-  lastname: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
+import type { RegisterFormDto } from "@/dto/RegisterFormDto";
 
 const registerSchema = z
   .object({
-    name: z.string().min(1, "El nombre es obligatorio."),
-    lastname: z.string().min(1, "El apellido es obligatorio."),
+    firstName: z.string().min(1, "El nombre es obligatorio."),
+    lastName: z.string().min(1, "El apellido es obligatorio."),
     email: z
       .string()
       .min(1, "El email es obligatorio.")
@@ -50,9 +40,9 @@ export default function Register() {
 
   const { register } = useAuth();
 
-  const [formData, setFormData] = useState<RegisterForm>({
-    name: "",
-    lastname: "",
+  const [formData, setFormData] = useState<RegisterFormDto>({
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -123,14 +113,14 @@ export default function Register() {
               <Input
                 required
                 className="mt-1"
-                name="name"
-                value={formData.name}
+                name="firstName"
+                value={formData.firstName}
                 onChange={handleChange}
                 placeholder={"Ingresa tu nombre"}
               />
-              {errors.name && (
+              {errors.firstName && (
                 <p className="text-sm text-start text-red-500 mt-1">
-                  {errors.name}
+                  {errors.firstName}
                 </p>
               )}
             </div>
@@ -140,14 +130,14 @@ export default function Register() {
               <Input
                 required
                 className="mt-1"
-                name="lastname"
-                value={formData.lastname}
+                name="lastName"
+                value={formData.lastName}
                 onChange={handleChange}
                 placeholder={"Ingresa tu apellido"}
               />
-              {errors.lastname && (
+              {errors.lastName && (
                 <p className="text-sm text-start text-red-500 mt-1">
-                  {errors.lastname}
+                  {errors.lastName}
                 </p>
               )}
             </div>
@@ -223,9 +213,12 @@ export default function Register() {
               )}
             </div>
             <div className="flex items-start gap-3 mt-2">
-              <Checkbox checked={acceptTerms} onCheckedChange={(v) => setAcceptTerms(Boolean(v))} />
+              <Checkbox
+                checked={acceptTerms}
+                onCheckedChange={(v) => setAcceptTerms(Boolean(v))}
+              />
               <p className="text-xs text-muted-foreground">
-                Al registrarte aceptas nuestros {" "}
+                Al registrarte aceptas nuestros{" "}
                 <a href="#" className="underline font-medium text-blue-600">
                   Términos y condiciones
                 </a>
@@ -245,7 +238,6 @@ export default function Register() {
               Crear Cuenta
               {isLoading && <LoadingSpinner />}
             </Button>
-
           </form>
 
           <div className="text-center text-sm mt-4">

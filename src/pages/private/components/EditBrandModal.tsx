@@ -38,17 +38,17 @@ export default function EditBrandModal({
     logo: "",
     name: "",
     description: "",
-    state: true,
+    isActive: true,
   });
 
-  const { name, logo, description, state } = formFields;
+  const { name, logo, description, isActive } = formFields;
 
   const brandSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, "El nombre es obligatorio"),
     logo: z.string().min(1, "El logo es obligatorio"),
     description: z.string(),
-    state: z.boolean(),
+    isActive: z.boolean(),
   });
 
   const [errors, setErrors] = useState<
@@ -66,7 +66,7 @@ export default function EditBrandModal({
         name: brand.name,
         logo: brand.logo,
         description: brand.description,
-        state: brand.state,
+        isActive: brand.isActive,
       });
       // populate multi-category selection from joined string
 
@@ -76,7 +76,7 @@ export default function EditBrandModal({
         name: "",
         logo: "",
         description: "",
-        state: true,
+        isActive: true,
       });
       setImagePreview("");
     }
@@ -131,11 +131,11 @@ export default function EditBrandModal({
     if (isEdit) {
       // SI SE ESTA EDITANDO LA MARCA
       const parsed = brandSchema.safeParse({
-        id: brand.id,
+        id: String(brand?.id || ""),
         name,
         logo,
         description,
-        state,
+        isActive,
       });
 
       if (!parsed.success) {
@@ -164,16 +164,12 @@ export default function EditBrandModal({
         name: parsed.data.name,
         description: parsed.data.description,
         logo: parsed.data.logo || imagePreview,
-        state: parsed.data.state,
+        isActive: parsed.data.isActive,
       } as Brand;
+      console.log({ toSave, isEdit });
 
       saveBrand(toSave, isEdit);
-      // Close the dialog and notify parent
-      try {
-        onOpenChange(false);
-      } catch (err) {
-        /* noop */
-      }
+
       onClose && onClose();
     } else {
       // SI ES UNA NUEVA MARCA
@@ -181,7 +177,7 @@ export default function EditBrandModal({
         name,
         logo,
         description,
-        state,
+        isActive,
       });
 
       if (!parsed.success) {
@@ -209,7 +205,7 @@ export default function EditBrandModal({
         ...parsed.data,
         name: parsed.data.name,
         description: parsed.data.description,
-        state: parsed.data.state,
+        isActive: parsed.data.isActive,
         logo: parsed.data.logo || imagePreview,
       } as BrandFormData;
       saveBrand(toSave, isEdit);
@@ -361,11 +357,11 @@ export default function EditBrandModal({
                   <label className="inline-flex items-center gap-2">
                     <input
                       type="radio"
-                      name="state"
+                      name="isActive"
                       value="active"
-                      checked={formFields.state === true}
+                      checked={formFields.isActive === true}
                       onChange={() =>
-                        setFormFields((prev) => ({ ...prev, state: true }))
+                        setFormFields((prev) => ({ ...prev, isActive: true }))
                       }
                     />
                     <span>Activo</span>
@@ -373,11 +369,11 @@ export default function EditBrandModal({
                   <label className="inline-flex items-center gap-2">
                     <input
                       type="radio"
-                      name="state"
+                      name="isActive"
                       value="inactive"
-                      checked={formFields.state === false}
+                      checked={formFields.isActive === false}
                       onChange={() =>
-                        setFormFields((prev) => ({ ...prev, state: false }))
+                        setFormFields((prev) => ({ ...prev, isActive: false }))
                       }
                     />
                     <span>Inactivo</span>

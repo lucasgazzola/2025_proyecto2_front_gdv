@@ -33,10 +33,11 @@ class AuthServiceReal implements IAuthService {
       }
       if (response.status === 200) {
         const data = (await response.json()) as {
-          access_token: string;
+          accessToken: string;
+          refreshToken: string;
         };
-        const { access_token } = data;
-        const { success, user, message } = await getUserProfile(access_token);
+        const { accessToken, refreshToken } = data;
+        const { success, user, message } = await getUserProfile(accessToken);
         if (!success) {
           return {
             success: false,
@@ -51,7 +52,8 @@ class AuthServiceReal implements IAuthService {
         }
         return {
           success: true,
-          accessToken: access_token,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
         };
       }
       return {
@@ -67,7 +69,7 @@ class AuthServiceReal implements IAuthService {
   }
 
   async register(
-    data: RegisterFormDto
+    data: Omit<RegisterFormDto, "confirmPassword">
   ): Promise<{ success: boolean; message?: string }> {
     // ...existing code...
     try {

@@ -2,8 +2,8 @@ import { Role } from "./Role";
 
 export type User = {
   email: string;
-  name: string;
-  lastname: string;
+  firstName: string;
+  lastName: string;
   active: boolean;
   role: Role;
   phone?: string;
@@ -16,8 +16,8 @@ export type User = {
 // Interfaz que responde la api de los users
 export type UserDto = {
   email: string;
-  name: string;
-  lastname: string;
+  firstName: string;
+  lastName: string;
   active: boolean;
   role: Array<"ROLE_USER" | "ROLE_AUDITOR">;
   phone?: string;
@@ -35,8 +35,8 @@ export function mapUserDtoRoleToRole(role: UserDto["role"]): Role {
 }
 
 export const userDtoToUser = (userDto: UserDto): User => ({
-  name: userDto.name,
-  lastname: userDto.lastname,
+  firstName: userDto.firstName,
+  lastName: userDto.lastName,
   email: userDto.email,
   active: userDto.active,
   role: mapUserDtoRoleToRole(userDto.role),

@@ -40,8 +40,8 @@ type Props = {
 type UserFormState = UserWithPassword & { confirmPassword?: string };
 
 const initialFormState: UserFormState = {
-  name: "",
-  lastname: "",
+  firstName: "",
+  lastName: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -67,8 +67,8 @@ export default function EditUserModal({
   useEffect(() => {
     if (isEdit && user) {
       setForm({
-        name: user.name || "",
-        lastname: user.lastname || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
         email: user.email || "",
         password: "",
         confirmPassword: "",
@@ -106,7 +106,7 @@ export default function EditUserModal({
       return;
     }
     {
-      if (!form.name || !form.lastname) {
+      if (!form.firstName || !form.lastName) {
         toast.error("Por favor completá todos los campos obligatorios.");
         return;
       }
@@ -115,8 +115,8 @@ export default function EditUserModal({
         token,
         form.email,
         {
-          name: form.name,
-          lastname: form.lastname,
+          firstName: form.firstName,
+          lastName: form.lastName,
           role: form.role,
           active: form.active,
         }
@@ -161,21 +161,23 @@ export default function EditUserModal({
                 </Label>
                 <Input
                   id="name"
-                  value={form.name}
-                  onChange={(e) => handleSelectChange("name", e.target.value)}
+                  value={form.firstName}
+                  onChange={(e) =>
+                    handleSelectChange("firstName", e.target.value)
+                  }
                   className="w-2/3"
                 />
               </div>
 
               <div className="flex">
-                <Label htmlFor="lastname" className="w-1/3 text-gray-600">
+                <Label htmlFor="lastName" className="w-1/3 text-gray-600">
                   Apellido del usuario*
                 </Label>
                 <Input
-                  id="lastname"
-                  value={form.lastname}
+                  id="lastName"
+                  value={form.lastName}
                   onChange={(e) =>
-                    handleSelectChange("lastname", e.target.value)
+                    handleSelectChange("lastName", e.target.value)
                   }
                   className="w-2/3"
                 />

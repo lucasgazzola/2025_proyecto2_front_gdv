@@ -17,30 +17,34 @@ export const getStoredAccessToken = (): {
   accessToken: string | null;
 } => {
   return {
-    accessToken: localStorage.getItem("access_token"),
+    accessToken: localStorage.getItem("accessToken"),
   };
 };
 
-export const storeNewAccessToken = (accessToken: string): void => {
-  localStorage.setItem("access_token", accessToken);
+export const storeNewAccessToken = (
+  accessToken: string,
+  refreshToken: string
+): void => {
+  localStorage.setItem("accessToken", accessToken);
+  localStorage.setItem("refreshToken", refreshToken);
 };
 
 type LoggedInUserData = {
   email: string;
-  name: string;
-  lastname: string;
+  firstName: string;
+  lastName: string;
   role: string;
 };
 
 export const storeLoggedUserData = ({
   email,
-  name,
-  lastname,
+  firstName,
+  lastName,
   role,
 }: LoggedInUserData): void => {
   localStorage.setItem("email", email);
-  localStorage.setItem("name", name);
-  localStorage.setItem("lastname", lastname);
+  localStorage.setItem("firstName", firstName);
+  localStorage.setItem("lastName", lastName);
   localStorage.setItem("role", role);
 };
 
@@ -49,5 +53,6 @@ export const removeLoggedUserData = (): void => {
   localStorage.removeItem("name");
   localStorage.removeItem("lastname");
   localStorage.removeItem("role");
-  localStorage.removeItem("access_token");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
 };

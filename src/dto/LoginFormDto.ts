@@ -5,6 +5,7 @@ export type LoginFormDto = {
 
 export type LoginResponseDto = {
   accessToken?: string;
+  refreshToken?: string;
   success: boolean;
   message?: string;
 };

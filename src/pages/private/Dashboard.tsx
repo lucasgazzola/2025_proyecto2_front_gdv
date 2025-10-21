@@ -1,150 +1,150 @@
-import { useEffect, useMemo, useState } from "react";
+// import { useEffect, useMemo, useState } from "react";
 
-import useAuth from "@/hooks/useAuth";
-import { toast } from "react-toastify";
+// import useAuth from "@/hooks/useAuth";
+// import { toast } from "react-toastify";
 
-import { userService } from "@/services/factories/userServiceFactory";
-import { productService } from "@/services/factories/productServiceFactory";
-import { invoiceService } from "@/services/factories/invoiceServiceFactory";
-import { brandService } from "@/services/factories/brandServiceFactory";
+// import { userService } from "@/services/factories/userServiceFactory";
+// import { productService } from "@/services/factories/productServiceFactory";
+// import { invoiceService } from "@/services/factories/invoiceServiceFactory";
+// import { brandService } from "@/services/factories/brandServiceFactory";
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+// import {
+//   Card,
+//   CardHeader,
+//   CardTitle,
+//   CardDescription,
+//   CardContent,
+// } from "@/components/ui/card";
 
-// Recharts
-import React, { Suspense } from "react";
-const DashboardCharts = React.lazy(
-  () => import("./components/DashboardCharts")
-);
-const MetabaseComponent = React.lazy(
-  () => import("./components/MetabaseComponent")
-);
-import Sparkline from "@/components/ui/Sparkline";
-import { Users, Box, FileText } from "lucide-react";
-import type { Invoice } from "@/types/Invoice";
-import type { ProductDto } from "@/types/Product";
+// // Recharts
+// import React, { Suspense } from "react";
+// const DashboardCharts = React.lazy(
+//   () => import("./components/DashboardCharts")
+// );
+// const MetabaseComponent = React.lazy(
+//   () => import("./components/MetabaseComponent")
+// );
+// import Sparkline from "@/components/ui/Sparkline";
+// import { Users, Box, FileText } from "lucide-react";
+// import type { Invoice } from "@/types/Invoice";
+// import type { ProductDto } from "@/types/Product";
 
-const useMetabaseCharts = import.meta.env.VITE_USE_METABASE_CHARTS === "true";
+// const useMetabaseCharts = import.meta.env.VITE_USE_METABASE_CHARTS === "true";
 
 export default function Dashboard() {
-  const { getAccessToken, logout } = useAuth();
+  // const { getAccessToken, logout } = useAuth();
 
-  const token = getAccessToken();
+  // const token = getAccessToken();
 
-  const [loading, setLoading] = useState(true);
-  const [usersCount, setUsersCount] = useState<number | null>(null);
-  const [productsCount, setProductsCount] = useState<number | null>(null);
-  const [invoicesCount, setInvoicesCount] = useState<number | null>(null);
-  const [brandsCount, setBrandsCount] = useState<number | null>(null);
+  // const [loading, setLoading] = useState(true);
+  // const [usersCount, setUsersCount] = useState<number | null>(null);
+  // const [productsCount, setProductsCount] = useState<number | null>(null);
+  // const [invoicesCount, setInvoicesCount] = useState<number | null>(null);
+  // const [brandsCount, setBrandsCount] = useState<number | null>(null);
 
-  const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
-  const [recentProducts, setRecentProducts] = useState<any[]>([]);
-  const [allProducts, setAllProducts] = useState<any[]>([]);
+  // const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
+  // const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  // const [allProducts, setAllProducts] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (!token) {
-      toast.error("Por favor, inicia sesión para acceder a esta sección.");
-      logout();
-      return;
-    }
+  // useEffect(() => {
+  //   if (!token) {
+  //     toast.error("Por favor, inicia sesión para acceder a esta sección.");
+  //     logout();
+  //     return;
+  //   }
 
-    let mounted = true;
+  //   let mounted = true;
 
-    async function loadData() {
-      setLoading(true);
-      try {
-        const t = token as string;
+  //   async function loadData() {
+  //     setLoading(true);
+  //     try {
+  //       const t = token as string;
 
-        const [uRes, pRes, iRes, bRes] = await Promise.all([
-          userService.getAllUsers(t),
-          productService.getAllProducts(t),
-          invoiceService.getAllInvoices(t),
-          brandService.getAllBrands(t),
-        ]);
+  //       const [uRes, pRes, iRes, bRes] = await Promise.all([
+  //         userService.getAllUsers(t),
+  //         productService.getAllProducts(t),
+  //         invoiceService.getAllInvoices(t),
+  //         brandService.getAllBrands(t),
+  //       ]);
 
-        if (!mounted) return;
+  //       if (!mounted) return;
 
-        if (uRes.success) setUsersCount(uRes.users?.length ?? 0);
-        if (pRes.success) setProductsCount(pRes.products?.length ?? 0);
-        if (iRes.success) setInvoicesCount(iRes.invoices?.length ?? 0);
-        if (bRes.success) setBrandsCount(bRes.brands?.length ?? 0);
+  //       if (uRes.success) setUsersCount(uRes.users?.length ?? 0);
+  //       if (pRes.success) setProductsCount(pRes.products?.length ?? 0);
+  //       if (iRes.success) setInvoicesCount(iRes.invoices?.length ?? 0);
+  //       if (bRes.success) setBrandsCount(bRes.brands?.length ?? 0);
 
-        // keep some recent items (first 5)
-        if (iRes.success && iRes.invoices) {
-          setRecentInvoices(iRes.invoices.slice(0, 5));
-        }
-        if (pRes.success && pRes.products) {
-          setRecentProducts(pRes.products.slice(0, 5));
-          setAllProducts(pRes.products);
-        }
-      } catch (err) {
-        toast.error("Error cargando datos del dashboard");
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
+  //       // keep some recent items (first 5)
+  //       if (iRes.success && iRes.invoices) {
+  //         setRecentInvoices(iRes.invoices.slice(0, 5));
+  //       }
+  //       if (pRes.success && pRes.products) {
+  //         setRecentProducts(pRes.products.slice(0, 5));
+  //         setAllProducts(pRes.products);
+  //       }
+  //     } catch (err) {
+  //       toast.error("Error cargando datos del dashboard");
+  //     } finally {
+  //       if (mounted) setLoading(false);
+  //     }
+  //   }
 
-    void loadData();
+  //   void loadData();
 
-    return () => {
-      mounted = false;
-    };
-  }, [token]);
+  //   return () => {
+  //     mounted = false;
+  //   };
+  // }, [token]);
 
-  const stats = useMemo(
-    () => [
-      {
-        title: "Usuarios",
-        value: usersCount ?? "—",
-        className: "text-indigo-600",
-        icon: Users,
-        color: "bg-indigo-500/10",
-      },
-      {
-        title: "Productos",
-        value: productsCount ?? "—",
-        className: "text-amber-500",
-        icon: Box,
-        color: "bg-amber-500/10",
-      },
-      {
-        title: "Facturas",
-        value: invoicesCount ?? "—",
-        className: "text-emerald-600",
-        icon: FileText,
-        color: "bg-emerald-500/10",
-      },
-      { title: "Marcas", value: brandsCount ?? "—", className: "text-sky-500" },
-    ],
-    [usersCount, productsCount, invoicesCount, brandsCount]
-  );
+  // const stats = useMemo(
+  //   () => [
+  //     {
+  //       title: "Usuarios",
+  //       value: usersCount ?? "—",
+  //       className: "text-indigo-600",
+  //       icon: Users,
+  //       color: "bg-indigo-500/10",
+  //     },
+  //     {
+  //       title: "Productos",
+  //       value: productsCount ?? "—",
+  //       className: "text-amber-500",
+  //       icon: Box,
+  //       color: "bg-amber-500/10",
+  //     },
+  //     {
+  //       title: "Facturas",
+  //       value: invoicesCount ?? "—",
+  //       className: "text-emerald-600",
+  //       icon: FileText,
+  //       color: "bg-emerald-500/10",
+  //     },
+  //     { title: "Marcas", value: brandsCount ?? "—", className: "text-sky-500" },
+  //   ],
+  //   [usersCount, productsCount, invoicesCount, brandsCount]
+  // );
 
-  const pieData = useMemo(() => {
-    const map = new Map<string, number>();
-    allProducts.forEach((p) => {
-      const brand =
-        typeof p.brand === "string" ? p.brand : p.brand?.name ?? "Sin marca";
-      map.set(brand, (map.get(brand) || 0) + 1);
-    });
-    return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
-  }, [allProducts]);
+  // const pieData = useMemo(() => {
+  //   const map = new Map<string, number>();
+  //   allProducts.forEach((p) => {
+  //     const brand =
+  //       typeof p.brand === "string" ? p.brand : p.brand?.name ?? "Sin marca";
+  //     map.set(brand, (map.get(brand) || 0) + 1);
+  //   });
+  //   return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
+  // }, [allProducts]);
 
-  if (useMetabaseCharts) {
-    return (
-      <Suspense fallback={<div>Cargando gráficos...</div>}>
-        <MetabaseComponent />
-      </Suspense>
-    );
-  }
+  // if (useMetabaseCharts) {
+  //   return (
+  //     <Suspense fallback={<div>Cargando gráficos...</div>}>
+  //       <MetabaseComponent />
+  //     </Suspense>
+  //   );
+  // }
 
   return (
     <div className="p-6 space-y-6">
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      {/* <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => {
           const Icon = s.icon as any;
           return (
@@ -284,7 +284,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

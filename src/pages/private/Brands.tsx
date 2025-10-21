@@ -76,8 +76,8 @@ export default function Brands() {
   };
 
   useEffect(() => {
-    fetchBrands();
-  }, []);
+    if (modalOpen === false && deleteModalOpen === false) fetchBrands();
+  }, [modalOpen, deleteModalOpen]);
 
   const handleSaveBrand = async (
     brand: Brand | BrandFormData,
@@ -87,7 +87,7 @@ export default function Brands() {
       !brand.name ||
       !("logo" in brand) ||
       !("description" in brand) ||
-      !("state" in brand)
+      !("isActive" in brand)
     ) {
       toast.error("Por favor, completa todos los campos obligatorios.");
       return;
@@ -116,17 +116,17 @@ export default function Brands() {
         toast.error("ID de la marca es necesario para actualizar.");
         return;
       }
-      const { success, message } = await updateBrandById(
-        token,
-        brand.id,
-        brand
-      );
+      const {
+        success,
+        message,
+        brand: updatedBrand,
+      } = await updateBrandById(token, brand.id, brand);
       if (!success) {
         toast.error(message);
         return;
       }
       setBrands((prev) =>
-        prev.map((p) => (p.id === brand.id ? { ...p, ...brand } : p))
+        prev.map((p) => (p.id === brand.id ? { ...p, ...updatedBrand } : p))
       );
       toast.success("Marca actualizada correctamente.");
     }
@@ -269,7 +269,7 @@ export default function Brands() {
                         <TableCell>{brand.description}</TableCell>
                         <TableCell>{brand.productsCount}</TableCell>
                         <TableCell>
-                          {brand.state ? (
+                          {brand.isActive ? (
                             <span className="block text-center w-24 text-emerald-700 p-4 rounded-sm bg-emerald-100 text-xs">
                               Activo
                             </span>

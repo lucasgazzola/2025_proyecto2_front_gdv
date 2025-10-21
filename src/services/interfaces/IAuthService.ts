@@ -5,7 +5,7 @@ export interface IAuthService {
   login(data: LoginFormDto): Promise<LoginResponseDto>;
 
   register(
-    data: RegisterFormDto
+    data: Omit<RegisterFormDto, "confirmPassword">
   ): Promise<{ success: boolean; message?: string }>;
 
   logout(token: string): Promise<{ success: boolean; message?: string }>;

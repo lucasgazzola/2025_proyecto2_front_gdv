@@ -77,7 +77,7 @@ class BrandServiceReal implements IBrandService {
   ): Promise<{ success: boolean; message?: string; brand?: Brand }> {
     try {
       const response = await fetch(apiEndpoints.brands.UPDATE_BRAND(brandId), {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

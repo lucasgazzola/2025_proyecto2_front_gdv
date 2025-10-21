@@ -91,9 +91,9 @@ export default function EditProductModal({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // obtener categorías únicas desde los productos registrados
+  const token = getAccessToken();
   useEffect(() => {
     const fetchCategories = async () => {
-      const token = getAccessToken();
       if (!token) {
         toast.error("Por favor, inicia sesión para acceder a esta sección.");
         return;
@@ -115,6 +115,11 @@ export default function EditProductModal({
 
       setCategoriesList(categories);
     };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     const fetchBrands = async () => {
       const token = getAccessToken();
       if (!token) {
@@ -137,9 +142,7 @@ export default function EditProductModal({
       setBrands(brands);
     };
     fetchBrands();
-
-    fetchCategories();
-  }, []);
+  }, [brandModalOpen]);
 
   useEffect(() => {
     if (isEdit && product) {
@@ -317,16 +320,28 @@ export default function EditProductModal({
     }
   };
   //Para guardar cuando se crea una marca desde el modal de marcas
-  const saveBrand = (b: Brand | BrandFormData, _isEdit: boolean) => {
-    const name = (b as Brand | BrandFormData).name || "";
-    if (!name) {
-      setBrandModalOpen(false);
+  const saveBrand = async (brand: BrandFormData, _isEdit: boolean) => {
+    if (!token) {
+      toast.error("Por favor, inicia sesión para acceder a esta sección.");
       return;
     }
     if (!brands.find((br) => br.name === name)) {
-      setBrands((prev) => [...prev, b as Brand]);
+      setBrands((prev) => [...prev, brand as Brand]);
     }
-    setFormFields((prev) => ({ ...prev, brand: b as Brand }));
+    const {
+      success,
+      message,
+      brand: createdBrand,
+    } = await brandService.createBrand(token, brand as BrandFormData);
+    if (!success) {
+      toast.error(message || "Error al guardar la marca");
+      return;
+    }
+    if (!createdBrand) {
+      toast.error("Error al crear la marca");
+      return;
+    }
+    setFormFields((prev) => ({ ...prev, brand: createdBrand }));
     setBrandModalOpen(false);
   };
 

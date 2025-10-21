@@ -8,8 +8,8 @@ export const USERS: UserWithPassword[] = [
   {
     email: "auditor1@example.com",
 
-    name: "John",
-    lastname: "Doe",
+    firstName: "John",
+    lastName: "Doe",
     active: true,
     role: Role.AUDITOR,
     phone: "5551234567",
@@ -17,8 +17,8 @@ export const USERS: UserWithPassword[] = [
   },
   {
     email: "auditor2@example.com",
-    name: "Jane",
-    lastname: "Smith",
+    firstName: "Jane",
+    lastName: "Smith",
     active: true,
     role: Role.AUDITOR,
     phone: "5559876543",
@@ -26,8 +26,8 @@ export const USERS: UserWithPassword[] = [
   },
   {
     email: "user1@example.com",
-    name: "Alice",
-    lastname: "Johnson",
+    firstName: "Alice",
+    lastName: "Johnson",
     active: false,
     role: Role.USER,
     phone: "5555678901",
@@ -35,8 +35,8 @@ export const USERS: UserWithPassword[] = [
   },
   {
     email: "user2@example.com",
-    name: "Bob",
-    lastname: "Brown",
+    firstName: "Bob",
+    lastName: "Brown",
     active: true,
     role: Role.USER,
     phone: "5556789012",

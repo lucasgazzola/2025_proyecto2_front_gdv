@@ -34,7 +34,7 @@ class AuthServiceMock implements IAuthService {
     });
   }
 
-  async register(data: RegisterFormDto) {
+  async register(data: Omit<RegisterFormDto, "confirmPassword">) {
     const exists = USERS.some((u) => u.email === data.email);
     if (exists) {
       return Promise.resolve({
@@ -45,8 +45,8 @@ class AuthServiceMock implements IAuthService {
 
     const newUser: UserWithPassword = {
       email: data.email,
-      name: data.name,
-      lastname: data.lastname,
+      firstName: data.firstName,
+      lastName: data.lastName,
       active: true,
       role: Role.USER,
       phone: "",

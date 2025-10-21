@@ -3,7 +3,7 @@ export interface BrandFormData {
   name: string;
   description: string;
   productsCount: number;
-  state: boolean;
+  isActive: boolean;
 }
 
 export interface Brand {
@@ -12,5 +12,5 @@ export interface Brand {
   logo: string;
   description: string;
   productsCount: number;
-  state: boolean;
+  isActive: boolean;
 }

@@ -18,16 +18,16 @@ export const API_ENDPOINTS = {
   },
 
   brands: {
-    GET_ALL: "/brands",
-    GET_BRAND: (id: string) => `/brands/${id}`,
-    CREATE_BRAND: "/brands",
-    UPDATE_BRAND: (id: string) => `/brands/${id}`,
-    DELETE_BRAND: (id: string) => `/brands/${id}`,
+    GET_ALL: "/marcas",
+    GET_BRAND: (id: string) => `/marcas/${id}`,
+    CREATE_BRAND: "/marcas",
+    UPDATE_BRAND: (id: string) => `/marcas/${id}`,
+    DELETE_BRAND: (id: string) => `/marcas/${id}`,
   },
 
   providers: {
-    GET_ALL: "/providers",
-    GET_PROVIDER: (id: string) => `/providers/${id}`,
+    GET_ALL: "/proveedores",
+    GET_PROVIDER: (id: string) => `/proveedores/${id}`,
   },
 
   categories: {
@@ -36,12 +36,13 @@ export const API_ENDPOINTS = {
   },
 
   users: {
-    GET_ALL: "/users",
-    GET_PROFILE: "/users/profile",
-    GET_USER_BY_EMAIL: (email: string) => `/users/${encodeURIComponent(email)}`,
-    UPDATE_USER_BY_EMAIL: (email: string) => `/users/${email}`,
-    DELETE_USER_BY_EMAIL: (email: string) => `/users/${email}`,
-    UPDATE_PROFILE: "/users/profile",
+    GET_ALL: "/usuarios",
+    GET_PROFILE: "/usuarios/profile",
+    GET_USER_BY_EMAIL: (email: string) =>
+      `/usuarios/${encodeURIComponent(email)}`,
+    UPDATE_USER_BY_EMAIL: (email: string) => `/usuarios/${email}`,
+    DELETE_USER_BY_EMAIL: (email: string) => `/usuarios/${email}`,
+    UPDATE_PROFILE: "/usuarios/profile",
   },
 
   locations: {
@@ -57,20 +58,20 @@ export const API_ENDPOINTS = {
   },
 
   products: {
-    GET_ALL: "/product/",
-    GET_PRODUCT: (id: string) => `/product/${id}`,
-    ADD_PRODUCT: "/product/add",
-    UPDATE_PRODUCT: "/product/update",
-    // CREATE_PRODUCT: "/product/createProduct",
-    // UPDATE_PRODUCT: "/product/updateProduct",
-    DELETE_PRODUCT: (id: string) => `/product/${id}`,
+    GET_ALL: "/productos",
+    GET_PRODUCT: (id: string) => `/productos/${id}`,
+    ADD_PRODUCT: "/productos/add",
+    UPDATE_PRODUCT: "/productos/update",
+    // CREATE_PRODUCT: "/productos/createProduct",
+    // UPDATE_PRODUCT: "/productos/updateProduct",
+    DELETE_PRODUCT: (id: string) => `/productos/${id}`,
   },
   //Facturas
   invoices: {
-    GET_ALL: "/invoices",
-    GET_INVOICE: (id: string) => `/invoices/${id}`,
-    CREATE_INVOICE: "/invoices",
-    DELETE_INVOICE: (id: string) => `/invoices/${id}`,
+    GET_ALL: "/facturas",
+    GET_INVOICE: (id: string) => `/facturas/${id}`,
+    CREATE_INVOICE: "/facturas",
+    DELETE_INVOICE: (id: string) => `/facturas/${id}`,
   },
 };
 

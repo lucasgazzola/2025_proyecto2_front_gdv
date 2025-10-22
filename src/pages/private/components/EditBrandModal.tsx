@@ -166,7 +166,6 @@ export default function EditBrandModal({
         logo: parsed.data.logo || imagePreview,
         isActive: parsed.data.isActive,
       } as Brand;
-      console.log({ toSave, isEdit });
 
       saveBrand(toSave, isEdit);
 

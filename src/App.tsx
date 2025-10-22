@@ -3,7 +3,6 @@ import { Route, Routes, Navigate, useNavigate } from "react-router";
 import "@/App.css";
 
 import {
-  getNotFound404Element,
   getProtectedRoutesForRole,
   getPublicRoutes,
   isPublicRoute,
@@ -16,6 +15,9 @@ import useAuth from "@/hooks/useAuth.tsx";
 import LoadingFallback from "@/components/common/LoadingFallback.tsx";
 
 import { isValidRole } from "@/types/Role";
+import { lazy } from "react";
+
+const NotFound = lazy(() => import("./pages/public/NotFound"));
 
 function App() {
   const navigate = useNavigate();
@@ -65,7 +67,7 @@ function App() {
             </Route>
           </Route>
           {/* 👇 Ruta 404 al final */}
-          <Route path="*" element={getNotFound404Element()} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </div>

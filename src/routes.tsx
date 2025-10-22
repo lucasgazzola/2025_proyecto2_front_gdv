@@ -28,7 +28,6 @@ const Register = lazy(() => import("@/pages/public/Register"));
 const ForgotPassword = lazy(() => import("@/pages/public/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/public/ResetPassword"));
 const Profile = lazy(() => import("@/pages/public/Profile"));
-const NotFound = lazy(() => import("@/pages/public/NotFound"));
 
 const Dashboard = lazy(() => import("@/pages/private/Dashboard"));
 const InvoiceHistory = lazy(() => import("@/pages/private/InvoiceHistory"));
@@ -67,9 +66,9 @@ export const publicRoutes: RouteItem[] = [
   },
 ];
 
-export const isPublicRoute = (path: string): boolean => {
+export function isPublicRoute(path: string): boolean {
   return publicRoutes.some((route) => route.to === path);
-};
+}
 
 export const roleBasedRoutes: Record<Role, RouteItem[]> = {
   [Role.USER]: [
@@ -189,19 +188,15 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
   ],
 };
 
-export const getSidebarRoutesForRole = (role: Role): RouteItem[] => {
+export function getSidebarRoutesForRole(role: Role): RouteItem[] {
   const routes = roleBasedRoutes[role] || [];
   return routes.filter((item) => !item.hiddenOnSidebar);
-};
+}
 
-export const getProtectedRoutesForRole = (role: Role): RouteItem[] => {
+export function getProtectedRoutesForRole(role: Role): RouteItem[] {
   return roleBasedRoutes[role];
-};
+}
 
-export const getPublicRoutes = (): RouteItem[] => {
+export function getPublicRoutes(): RouteItem[] {
   return publicRoutes;
-};
-
-export const getNotFound404Element = () => {
-  return <NotFound />;
-};
+}

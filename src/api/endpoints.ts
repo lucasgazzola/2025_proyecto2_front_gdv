@@ -28,11 +28,17 @@ export const API_ENDPOINTS = {
   providers: {
     GET_ALL: "/proveedores",
     GET_PROVIDER: (id: string) => `/proveedores/${id}`,
+    CREATE_PROVIDER: "/proveedores",
+    UPDATE_PROVIDER: (id: string) => `/proveedores/${id}`,
+    DELETE_PROVIDER: (id: string) => `/proveedores/${id}`,
   },
 
   categories: {
-    GET_ALL: "/categories",
-    GET_CATEGORY: (id: string) => `/categories/${id}`,
+    GET_ALL: "/categorias",
+    GET_CATEGORY: (id: string) => `/categorias/${id}`,
+    CREATE_CATEGORY: "/categorias",
+    UPDATE_CATEGORY: (id: string) => `/categorias/${id}`,
+    DELETE_CATEGORY: (id: string) => `/categorias/${id}`,
   },
 
   users: {

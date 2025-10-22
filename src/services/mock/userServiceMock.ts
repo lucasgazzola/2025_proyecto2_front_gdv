@@ -7,7 +7,6 @@ export type UserWithPassword = User & { password: string };
 export const USERS: UserWithPassword[] = [
   {
     email: "auditor1@example.com",
-
     firstName: "John",
     lastName: "Doe",
     active: true,

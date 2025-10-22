@@ -30,6 +30,7 @@ import useAuth from "@/hooks/useAuth";
 
 import { z } from "zod";
 import EditBrandModal from "./EditBrandModal";
+import EditCategoryModal from "./EditCategoryModal";
 import type { Brand, BrandFormData } from "@/types/Brand";
 import { categoryService } from "@/services/factories/categoryServiceFactory";
 import { toast } from "react-toastify";
@@ -81,6 +82,8 @@ export default function EditProductModal({
 
   // Brand modal state
   const [brandModalOpen, setBrandModalOpen] = useState(false);
+  // Category modal state
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
   // For multi-category selection UI
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
@@ -143,6 +146,26 @@ export default function EditProductModal({
     };
     fetchBrands();
   }, [brandModalOpen]);
+
+  // Save category created from modal: add to categories list and select it
+  const saveCategory = async (cat: Category | { name: string; description?: string }, _isEdit: boolean) => {
+    if (!token) {
+      toast.error("Por favor, inicia sesión para crear la categoría.");
+      return;
+    }
+    const payload = { name: cat.name, description: (cat as { description?: string }).description };
+    const { success, category: created, message } = await categoryService.createCategory(token, payload);
+    if (!success || !created) {
+      toast.error(message || "No se pudo crear la categoría.");
+      setCategoryModalOpen(false);
+      return;
+    }
+    // update local lists
+    setCategoriesList((prev) => [...prev, created]);
+    setSelectedCategories((prev) => [...prev, created]);
+    setCategoryModalOpen(false);
+    toast.success("Categoría creada correctamente.");
+  };
 
   useEffect(() => {
     if (isEdit && product) {
@@ -557,24 +580,24 @@ export default function EditProductModal({
                   >
                     Categorías*
                   </Label>
-                  <div className="flex flex-col w-3/5 items-start">
+                  <div className="flex gap-2 items-center w-3/5">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="flex w-full items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                          type="button"
-                        >
-                          Seleccionar categorías
+                        <div className="flex-1 rounded-md border px-3 py-2 bg-white flex items-center justify-between text-gray-500 cursor-pointer">
+                          <div className="truncate text-sm">
+                            {selectedCategories.length > 0
+                              ? selectedCategories.map((c) => c.name).join(", ")
+                              : "Selecciona categorías"}
+                          </div>
                           <ChevronDown className="ml-2 size-4 opacity-60" />
-                        </Button>
+                        </div>
                       </DropdownMenuTrigger>
 
                       <DropdownMenuContent className="w-[300px]">
                         {categoriesList.map((category) => (
                           <DropdownMenuCheckboxItem
                             key={category.id}
-                            checked={selectedCategories.includes(category)}
+                            checked={selectedCategories.some((c) => c.id === category.id)}
                             onCheckedChange={(checked: boolean) => {
                               if (checked) handleAddCategory(category);
                               else removeCategory(category);
@@ -585,28 +608,40 @@ export default function EditProductModal({
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {selectedCategories.map((selectedCategory) => (
-                        <span
-                          key={selectedCategory.id}
-                          className="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-sm"
-                        >
-                          <span className="text-[#5932EA] font-medium">
-                            {selectedCategory.name}
-                          </span>
-                          <button
-                            type="button"
-                            className="text-xs text-gray-500 hover:text-gray-700"
-                            onClick={() => removeCategory(selectedCategory)}
-                            aria-label={`Eliminar categoría ${selectedCategory.name}`}
-                          >
-                            <span className="text-[#5932EA]">×</span>
-                          </button>
-                        </span>
-                      ))}
-                    </div>
+
+                    {/* Botón igual al de "Agregar Marca" */}
+                    <Button
+                      variant="default"
+                      type="button"
+                      onClick={() => setCategoryModalOpen(true)}
+                    >
+                      Agregar Categoría
+                    </Button>
                   </div>
                 </div>
+
+                {/* Chips con categorías seleccionadas */}
+                <div className="w-3/5 ml-auto flex flex-wrap gap-2 mt-2">
+                  {selectedCategories.map((selectedCategory) => (
+                    <span
+                      key={selectedCategory.id}
+                      className="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-sm"
+                    >
+                      <span className="text-[#5932EA] font-medium">
+                        {selectedCategory.name}
+                      </span>
+                      <button
+                        type="button"
+                        className="text-xs text-gray-500 hover:text-gray-700"
+                        onClick={() => removeCategory(selectedCategory)}
+                        aria-label={`Eliminar categoría ${selectedCategory.name}`}
+                      >
+                        <span className="text-[#5932EA]">×</span>
+                      </button>
+                    </span>
+                  ))}
+                </div>
+
                 <div className="w-3/5 ml-auto">
                   {errors.categories && (
                     <p className="text-sm text-start text-red-500">
@@ -672,6 +707,14 @@ export default function EditProductModal({
           onOpenChange={(v: boolean) => setBrandModalOpen(v)}
           brand={null}
           saveBrand={saveBrand}
+        />
+      )}
+      {categoryModalOpen && (
+        <EditCategoryModal
+          open={categoryModalOpen}
+          onOpenChange={(v: boolean) => setCategoryModalOpen(v)}
+          category={null}
+          saveCategory={saveCategory}
         />
       )}
     </Dialog>

@@ -4,7 +4,7 @@ import useAuth from "@/hooks/useAuth";
 import type { Provider, ProviderFormData } from "@/types/Provider";
 import EditProviderModal from "@/pages/private/components/EditProviderModal";
 import { providerService } from "@/services/factories/providerServiceFactory";
-const { deleteProviderById, getAllProviders, getProviderById } = providerService;
+const { deleteProviderById, getAllProviders, getProviderById, createProvider, updateProviderById } = providerService;
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   Table, 
@@ -186,7 +186,9 @@ export default function Provider() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="text-gray-400">Código</TableHead>
                     <TableHead className="text-gray-400">Nombre</TableHead>
+                    <TableHead className="text-gray-400">Dirección</TableHead>
                     <TableHead className="text-gray-400">Cantidad productos</TableHead>
                     <TableHead className="text-gray-400">Acciones</TableHead>
                   </TableRow>
@@ -207,9 +209,11 @@ export default function Provider() {
                   ) : (
                     paginatedProviders.map((provider) => (
                       <TableRow key={provider.id}>
+                        <TableCell>{provider.code}</TableCell>
                         <TableCell>{provider.name}</TableCell>
+                        <TableCell>{provider.address ?? "-"}</TableCell>
                         <TableCell>{provider.productsCount ?? 0}</TableCell>
-                        {<TableCell className="text-center space-x-2">
+                        <TableCell className="text-center space-x-2">
                           <EditButton 
                             handleEdit={() => {
                               setSelectedProvider(provider);
@@ -222,7 +226,7 @@ export default function Provider() {
                               setDeleteModalOpen(true);
                             }}
                           />
-                        </TableCell>}
+                        </TableCell>
                       </TableRow>
                     ))
                   )}

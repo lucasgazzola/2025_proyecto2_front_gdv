@@ -40,7 +40,7 @@ class ProviderServiceReal implements IProviderService {
       if (!response.ok)
         return { success: false, message: "Proveedor no encontrado" };
       const data = (await response.json()) as Provider;
-      return { success: true, provider: data };
+      return { success: response.ok, provider: data };
     } catch {
       return { success: false, message: "Error al obtener el proveedor" };
     }
@@ -79,7 +79,7 @@ class ProviderServiceReal implements IProviderService {
     providerData: { name?: string; productsCount?: number }
   ): Promise<{ success: boolean; provider?: Provider; message?: string }> {
     try {
-      const response = await fetch(apiEndpoints.providers.UPDATE(providerId), {
+      const response = await fetch(apiEndpoints.providers.UPDATE_PROVIDER(providerId), {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -101,7 +101,7 @@ class ProviderServiceReal implements IProviderService {
     providerId: string
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      const response = await fetch(apiEndpoints.providers.DELETE(providerId), {
+      const response = await fetch(apiEndpoints.providers.DELETE_PROVIDER(providerId), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

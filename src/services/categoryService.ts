@@ -16,7 +16,7 @@ class CategoryServiceReal implements ICategoryService {
       }
       const data = (await response.json()) as Category[];
       return { success: true, categories: data };
-    } catch (error) {
+    } catch {
       return { success: false, message: "Error al obtener las categorías" };
     }
   }
@@ -39,8 +39,61 @@ class CategoryServiceReal implements ICategoryService {
       const data = (await response.json()) as Category;
 
       return { success: response.ok, category: data };
-    } catch (error) {
+    } catch {
       return { success: false, message: "Error al obtener la categoría" };
+    }
+  }
+
+  async createCategory(
+    token: string,
+    payload: { name: string; description?: string }
+  ): Promise<{ success: boolean; category?: Category; message?: string }> {
+    try {
+      const response = await fetch(apiEndpoints.categories.CREATE_CATEGORY, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        try {
+          const err = await response.json();
+          const msg = err?.message || "Error al crear la categoría";
+          return { success: false, message: msg };
+        } catch {
+          return { success: false, message: "Error al crear la categoría" };
+        }
+      }
+
+      const data = (await response.json()) as Category;
+      return { success: true, category: data };
+    } catch {
+      return { success: false, message: "Error al crear la categoría" };
+    }
+  }
+
+  async deleteCategoryById(
+    token: string,
+    categoryId: string
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await fetch(apiEndpoints.categories.DELETE_CATEGORY(categoryId), {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        return {
+          success: false,
+          message: errorData.message || "Error al eliminar la categoría",
+        };
+      }
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: "Error al eliminar la categoría" };
     }
   }
 }

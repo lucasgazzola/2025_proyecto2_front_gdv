@@ -33,16 +33,20 @@ export default function EditProviderModal({
   const isEdit = provider !== null;
 
   const [formFields, setFormFields] = useState({
+    code: "",
     name: "",
     productsCount: 0,
+    address: "",
   });
 
-  const { name, productsCount } = formFields;
+  const { code, name, productsCount, address } = formFields;
 
   const providerSchema = z.object({
     id: z.string().optional(),
+    code: z.string().min(1, "El código es obligatorio"),
     name: z.string().min(1, "El nombre es obligatorio"),
     productsCount: z.number().int().min(0),
+    address: z.string().optional(),
   });
 
   const [errors, setErrors] = useState<
@@ -50,7 +54,6 @@ export default function EditProviderModal({
   >({});
 
   const { getAccessToken } = useAuth();
-  const [providers, setProviders] = useState<Provider[]>([]);
   const [providerModalOpen, setProviderModalOpen] = useState(false);
 
   useEffect(() => {
@@ -61,11 +64,13 @@ export default function EditProviderModal({
       }
     if (isEdit && provider) {
       setFormFields({
+        code: provider.code || "",
         name: provider.name,
         productsCount: provider.productsCount || 0,
+        address: provider.address || "",
       });
     } else {
-      setFormFields({ name: "", productsCount: 0 });
+      setFormFields({ code: "", name: "", productsCount: 0, address: "" });
     }
   }, [isEdit, provider]);
 
@@ -84,9 +89,11 @@ export default function EditProviderModal({
 
     if (isEdit) {
       const parsed = providerSchema.safeParse({
-        id: provider.id,
+        id: provider!.id,
+        code,
         name,
         productsCount,
+        address,
       });
       if (!parsed.success) {
         const fieldErrors: Partial<
@@ -104,8 +111,10 @@ export default function EditProviderModal({
 
     } else {
       const parsed = providerSchema.safeParse({
+        code,
         name,
-        productsCount,
+        productsCount: 0,
+        address,
       });
 
       if (!parsed.success) {
@@ -146,7 +155,7 @@ export default function EditProviderModal({
         <form onSubmit={handleSave}>
           <div className="grid gap-4 py-4 w-full">
             <div className="space-y-6">
-              <div className="flex gap-1 flex-col">
+              <div className="flex">
                 <Label htmlFor="name" className="text-nowrap text-gray-500 w-2/5">
                   Nombre del proveedor*
                 </Label>
@@ -167,8 +176,36 @@ export default function EditProviderModal({
                 )}
               </div>
 
+              <div className="flex">
+                <Label htmlFor="code" className="text-nowrap text-gray-500 w-2/5">
+                  Codigo*
+                </Label>
+                <Input
+                  id="code"
+                  name="code"
+                  type="string"
+                  value={String(code)}
+                  onChange={handleChange}
+                  className="w-3/5"
+                  autoComplete="off"
+                />
+              </div>
+              <div className="flex">
+                <Label htmlFor="address" className="text-nowrap text-gray-500 w-2/5">
+                  Direccion del proveedor*
+                </Label>
+                <Input
+                  id="address"
+                  name="address"
+                  value={address}
+                  onChange={handleChange}
+                  className="w-3/5"
+                  autoComplete="off"
+                />
+              </div>
 
-              <div className="flex gap-1 flex-col">
+
+              <div className="flex">
                 <Label htmlFor="productsCount" className="text-nowrap text-gray-500 w-2/5">
                   Cantidad de productos
                 </Label>
@@ -179,6 +216,8 @@ export default function EditProviderModal({
                   value={String(productsCount)}
                   onChange={handleChange}
                   className="w-3/5"
+                  min={0}
+                  disabled={!isEdit} // no se puede modificar al crear
                 />
                 {errors.productsCount && <p className="text-sm text-red-500">{errors.productsCount}</p>}
               </div>

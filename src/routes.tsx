@@ -10,6 +10,7 @@ import {
   Tag,
   FileSearch,
   Building2,
+  Shapes,
 } from "lucide-react";
 
 export type RouteItem = {
@@ -36,6 +37,7 @@ const Users = lazy(() => import("@/pages/private/Users"));
 const Audits = lazy(() => import("@/pages/private/Audits"));
 const Products = lazy(() => import("@/pages/private/Products"));
 const Brands = lazy(() => import("@/pages/private/Brands"));
+const Category = lazy(() => import("@/pages/private/Category"));
 const Provider = lazy(() => import("@/pages/private/Provider"));
 
 export const publicRoutes: RouteItem[] = [
@@ -109,6 +111,12 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Brands />,
     },
     {
+      label: "Categorias",
+      to: "/categories",
+      icon: Shapes,
+      element: <Category />,
+    },
+    {
       label: "Proveedores",
       to: "/providers",
       icon: Building2,
@@ -165,6 +173,12 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       to: "/audits",
       icon: FileSearch,
       element: <Audits />,
+    },
+    {
+      label: "Categorias",
+      to: "/categories",
+      icon: Shapes,
+      element: <Category />,
     },
     {
       label: "Proveedores",

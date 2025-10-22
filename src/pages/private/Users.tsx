@@ -87,8 +87,8 @@ export default function Users() {
     const q = search.toLowerCase().trim();
     if (!q) return true;
 
-    const name = (user.name || "").toLowerCase();
-    const lastname = (user.lastname || "").toLowerCase();
+    const name = (user.firstName || "").toLowerCase();
+    const lastname = (user.lastName || "").toLowerCase();
     const email = (user.email || "").toLowerCase();
     const phone = (
       (user as unknown as { phone?: string }).phone ?? ""
@@ -106,9 +106,9 @@ export default function Users() {
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     switch (orderBy) {
       case "name":
-        return (a.name || "").localeCompare(b.name || "");
-      case "lastname":
-        return (a.lastname || "").localeCompare(b.lastname || "");
+        return (a.firstName || "").localeCompare(b.firstName || "");
+      case "lastName":
+        return (a.lastName || "").localeCompare(b.lastName || "");
       case "email":
         return (a.email || "").localeCompare(b.email || "");
       case "phone":
@@ -256,14 +256,14 @@ export default function Users() {
                         }
                       >
                         <TableCell>
-                          {user.name.length > 50
-                            ? user.name.slice(0, 50)
-                            : user.name}
+                          {user.firstName.length > 50
+                            ? user.firstName.slice(0, 50)
+                            : user.firstName}
                         </TableCell>
                         <TableCell>
-                          {user.lastname.length > 50
-                            ? user.lastname.slice(0, 50)
-                            : user.lastname}
+                          {user.lastName.length > 50
+                            ? user.lastName.slice(0, 50)
+                            : user.lastName}
                         </TableCell>
                         <TableCell>
                           {user.email.length > 50

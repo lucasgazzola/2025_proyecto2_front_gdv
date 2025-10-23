@@ -68,8 +68,8 @@ export default function Profile() {
       }
 
       setUser(fetchedUser);
-      setNewName(fetchedUser.name);
-      setNewLastname(fetchedUser.lastname);
+      setNewName(fetchedUser.firstName);
+      setNewLastname(fetchedUser.lastName);
       setAddress(fetchedUser.address || "");
       setPhone(fetchedUser.phone || "");
       setCity(fetchedUser.city || "");
@@ -109,8 +109,8 @@ export default function Profile() {
       token,
       user?.email || "",
       {
-        name: newName,
-        lastname: newLastname,
+        firstName: newName,
+        lastName: newLastname,
         email: user?.email || "",
         address,
         phone,
@@ -165,8 +165,8 @@ export default function Profile() {
   const handleCancel = () => {
     // Restaurar valores desde el usuario cargado
     if (!user) return;
-    setNewName(user.name);
-    setNewLastname(user.lastname);
+    setNewName(user.firstName);
+    setNewLastname(user.lastName);
     setAddress(user.address || "");
     setPhone(user.phone || "");
     setCity(user.city || "");

@@ -4,10 +4,7 @@ import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import useAuth from "@/hooks/useAuth";
 
@@ -16,10 +13,12 @@ import ShowPasswordButton from "@/components/common/ShowPasswordButton";
 
 import { z } from "zod";
 
-// TODO: remover Zod de aca
 const loginSchema = z.object({
-  email: z.string().min(1, "El email es obligatorio.").email("Email inválido."),
-  password: z.string().min(1, "La contraseña es obligatoria."),
+  email: z.email("Email inválido.").min(1, "El email es obligatorio."),
+  password: z
+    .string()
+    .min(1, "La contraseña es obligatoria.")
+    .min(6, "La contraseña debe tener al menos 6 caracteres."),
 });
 
 type FormData = z.infer<typeof loginSchema>;
@@ -133,11 +132,7 @@ const Login = () => {
               </Link>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-13"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full h-13" disabled={isLoading}>
               Iniciar Sesión
               {isLoading && <LoadingSpinner />}
             </Button>

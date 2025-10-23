@@ -131,7 +131,7 @@ export default function Category() {
                     <TableHead className="text-gray-400">ID</TableHead>
                     <TableHead className="text-gray-400">Nombre</TableHead>
                     <TableHead className="text-gray-400">Descripción</TableHead>
-                    <TableHead className="text-gray-400">Acciones</TableHead>
+                    <TableHead className="flex justify-center text-gray-400">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-start">

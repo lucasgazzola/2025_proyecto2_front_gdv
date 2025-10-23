@@ -72,6 +72,13 @@ export const API_ENDPOINTS = {
     // UPDATE_PRODUCT: "/productos/updateProduct",
     DELETE_PRODUCT: (id: string) => `/productos/${id}`,
   },
+  // Customers
+  customers: {
+    GET_ALL: "/clientes",
+    CREATE_CUSTOMER: "/clientes",
+    GET_BY_ID: (id: string) => `/clientes/${encodeURIComponent(id)}`,
+    UPDATE_BY_ID: (id: string) => `/clientes/${encodeURIComponent(id)}`,
+  },
   //Facturas
   invoices: {
     GET_ALL: "/facturas",

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UsersIcon } from "lucide-react";
+import { IdCard } from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -138,7 +138,7 @@ export default function EditUserModal({
         <DialogHeader>
           <div className="flex items-start gap-3">
             <div className="rounded-lg bg-primary/10 p-3">
-              <UsersIcon className="h-6 w-6 text-gray-600" />
+              <IdCard className="h-6 w-6 text-gray-600" />
             </div>
             <div className="flex-1">
               <DialogTitle className="text-gray-800 text-lg font-semibold">

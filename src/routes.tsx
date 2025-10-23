@@ -2,10 +2,11 @@ import { lazy } from "react";
 
 import {
   LayoutDashboard,
-  Users as UsersIcon,
+  IdCard,
   Mail,
   FilePlus,
   User,
+  Users as IconUsers,
   Package,
   Tag,
   FileSearch,
@@ -38,6 +39,7 @@ const Products = lazy(() => import("@/pages/private/Products"));
 const Brands = lazy(() => import("@/pages/private/Brands"));
 const Category = lazy(() => import("@/pages/private/Category"));
 const Provider = lazy(() => import("@/pages/private/Provider"));
+const Customers = lazy(() => import("@/pages/private/Customers"));
 
 export const publicRoutes: RouteItem[] = [
   {
@@ -104,6 +106,12 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Products />,
     },
     {
+      label: "Clientes",
+      to: "/customers",
+      icon: IconUsers,
+      element: <Customers />,
+    },
+    {
       label: "Marcas",
       to: "/brands",
       icon: Tag,
@@ -156,6 +164,12 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Products />,
     },
     {
+      label: "Clientes",
+      to: "/customers",
+      icon: IconUsers,
+      element: <Customers />,
+    },
+    {
       label: "Marcas",
       to: "/brands",
       icon: Tag,
@@ -164,7 +178,7 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
     {
       label: "Usuarios",
       to: "/users",
-      icon: UsersIcon,
+      icon: IdCard,
       element: <Users />,
     },
     {

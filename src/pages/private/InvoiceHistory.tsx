@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Search, Trash, Eye, Plus } from "lucide-react";
+import { Search, Eye, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 
-import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
+// import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
 import FetchingSpinner from "@/components/common/FetchingSpinner";
 
 import useAuth from "@/hooks/useAuth";
@@ -32,7 +32,7 @@ export default function InvoiceHistory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [viewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  // const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const token = getAccessToken();
 
@@ -98,26 +98,26 @@ export default function InvoiceHistory() {
     currentPage * INVOICES_PER_PAGE
   );
 
-  const handleDelete = async (id?: string) => {
-    if (!id) return;
-    if (!token) {
-      toast.error("Por favor, inicia sesión para realizar esta acción.");
-      logout();
-      return;
-    }
+  // const handleDelete = async (id?: string) => {
+  //   if (!id) return;
+  //   if (!token) {
+  //     toast.error("Por favor, inicia sesión para realizar esta acción.");
+  //     logout();
+  //     return;
+  //   }
 
-    try {
-      const res = await invoiceService.deleteInvoiceById(token, id);
-      if (!res.success) {
-        toast.error(res.message || "No se pudo eliminar la factura.");
-        return;
-      }
-      setInvoices((prev) => prev.filter((i) => i.id !== id));
-      toast.success("Factura eliminada correctamente.");
-    } catch {
-      toast.error("Error al eliminar la factura.");
-    }
-  };
+  //   try {
+  //     const res = await invoiceService.deleteInvoiceById(token, id);
+  //     if (!res.success) {
+  //       toast.error(res.message || "No se pudo eliminar la factura.");
+  //       return;
+  //     }
+  //     setInvoices((prev) => prev.filter((i) => i.id !== id));
+  //     toast.success("Factura eliminada correctamente.");
+  //   } catch {
+  //     toast.error("Error al eliminar la factura.");
+  //   }
+  // };
 
   return (
     <div className="p-6 space-y-6">
@@ -257,17 +257,6 @@ export default function InvoiceHistory() {
                           >
                             <Eye className="w-3 h-3" />
                           </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            title="Eliminar factura"
-                            onClick={() => {
-                              setSelectedInvoice(inv);
-                              setDeleteModalOpen(true);
-                            }}
-                          >
-                            <Trash className="w-3 h-3" />
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -315,7 +304,7 @@ export default function InvoiceHistory() {
       />
 
       {/* Confirm delete modal */}
-      <ConfirmDeleteModal
+      {/* <ConfirmDeleteModal
         isOpen={deleteModalOpen}
         onClose={() => {
           setDeleteModalOpen(false);
@@ -328,7 +317,7 @@ export default function InvoiceHistory() {
           setDeleteModalOpen(false);
           setSelectedInvoice(null);
         }}
-      />
+      /> */}
     </div>
   );
 }

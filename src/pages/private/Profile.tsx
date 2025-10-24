@@ -21,8 +21,8 @@ import { authService } from "@/services/factories/authServiceFactory";
 const { changePassword } = authService;
 
 import type { User } from "@/types/User";
-import ShowPasswordIcon from "@/components/common/ShowPasswordIcon";
 import { storeLoggedUserData } from "@/utils/localStorage";
+import ProfileChangePasswordModal from "./components/ProfileChangePasswordModal";
 // Nota: se usa el campo de contraseña inline con el botón de visibilidad
 
 export default function Profile() {
@@ -39,9 +39,7 @@ export default function Profile() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
   const token = getAccessToken();
 
@@ -75,7 +73,6 @@ export default function Profile() {
       setCity(fetchedUser.city || "");
       setProvince(fetchedUser.province || "");
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSave = async () => {
@@ -297,97 +294,30 @@ export default function Profile() {
                 />
               </div>
             </div>
-
-            <div className="flex gap-6">
-              <div className="w-full">
-                <Label htmlFor="oldPassword">Contraseña actual</Label>
-                <div className="relative">
-                  <Input
-                    className="mt-1"
-                    id="oldPassword"
-                    name="oldPassword"
-                    autoComplete="off"
-                    type={showOldPassword ? "text" : "password"}
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                    placeholder={"Ingresa tu contraseña actual"}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowOldPassword((s) => !s)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    <ShowPasswordIcon />
-                  </button>
-                </div>
-              </div>
-
-              <div className="w-full">
-                <Label htmlFor="newPassword">Nueva contraseña</Label>
-                <div className="relative">
-                  <Input
-                    className="mt-1"
-                    id="newPassword"
-                    name="newPassword"
-                    autoComplete="off"
-                    type={showNewPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder={"Ingresa la nueva contraseña"}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword((s) => !s)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    <ShowPasswordIcon />
-                  </button>
-                </div>
-              </div>
-
-              <div className="w-full">
-                <Label htmlFor="confirmPassword">
-                  Confirmar nueva contraseña
-                </Label>
-                <div className="relative">
-                  <Input
-                    className="mt-1"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    autoComplete="off"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder={"Reingresa la nueva contraseña"}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword((s) => !s)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    <ShowPasswordIcon />
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
-
-          <div className="mt-10 flex gap-6 justify-end">
-            <Button
-              variant="outline"
-              className="border-gray-300 text-gray-700 hover:bg-gray-100 transition-all w-24"
-              onClick={handleCancel}
-            >
-              Cancelar
-            </Button>
-            <Button className="w-24" onClick={handleSave}>
-              Guardar
-            </Button>
+          <div className="mt-10 flex justify-between items-center gap-6">
+            <Button onClick={() => setPasswordModalOpen(true)}>Cambiar contraseña</Button>
+            <div className="flex gap-6">
+              <Button
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-100 transition-all w-24"
+                onClick={handleCancel}
+              >
+                Cancelar
+              </Button>
+              <Button className="w-24" onClick={handleSave}>
+                Guardar
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Cambio de contraseña via inline field */}
+      <ProfileChangePasswordModal
+        token={token || ""}
+        passwordModalOpen={passwordModalOpen}
+        setPasswordModalOpen={setPasswordModalOpen}
+      />
     </div>
   );
 }

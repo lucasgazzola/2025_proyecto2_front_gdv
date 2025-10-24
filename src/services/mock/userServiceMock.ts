@@ -102,6 +102,27 @@ class UserServiceMock implements IUserService {
       });
     }
   }
+
+  async changePassword(
+    _token: string,
+    email: string,
+    oldPassword: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Promise<{ success: boolean; message?: string }> {
+    if (newPassword !== confirmPassword)
+      return Promise.resolve({ success: false, message: "Passwords no coinciden (mock)" });
+
+    const index = USERS.findIndex((u) => u.email === email);
+    if (index === -1) {
+      return Promise.resolve({ success: false, message: "Usuario no encontrado (mock)" });
+    }
+    if (USERS[index].password !== oldPassword) {
+      return Promise.resolve({ success: false, message: "Contraseña anterior incorrecta (mock)" });
+    }
+    USERS[index].password = newPassword;
+    return Promise.resolve({ success: true, message: "Contraseña cambiada (mock)" });
+  }
 }
 
 export const userServiceMock = new UserServiceMock();

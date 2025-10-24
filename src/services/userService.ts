@@ -128,6 +128,43 @@ class UserServiceReal implements IUserService {
             : "Error desconocido al actualizar el usuario",
       };
     }
+
+  }
+
+  async changePassword(
+      token: string,
+      email: string,
+      oldPassword: string,
+      newPassword: string,
+      confirmPassword: string
+    ): Promise<{ success: boolean; message?: string }> {
+      try {
+        const response = await fetch(apiEndpoints.users.CHANGE_PASSWORD(email), {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            old_password: oldPassword,
+            new_password: newPassword,
+            password_confirm: confirmPassword,
+          }),
+        });
+        if (!response.ok) {
+          if (response.status === 400) {
+            return { success: false, message: "Contraseña actual incorrecta" };
+          }
+          const errorData = (await response.json()) as { message: string };
+          return {
+            success: false,
+            message: errorData.message || "Error al cambiar la contraseña",
+          };
+        }
+        return { success: true, message: "Contraseña cambiada correctamente" };
+      } catch {
+        return { success: false, message: "Error al conectar con el servidor" };
+      }
   }
 }
 

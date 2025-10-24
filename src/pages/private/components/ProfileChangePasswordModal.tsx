@@ -2,20 +2,20 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import useAuth from "@/hooks/useAuth";
 import ShowPasswordButton from "@/components/common/ShowPasswordButton";
 import { toast } from "react-toastify";
-import { authService } from "@/services/factories/authServiceFactory";
-
-const { changePassword } = authService;
+import { userService } from "@/services/factories/userServiceFactory";
 import { z } from "zod";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { KeyRound } from "lucide-react";
 
 type FormData = {
   oldPassword: string;
@@ -23,7 +23,7 @@ type FormData = {
   confirmPassword: string;
 };
 
-type ProfileChangePasswordModalProps = {
+type Props = {
   token: string;
   passwordModalOpen: boolean;
   setPasswordModalOpen: (open: boolean) => void;
@@ -49,7 +49,7 @@ const ProfileChangePasswordModal = ({
   token,
   passwordModalOpen,
   setPasswordModalOpen,
-}: ProfileChangePasswordModalProps) => {
+}: Props) => {
   const { email, logout } = useAuth();
 
   const [formData, setFormData] = useState<FormData>({
@@ -65,7 +65,6 @@ const ProfileChangePasswordModal = ({
     new: false,
     confirm: false,
   });
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -75,6 +74,16 @@ const ProfileChangePasswordModal = ({
 
   const togglePasswordVisibility = (field: keyof typeof showPassword) => {
     setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      // limpiar formulario cuando se cierra el modal
+      setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+      setErrors({});
+      setShowPassword({ old: false, new: false, confirm: false });
+    }
+    setPasswordModalOpen(open);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,15 +103,13 @@ const ProfileChangePasswordModal = ({
       setErrors(fieldErrors);
       return;
     }
-    setIsLoading(true);
-    const { success, message } = await changePassword(
+    const { success, message } = await userService.changePassword(
       token,
       email,
       formData.oldPassword,
       formData.newPassword,
       formData.confirmPassword
     );
-    setIsLoading(false);
     if (success) {
       toast.success("Contraseña cambiada correctamente.");
       setPasswordModalOpen(false);
@@ -112,20 +119,26 @@ const ProfileChangePasswordModal = ({
     }
   };
 
-  if (!passwordModalOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <Card className="w-full max-w-md rounded-xl shadow-lg p-6">
-        <CardHeader className="bg-[#2C638B] rounded-t-xl pt-6 pb-5 px-6">
-          <CardTitle className="text-white text-lg font-semibold mb-1">
-            Cambiar contraseña
-          </CardTitle>
-          <CardDescription className="text-white text-sm">
-            Ingresa tu contraseña actual y la nueva contraseña para
-            actualizarla.
-          </CardDescription>
-        </CardHeader>
+    <Dialog open={passwordModalOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-primary/10 p-3">
+              <KeyRound className="h-6 w-6 text-gray-600" />
+            </div>
+            <div className="flex-1">
+              <DialogTitle className="text-gray-800 text-lg font-semibold">
+                Cambiar contraseña
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground">
+                Ingresa tu contraseña actual y la nueva contraseña para
+                actualizarla.
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+
         <CardContent className="px-6 py-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -210,23 +223,23 @@ const ProfileChangePasswordModal = ({
               <Button
                 type="button"
                 variant="outline"
+                className="w-1/2"
                 onClick={() => setPasswordModalOpen(false)}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                className="bg-[#2C638B] hover:bg-[#25597e] text-white font-semibold"
-                disabled={isLoading}
+                variant="default"
+                className="w-1/2"
               >
                 Cambiar contraseña
-                {isLoading && <span className="ml-2 animate-spin">⏳</span>}
               </Button>
             </div>
           </form>
         </CardContent>
-      </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

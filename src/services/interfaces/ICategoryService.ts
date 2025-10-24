@@ -16,4 +16,9 @@ export interface ICategoryService {
     token: string,
     categoryId: string
   ): Promise<{ success: boolean; message?: string }>;
+  updateCategoryById(
+    token: string,
+    categoryId: string,
+    payload: Partial<Category>
+  ): Promise<{ success: boolean; category?: Category; message?: string }>;
 }

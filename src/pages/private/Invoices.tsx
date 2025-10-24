@@ -16,7 +16,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Search, Plus, FileText } from "lucide-react";
+import { Search, Plus, FileText, Users as IconUsers } from "lucide-react";
 import { Link } from "react-router-dom";
 import FetchingSpinner from "@/components/common/FetchingSpinner";
 import { productService } from "@/services/factories/productServiceFactory";
@@ -28,6 +28,7 @@ import type { Provider } from "@/types/Provider";
 import DeleteButton from "@/components/common/DeleteButton";
 import { Card, CardContent } from "@/components/ui/card";
 import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
+import SelectCustomerModal from "./components/SelectCustomerModal";
 import { invoiceService } from "@/services/factories/invoiceServiceFactory";
 import type { Invoice, InvoiceDetail } from "@/types/Invoice";
 
@@ -43,6 +44,8 @@ export default function AgregarFactura() {
   const [selections, setSelections] = useState<Record<string, Selection>>({});
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  const [selectCustomerOpen, setSelectCustomerOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<import("@/types/Customer").Customer | null>(null);
   // estados de carga separados para que la interfaz sea responsiva
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingProviders, setLoadingProviders] = useState(false);
@@ -216,6 +219,10 @@ export default function AgregarFactura() {
       toast.error("Agregue al menos un producto a la factura.");
       return;
     }
+    if (!selectedCustomer) {
+      toast.error("Agregue un cliente a la factura.");
+      return;
+    }
 
     const token = getAccessToken();
     if (!token) {
@@ -227,6 +234,7 @@ export default function AgregarFactura() {
     const invoice: Omit<Invoice, "id" | "creator" | "createdAt"> = {
       invoiceDetails: invoiceDetails,
       priceTotal: invoiceDetails.reduce((s, l) => s + (l.subtotal || 0), 0),
+      customer: selectedCustomer,
     };
 
     try {
@@ -241,6 +249,7 @@ export default function AgregarFactura() {
       }
       toast.success("Factura creada correctamente.");
       setInvoiceDetails([]);
+      setSelectedCustomer(null);
     } catch {
       toast.error("Ocurrió un error al enviar la factura.");
     } finally {
@@ -261,6 +270,22 @@ export default function AgregarFactura() {
         <CardContent className="p-2">
           {/* Buscador */}
           <div className="flex md:flex-row gap-4 items-center">
+            <div className="flex items-center gap-4">
+              <Button 
+                size="sm" 
+                className="flex items-center gap-2" 
+                onClick={() => setSelectCustomerOpen(true)}
+              >
+                <IconUsers size={16} />
+                Seleccionar Cliente
+              </Button>
+              {/*TEMPORAL*/}
+              {selectedCustomer ? (
+                <div className="text-sm">
+                  Seleccionado: <span>{selectedCustomer.firstName} {selectedCustomer.lastName}</span>
+                </div>
+              ) : null}
+            </div>
             <div className="relative w-full max-w-60 md:w-1/3 ml-auto bg-gray-50">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                 <Search size={16} />
@@ -432,6 +457,14 @@ export default function AgregarFactura() {
           setInvoiceDetails([]);
           setDeleteModalOpen(false);
           toast.success("Se han eliminado todos los productos de la factura.");
+        }}
+      />
+      <SelectCustomerModal
+        open={selectCustomerOpen}
+        onOpenChange={setSelectCustomerOpen}
+        onSelect={(c) => {
+          setSelectedCustomer(c);
+          setSelectCustomerOpen(false);
         }}
       />
     </div>

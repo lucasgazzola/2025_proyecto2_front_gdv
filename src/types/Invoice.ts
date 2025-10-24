@@ -1,3 +1,4 @@
+import type { Customer } from "./Customer";
 import type { ProductDto } from "./Product";
 import type { Provider } from "./Provider";
 import type { User } from "./User";
@@ -16,6 +17,7 @@ export interface InvoiceDetail {
 export interface Invoice {
   id: string;
   creator: User;
+  customer: Customer;
   invoiceDetails: InvoiceDetail[];
   priceTotal: number;
   createdAt?: string;

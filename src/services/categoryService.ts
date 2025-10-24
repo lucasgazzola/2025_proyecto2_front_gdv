@@ -96,6 +96,31 @@ class CategoryServiceReal implements ICategoryService {
       return { success: false, message: "Error al eliminar la categoría" };
     }
   }
+  async updateCategoryById(token: string, categoryId: string, payload: Partial<Category>): Promise<{ success: boolean; category?: Category; message?: string; }> {
+    try {
+      const response = await fetch(apiEndpoints.categories.UPDATE_CATEGORY(categoryId), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return {
+          success: false,
+          message: errorData.message || "Error al actualizar la categoría",
+        };
+      }
+
+      const data = (await response.json()) as Category;
+      return { success: true, category: data };
+    } catch (error) {
+      return { success: false, message: "Error al actualizar la categoría" };
+    }
+  }
 }
 
 export const categoryServiceReal = new CategoryServiceReal();

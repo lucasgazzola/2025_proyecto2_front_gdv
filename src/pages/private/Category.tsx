@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import useAuth from "@/hooks/useAuth";
-import type { Category } from "@/types/Category";
+import type { Category, CategoryFormData } from "@/types/Category";
 import { categoryService } from "@/services/factories/categoryServiceFactory";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableHead, TableRow, TableCell, TableHeader } from "@/components/ui/table";
@@ -49,7 +49,7 @@ export default function Category() {
     fetchCategories();
   }, []);
 
-  const handleSaveCategory = async (cat: Category, isEdit: boolean) => {
+  const handleSaveCategory = async (cat: Category | CategoryFormData, isEdit: boolean) => {
     if (!cat.name) return toast.error("El nombre es obligatorio");
     if (!token) {
       toast.error("Por favor, inicia sesión para realizar esta acción.");
@@ -68,6 +68,15 @@ export default function Category() {
       setCategories((p) => [created, ...p]);
       toast.success("Categoría creada");
     } else {
+      if (!("id" in cat) || !cat.id) return toast.error("ID de categoría no válida");
+      const { success, message } = await categoryService.updateCategoryById(token, cat.id, {
+        name: cat.name,
+        description: cat.description,
+      });
+      if (!success) {
+        toast.error(message || "No se pudo actualizar la categoría.");
+        return;
+      }
       setCategories((p) => p.map((c) => (c.id === cat.id ? { ...c, ...cat } : c)));
       toast.success("Categoría actualizada");
     }

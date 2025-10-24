@@ -3,6 +3,7 @@ import type { IInvoiceService } from "../interfaces/IInvoiceService";
 import { PRODUCTS } from "./productServiceMock";
 import { PROVIDERS } from "./providerServiceMock";
 import { USERS } from "./userServiceMock";
+import { CUSTOMERS } from "./customerServiceMock";
 
 // Helpers to generate realistic invoice and detail IDs (no 'mock' in ids)
 function pad(n: number) {
@@ -60,6 +61,7 @@ const INVOICES: Invoice[] = [
     return {
       id: invoiceId,
       creator: USERS[0],
+      customer: CUSTOMERS[0],
       invoiceDetails: [line1, line2],
       priceTotal,
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
@@ -104,6 +106,7 @@ const INVOICES: Invoice[] = [
     return {
       id: invoiceId,
       creator: USERS[0],
+      customer: CUSTOMERS[1],
       invoiceDetails: [line1, line2, line3],
       priceTotal,
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
@@ -148,6 +151,7 @@ const INVOICES: Invoice[] = [
     return {
       id: invoiceId,
       creator: USERS[1] ?? USERS[0],
+      customer: CUSTOMERS[1],
       invoiceDetails: [line1, line2, line3],
       priceTotal,
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
@@ -181,6 +185,7 @@ const INVOICES: Invoice[] = [
     return {
       id: invoiceId,
       creator: USERS[0],
+      customer: CUSTOMERS[2],
       invoiceDetails: [line1, line2],
       priceTotal,
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
@@ -214,6 +219,7 @@ const INVOICES: Invoice[] = [
     return {
       id: invoiceId,
       creator: USERS[1] ?? USERS[0],
+      customer: CUSTOMERS[0],
       invoiceDetails: [line1, line2],
       priceTotal,
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
@@ -247,6 +253,7 @@ const INVOICES: Invoice[] = [
     return {
       id: invoiceId,
       creator: USERS[0],
+      customer: CUSTOMERS[2],
       invoiceDetails: [line1, line2],
       priceTotal,
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
@@ -297,6 +304,7 @@ class InvoiceServiceMock implements IInvoiceService {
       ...invoice,
       id: invoiceId,
       creator: USERS[0],
+      customer: invoice.customer,
       invoiceDetails: details,
       createdAt: new Date().toISOString(),
     } as Invoice;

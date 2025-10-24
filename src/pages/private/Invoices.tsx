@@ -219,6 +219,10 @@ export default function AgregarFactura() {
       toast.error("Agregue al menos un producto a la factura.");
       return;
     }
+    if (!selectedCustomer) {
+      toast.error("Agregue un cliente a la factura.");
+      return;
+    }
 
     const token = getAccessToken();
     if (!token) {
@@ -230,6 +234,7 @@ export default function AgregarFactura() {
     const invoice: Omit<Invoice, "id" | "creator" | "createdAt"> = {
       invoiceDetails: invoiceDetails,
       priceTotal: invoiceDetails.reduce((s, l) => s + (l.subtotal || 0), 0),
+      customer: selectedCustomer,
     };
 
     try {
@@ -244,6 +249,7 @@ export default function AgregarFactura() {
       }
       toast.success("Factura creada correctamente.");
       setInvoiceDetails([]);
+      setSelectedCustomer(null);
     } catch {
       toast.error("Ocurrió un error al enviar la factura.");
     } finally {

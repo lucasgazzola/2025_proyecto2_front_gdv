@@ -80,12 +80,13 @@ export default function InvoiceHistory() {
     // Buscar en id, provider, line names y fecha
     const inId = (inv.id || "").toLowerCase().includes(q);
     const inDate = (inv.createdAt || "").toLowerCase().includes(q);
+    const inCustomer = `${inv.customer.firstName ?? ""} ${inv.customer.lastName ?? ""}`.toLowerCase().includes(q);
     const inLines = inv.invoiceDetails.some(
       (l) =>
         (l.product.name || "").toLowerCase().includes(q) ||
         (l.provider.name || "").toLowerCase().includes(q)
     );
-    return inId || inDate || inLines;
+    return inId || inDate || inCustomer || inLines;
   });
 
   const INVOICES_PER_PAGE = 6;
@@ -171,6 +172,7 @@ export default function InvoiceHistory() {
                 <TableRow>
                   <TableHead className="text-gray-400">ID</TableHead>
                   <TableHead className="text-gray-400">Fecha</TableHead>
+                  <TableHead className="text-gray-400">Cliente</TableHead>
                   <TableHead className="text-gray-400">Productos</TableHead>
                   <TableHead className="text-gray-400">Proveedores</TableHead>
                   <TableHead className="text-gray-400">Total</TableHead>
@@ -204,6 +206,11 @@ export default function InvoiceHistory() {
                       <TableCell className="text-sm text-muted-foreground whitespace-nowrap text-start">
                         {inv.createdAt
                           ? new Date(inv.createdAt).toLocaleString()
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="font-medium whitespace-nowrap text-start">
+                        {inv.customer
+                          ? `${inv.customer.firstName} ${inv.customer.lastName}`
                           : "—"}
                       </TableCell>
 

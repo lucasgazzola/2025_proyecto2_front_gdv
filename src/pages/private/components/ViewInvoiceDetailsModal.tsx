@@ -79,10 +79,10 @@ export default function ViewInvoiceDetailsModal({
               <div>
                 <div className="text-xs text-muted-foreground">Cliente</div>
                 <div className="font-medium">
-                  {selectedInvoice.creator.name}
+                  {`${selectedInvoice.customer.firstName} ${selectedInvoice.customer.lastName}`}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {selectedInvoice.creator.email}
+                  {selectedInvoice.customer.email}
                 </div>
               </div>
               <div className="text-right">

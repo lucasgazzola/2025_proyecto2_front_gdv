@@ -28,8 +28,8 @@ const Login = lazy(() => import("@/pages/public/Login"));
 const Register = lazy(() => import("@/pages/public/Register"));
 const ForgotPassword = lazy(() => import("@/pages/public/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/public/ResetPassword"));
-const Profile = lazy(() => import("@/pages/public/Profile"));
 
+const Profile = lazy(() => import("@/pages/private/Profile"));
 const Dashboard = lazy(() => import("@/pages/private/Dashboard"));
 const InvoiceHistory = lazy(() => import("@/pages/private/InvoiceHistory"));
 const Invoices = lazy(() => import("@/pages/private/Invoices"));

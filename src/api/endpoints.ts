@@ -49,6 +49,7 @@ export const API_ENDPOINTS = {
     UPDATE_USER_BY_EMAIL: (email: string) => `/usuarios/${email}`,
     DELETE_USER_BY_EMAIL: (email: string) => `/usuarios/${email}`,
     UPDATE_PROFILE: "/usuarios/profile",
+    CHANGE_PASSWORD: (email: string) => `/usuarios/${email}/change-password`,
   },
 
   locations: {

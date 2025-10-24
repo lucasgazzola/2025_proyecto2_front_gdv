@@ -11,7 +11,6 @@ import { IdCard } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import useAuth from "@/hooks/useAuth";
 import { customerService } from "@/services/factories/customerServiceFactory";
 import type { Customer } from "@/types/Customer";
@@ -170,15 +169,28 @@ export default function EditCustomerModal({ open, setModalOpen, customer, onSave
               </div>
               <div className="flex">
                 <Label className="w-1/3 text-gray-600">Estado</Label>
-                <Select value={String(form.active)} onValueChange={(v) => handleChange("active", v === "true") }>
-                  <SelectTrigger className="w-2/3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={"true"}>Activo</SelectItem>
-                    <SelectItem value={"false"}>Inactivo</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-10 justify-center w-3/5">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="isActive"
+                      value="active"
+                      checked={form.active === true}
+                      onChange={() => handleChange("active", true)}
+                    />
+                    <span>Activo</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="isActive"
+                      value="inactive"
+                      checked={form.active === false}
+                      onChange={() => handleChange("active", false)}
+                    />
+                    <span>Inactivo</span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>

@@ -53,5 +53,18 @@ class CategoryServiceMock implements ICategoryService {
       return Promise.resolve({ success: false, message: "Category not found" });
     }
   }
+  updateCategoryById(
+    _token: string, 
+    categoryId: string, 
+    payload: Partial<Category>
+  ): Promise<{ success: boolean; category?: Category; message?: string; }> {
+    const index = CATEGORIES.findIndex((c) => c.id === categoryId);
+    if (index !== -1) {
+      CATEGORIES[index] = { ...CATEGORIES[index], ...payload };
+      return Promise.resolve({ success: true, category: { ...CATEGORIES[index] } });
+    } else {
+      return Promise.resolve({ success: false, message: "Category not found" });
+    }
+  }
 }
 export const categoryServiceMock = new CategoryServiceMock();

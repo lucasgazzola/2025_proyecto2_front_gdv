@@ -6,28 +6,28 @@ export type UserWithPassword = User & { password: string };
 
 export const USERS: UserWithPassword[] = [
   {
-    email: "auditor1@example.com",
+    email: "admin1@example.com",
     firstName: "John",
     lastName: "Doe",
     active: true,
-    role: Role.AUDITOR,
+    role: Role.ADMIN,
     phone: "5551234567",
-    password: "auditor1pass",
+    password: "admin1pass",
   },
   {
-    email: "auditor2@example.com",
+    email: "auditor1@example.com",
     firstName: "Jane",
     lastName: "Smith",
     active: true,
     role: Role.AUDITOR,
     phone: "5559876543",
-    password: "auditor2pass",
+    password: "auditor1pass",
   },
   {
     email: "user1@example.com",
     firstName: "Alice",
     lastName: "Johnson",
-    active: false,
+    active: true,
     role: Role.USER,
     phone: "5555678901",
     password: "user1pass",
@@ -111,17 +111,29 @@ class UserServiceMock implements IUserService {
     confirmPassword: string
   ): Promise<{ success: boolean; message?: string }> {
     if (newPassword !== confirmPassword)
-      return Promise.resolve({ success: false, message: "Passwords no coinciden (mock)" });
+      return Promise.resolve({
+        success: false,
+        message: "Passwords no coinciden (mock)",
+      });
 
     const index = USERS.findIndex((u) => u.email === email);
     if (index === -1) {
-      return Promise.resolve({ success: false, message: "Usuario no encontrado (mock)" });
+      return Promise.resolve({
+        success: false,
+        message: "Usuario no encontrado (mock)",
+      });
     }
     if (USERS[index].password !== oldPassword) {
-      return Promise.resolve({ success: false, message: "Contraseña anterior incorrecta (mock)" });
+      return Promise.resolve({
+        success: false,
+        message: "Contraseña anterior incorrecta (mock)",
+      });
     }
     USERS[index].password = newPassword;
-    return Promise.resolve({ success: true, message: "Contraseña cambiada (mock)" });
+    return Promise.resolve({
+      success: true,
+      message: "Contraseña cambiada (mock)",
+    });
   }
 }
 

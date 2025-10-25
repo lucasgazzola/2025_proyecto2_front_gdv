@@ -130,8 +130,7 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Provider />,
     },
   ],
-
-  [Role.AUDITOR]: [
+  [Role.ADMIN]: [
     {
       label: "Perfil",
       to: "/profile",
@@ -176,18 +175,6 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       element: <Brands />,
     },
     {
-      label: "Usuarios",
-      to: "/users",
-      icon: IdCard,
-      element: <Users />,
-    },
-    {
-      label: "Auditoría",
-      to: "/audits",
-      icon: FileSearch,
-      element: <Audits />,
-    },
-    {
       label: "Categorias",
       to: "/categories",
       icon: Shapes,
@@ -198,6 +185,34 @@ export const roleBasedRoutes: Record<Role, RouteItem[]> = {
       to: "/providers",
       icon: Building2,
       element: <Provider />,
+    },
+    {
+      label: "Usuarios",
+      to: "/users",
+      icon: IdCard,
+      element: <Users />,
+    },
+  ],
+
+  [Role.AUDITOR]: [
+    {
+      label: "Perfil",
+      to: "/profile",
+      icon: User,
+      element: <Profile />,
+      hiddenOnSidebar: true,
+    },
+    {
+      label: "Dashboard",
+      to: "/dashboard",
+      icon: LayoutDashboard,
+      element: <Dashboard />,
+    },
+    {
+      label: "Auditoría",
+      to: "/audits",
+      icon: FileSearch,
+      element: <Audits />,
     },
   ],
 };

@@ -73,8 +73,7 @@ export default function Products() {
       toast.info("No hay productos registrados.");
       return;
     }
-
-    setProducts(products);
+    setProducts([...products]);
   };
 
   useEffect(() => {
@@ -110,7 +109,7 @@ export default function Products() {
         toast.error("Error al crear el producto. Intenta nuevamente.");
         return;
       }
-      setProducts((prev) => [...prev, newProduct]);
+      setProducts((prev) => [newProduct, ...prev]);
     } else {
       if (!product) {
         toast.error("Producto no encontrado.");

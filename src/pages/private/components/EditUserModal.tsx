@@ -162,6 +162,7 @@ export default function EditUserModal({
                 <Input
                   id="name"
                   value={form.firstName}
+                  disabled
                   onChange={(e) =>
                     handleSelectChange("firstName", e.target.value)
                   }
@@ -176,6 +177,7 @@ export default function EditUserModal({
                 <Input
                   id="lastName"
                   value={form.lastName}
+                  disabled
                   onChange={(e) =>
                     handleSelectChange("lastName", e.target.value)
                   }
@@ -208,6 +210,7 @@ export default function EditUserModal({
                     <SelectValue placeholder="Seleccionar rol" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="ADMIN">Administrador</SelectItem>
                     <SelectItem value="USER">Usuario</SelectItem>
                     <SelectItem value="AUDITOR">Auditor</SelectItem>
                   </SelectContent>

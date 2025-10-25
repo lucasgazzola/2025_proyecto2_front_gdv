@@ -87,7 +87,6 @@ export default function EditProductModal({
   const [_imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  
 
   // obtener categorías únicas desde los productos registrados
   const token = getAccessToken();
@@ -144,13 +143,23 @@ export default function EditProductModal({
   }, [brandModalOpen]);
 
   // Save category created from modal: add to categories list and select it
-  const saveCategory = async (cat: Category | { name: string; description?: string }, _isEdit: boolean) => {
+  const saveCategory = async (
+    cat: Category | { name: string; description?: string },
+    _isEdit: boolean
+  ) => {
     if (!token) {
       toast.error("Por favor, inicia sesión para crear la categoría.");
       return;
     }
-    const payload = { name: cat.name, description: (cat as { description?: string }).description };
-    const { success, category: created, message } = await categoryService.createCategory(token, payload);
+    const payload = {
+      name: cat.name,
+      description: (cat as { description?: string }).description,
+    };
+    const {
+      success,
+      category: created,
+      message,
+    } = await categoryService.createCategory(token, payload);
     if (!success || !created) {
       toast.error(message || "No se pudo crear la categoría.");
       setCategoryModalOpen(false);
@@ -343,8 +352,6 @@ export default function EditProductModal({
     }
   };
 
-
-
   //Para guardar cuando se crea una marca desde el modal de marcas
   const saveBrand = async (brand: BrandFormData, _isEdit: boolean) => {
     if (!token) {
@@ -435,7 +442,7 @@ export default function EditProductModal({
                     id="price"
                     type="number"
                     name="price"
-                    step="1"
+                    step="0.01"
                     min={0}
                     value={price}
                     onChange={handleChange}
@@ -629,7 +636,9 @@ export default function EditProductModal({
                         {categoriesList.map((category) => (
                           <DropdownMenuCheckboxItem
                             key={category.id}
-                            checked={selectedCategories.some((c) => c.id === category.id)}
+                            checked={selectedCategories.some(
+                              (c) => c.id === category.id
+                            )}
                             onCheckedChange={(checked: boolean) => {
                               if (checked) handleAddCategory(category);
                               else removeCategory(category);

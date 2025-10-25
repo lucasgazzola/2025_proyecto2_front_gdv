@@ -15,7 +15,24 @@ class BrandServiceReal implements IBrandService {
         return { success: false, message: "Error al obtener las marcas" };
       }
       const data = (await response.json()) as Brand[];
-      return { success: true, brands: data };
+      console.log({ data });
+
+      // Normalizar la ruta del logo: si el backend devuelve una ruta
+      // relativa (p.ej. "uploads/brands/.."), prefijarla con el base URL
+      // para que el <img src=... /> la resuelva correctamente.
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+      const normalize = (b: Brand) => ({
+        ...b,
+        logo:
+          b.logo && !b.logo.startsWith("http")
+            ? `${API_BASE_URL}/${b.logo}`
+            : b.logo,
+      });
+
+      const normalized = data.map(normalize);
+
+      return { success: true, brands: normalized };
     } catch (error) {
       return { success: false, message: "Error al obtener las marcas" };
     }
@@ -35,8 +52,17 @@ class BrandServiceReal implements IBrandService {
       }
 
       const data = (await response.json()) as Brand;
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+      const normalized = {
+        ...data,
+        logo:
+          data.logo && !data.logo.startsWith("http")
+            ? `${API_BASE_URL}/${data.logo}`
+            : data.logo,
+      };
 
-      return { success: response.ok, brand: data };
+      return { success: response.ok, brand: normalized };
     } catch (error) {
       return { success: false, message: "Error al obtener la marca" };
     }
@@ -64,8 +90,17 @@ class BrandServiceReal implements IBrandService {
       }
 
       const data = (await response.json()) as Brand;
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+      const normalized = {
+        ...data,
+        logo:
+          data.logo && !data.logo.startsWith("http")
+            ? `${API_BASE_URL}/${data.logo}`
+            : data.logo,
+      };
 
-      return { success: response.ok, brand: data };
+      return { success: response.ok, brand: normalized };
     } catch (error) {
       return { success: false, message: "Error al crear la marca" };
     }
@@ -93,8 +128,17 @@ class BrandServiceReal implements IBrandService {
       }
 
       const data = (await response.json()) as Brand;
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+      const normalized = {
+        ...data,
+        logo:
+          data.logo && !data.logo.startsWith("http")
+            ? `${API_BASE_URL}/${data.logo}`
+            : data.logo,
+      };
 
-      return { success: response.ok, brand: data };
+      return { success: response.ok, brand: normalized };
     } catch (error) {
       return { success: false, message: "Error al actualizar la marca" };
     }

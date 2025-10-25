@@ -68,7 +68,8 @@ export default function Users() {
       toast.info("No users found");
       return;
     }
-    setUsers(users);
+    const email = localStorage.getItem("email") || "";
+    setUsers(users.filter((user) => user.email !== email));
   };
 
   useEffect(() => {

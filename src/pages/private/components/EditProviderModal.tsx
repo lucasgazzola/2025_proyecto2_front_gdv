@@ -21,7 +21,10 @@ type Props = {
   open: boolean;
   onOpenChange: (val: boolean) => void;
   provider: Provider | null;
-  saveProvider: (provider: Provider | ProviderFormData, isEdit: boolean) => void;
+  saveProvider: (
+    provider: Provider | ProviderFormData,
+    isEdit: boolean
+  ) => void;
 };
 
 export default function EditProviderModal({
@@ -35,18 +38,23 @@ export default function EditProviderModal({
   const [formFields, setFormFields] = useState({
     code: "",
     name: "",
-    productsCount: 0,
+    email: "",
     address: "",
+    city: "",
   });
 
-  const { code, name, productsCount, address } = formFields;
+  const { code, name, email, address, city } = formFields;
 
   const providerSchema = z.object({
     id: z.string().optional(),
     code: z.string().min(1, "El código es obligatorio"),
     name: z.string().min(1, "El nombre es obligatorio"),
-    productsCount: z.number().int().min(0),
+    email: z
+      .email("El email no es válido")
+      .min(1, "El email es obligatorio")
+      .optional(),
     address: z.string().optional(),
+    city: z.string().optional(),
   });
 
   const [errors, setErrors] = useState<
@@ -58,25 +66,29 @@ export default function EditProviderModal({
 
   useEffect(() => {
     const token = getAccessToken();
-      if (!token) {
-        toast.error("Por favor, inicia sesión para acceder a esta sección.");
-        return;
-      }
+    if (!token) {
+      toast.error("Por favor, inicia sesión para acceder a esta sección.");
+      return;
+    }
     if (isEdit && provider) {
       setFormFields({
         code: provider.code || "",
         name: provider.name,
-        productsCount: provider.productsCount || 0,
+        email: provider.email || "",
         address: provider.address || "",
+        city: provider.city || "",
       });
     } else {
-      setFormFields({ code: "", name: "", productsCount: 0, address: "" });
+      setFormFields({ code: "", name: "", address: "", city: "", email: "" });
     }
   }, [isEdit, provider]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormFields((prev) => ({ ...prev, [name]: name === "productsCount" ? Number(value) : value }));
+    setFormFields((prev) => ({
+      ...prev,
+      [name]: name === "productsCount" ? Number(value) : value,
+    }));
     setErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors[name as keyof typeof prev];
@@ -92,29 +104,32 @@ export default function EditProviderModal({
         id: provider!.id,
         code,
         name,
-        productsCount,
+        email,
         address,
+        city,
       });
       if (!parsed.success) {
         const fieldErrors: Partial<
           Record<keyof z.infer<typeof providerSchema>, string>
         > = {};
         parsed.error.issues.forEach((issue) => {
-          fieldErrors[issue.path[0] as keyof z.infer<typeof providerSchema>] = issue.message;
+          fieldErrors[issue.path[0] as keyof z.infer<typeof providerSchema>] =
+            issue.message;
         });
         setErrors(fieldErrors);
         return;
       }
 
-      const toSave = parsed.data as Provider | ProviderFormData;
+      console.log(parsed.data);
+      const toSave = parsed.data as Provider;
       saveProvider(toSave, isEdit);
-
     } else {
       const parsed = providerSchema.safeParse({
         code,
         name,
-        productsCount: 0,
+        email,
         address,
+        city,
       });
 
       if (!parsed.success) {
@@ -122,13 +137,14 @@ export default function EditProviderModal({
           Record<keyof z.infer<typeof providerSchema>, string>
         > = {};
         parsed.error.issues.forEach((issue) => {
-          fieldErrors[issue.path[0] as keyof z.infer<typeof providerSchema>] = issue.message;
+          fieldErrors[issue.path[0] as keyof z.infer<typeof providerSchema>] =
+            issue.message;
         });
         setErrors(fieldErrors);
         return;
       }
 
-      const toSave = parsed.data as Provider | ProviderFormData;
+      const toSave = parsed.data as ProviderFormData;
       saveProvider(toSave, isEdit);
     }
   };
@@ -146,7 +162,9 @@ export default function EditProviderModal({
                 {isEdit ? "Editar Proveedor" : "Agregar Proveedor"}
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
-                {isEdit ? "Modifica los datos del proveedor." : "Complete los datos para crear un nuevo proveedor."}
+                {isEdit
+                  ? "Modifica los datos del proveedor."
+                  : "Complete los datos para crear un nuevo proveedor."}
               </DialogDescription>
             </div>
           </div>
@@ -156,8 +174,11 @@ export default function EditProviderModal({
           <div className="grid gap-4 py-4 w-full">
             <div className="space-y-6">
               <div className="flex">
-                <Label htmlFor="name" className="text-nowrap text-gray-500 w-2/5">
-                  Nombre del proveedor*
+                <Label
+                  htmlFor="name"
+                  className="text-nowrap text-gray-500 w-2/5"
+                >
+                  Nombre*
                 </Label>
                 <Input
                   id="name"
@@ -177,7 +198,10 @@ export default function EditProviderModal({
               </div>
 
               <div className="flex">
-                <Label htmlFor="code" className="text-nowrap text-gray-500 w-2/5">
+                <Label
+                  htmlFor="code"
+                  className="text-nowrap text-gray-500 w-2/5"
+                >
                   Codigo*
                 </Label>
                 <Input
@@ -190,9 +214,44 @@ export default function EditProviderModal({
                   autoComplete="off"
                 />
               </div>
+              <div className="w-3/5 ml-auto">
+                {errors.code && (
+                  <p className="text-sm text-start text-red-500">
+                    {errors.code}
+                  </p>
+                )}
+              </div>
+
               <div className="flex">
-                <Label htmlFor="address" className="text-nowrap text-gray-500 w-2/5">
-                  Direccion del proveedor*
+                <Label
+                  htmlFor="email"
+                  className="text-nowrap text-gray-500 w-2/5"
+                >
+                  Correo electrónico*
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  value={email}
+                  onChange={handleChange}
+                  className="w-3/5"
+                  autoComplete="off"
+                />
+              </div>
+              <div className="w-3/5 ml-auto">
+                {errors.email && (
+                  <p className="text-sm text-start text-red-500">
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex">
+                <Label
+                  htmlFor="address"
+                  className="text-nowrap text-gray-500 w-2/5"
+                >
+                  Direccion
                 </Label>
                 <Input
                   id="address"
@@ -203,27 +262,39 @@ export default function EditProviderModal({
                   autoComplete="off"
                 />
               </div>
-
-
+              <div className="w-3/5 ml-auto">
+                {errors.address && (
+                  <p className="text-sm text-start text-red-500">
+                    {errors.address}
+                  </p>
+                )}
+              </div>
               <div className="flex">
-                <Label htmlFor="productsCount" className="text-nowrap text-gray-500 w-2/5">
-                  Cantidad de productos
+                <Label
+                  htmlFor="city"
+                  className="text-nowrap text-gray-500 w-2/5"
+                >
+                  Ciudad
                 </Label>
                 <Input
-                  id="productsCount"
-                  name="productsCount"
-                  type="number"
-                  value={String(productsCount)}
+                  id="city"
+                  name="city"
+                  value={city}
                   onChange={handleChange}
                   className="w-3/5"
-                  min={0}
-                  disabled={!isEdit} // no se puede modificar al crear
+                  autoComplete="off"
                 />
-                {errors.productsCount && <p className="text-sm text-red-500">{errors.productsCount}</p>}
               </div>
+            </div>
 
+            <div className="mt-4 mb-2">
               <div className="flex w-full items-center gap-3">
-                <Button variant="outline" className="w-1/2" type="button" onClick={() => onOpenChange(false)}>
+                <Button
+                  variant="outline"
+                  className="w-1/2"
+                  type="button"
+                  onClick={() => onOpenChange(false)}
+                >
                   Cancelar
                 </Button>
                 <Button className="w-1/2" type="submit" variant="default">

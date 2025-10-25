@@ -63,7 +63,9 @@ export default function Provider() {
       return;
     }
 
-    setProviders(providers);
+    console.log({ providers });
+
+    setProviders([...providers]);
   };
 
   useEffect(() => {
@@ -142,10 +144,7 @@ export default function Provider() {
     const q = search.toLowerCase().trim();
     if (!q) return true;
 
-    return (
-      provider.name.toLowerCase().includes(q) ||
-      String(provider.productsCount).toLowerCase().includes(q)
-    );
+    return provider.name.toLowerCase().includes(q);
   });
 
   const totalPages = Math.ceil(filteredProviders.length / providersPerPage);
@@ -199,10 +198,9 @@ export default function Provider() {
                     <TableHead className="text-gray-400">Código</TableHead>
                     <TableHead className="text-gray-400">Nombre</TableHead>
                     <TableHead className="text-gray-400">Dirección</TableHead>
-                    <TableHead className="text-gray-400">
-                      Cantidad productos
+                    <TableHead className="text-gray-400 text-center">
+                      Acciones
                     </TableHead>
-                    <TableHead className="text-gray-400">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-start">
@@ -224,7 +222,6 @@ export default function Provider() {
                         <TableCell>{provider.code}</TableCell>
                         <TableCell>{provider.name}</TableCell>
                         <TableCell>{provider.address ?? "-"}</TableCell>
-                        <TableCell>{provider.productsCount ?? 0}</TableCell>
                         <TableCell className="text-center space-x-2">
                           <EditButton
                             handleEdit={() => {

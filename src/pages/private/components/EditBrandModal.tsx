@@ -20,7 +20,7 @@ type Props = {
   open: boolean;
   onOpenChange: (val: boolean) => void;
   brand: Brand | null;
-  saveBrand: (brand: Brand | BrandFormData, isEdit: boolean) => void;
+  saveBrand: (brand: Brand | BrandFormData | FormData, isEdit: boolean) => void;
   // Optional callback invoked whenever the modal actually closes (cancel or after save)
   onClose?: () => void;
 };
@@ -159,15 +159,26 @@ export default function EditBrandModal({
         return;
       }
 
-      const toSave = {
-        ...parsed.data,
-        name: parsed.data.name,
-        description: parsed.data.description,
-        logo: parsed.data.logo || imagePreview,
-        isActive: parsed.data.isActive,
-      } as Brand;
-
-      saveBrand(toSave, isEdit);
+      // If a new file was selected, send as FormData so backend recibe 'logo' como file
+      if (imageFile) {
+        const fd = new FormData();
+        if (brand && (brand as Brand).id)
+          fd.append("id", String((brand as Brand).id));
+        fd.append("logo", imageFile);
+        fd.append("name", parsed.data.name);
+        fd.append("description", parsed.data.description || "");
+        fd.append("isActive", String(parsed.data.isActive));
+        saveBrand(fd, isEdit);
+      } else {
+        const toSave = {
+          ...parsed.data,
+          name: parsed.data.name,
+          description: parsed.data.description,
+          logo: parsed.data.logo || imagePreview,
+          isActive: parsed.data.isActive,
+        } as Brand;
+        saveBrand(toSave, isEdit);
+      }
 
       onClose && onClose();
     } else {
@@ -200,14 +211,47 @@ export default function EditBrandModal({
       }
 
       // parsed.data coincide con ProductFormData
-      const toSave = {
-        ...parsed.data,
-        name: parsed.data.name,
-        description: parsed.data.description,
-        isActive: parsed.data.isActive,
-        logo: parsed.data.logo || imagePreview,
-      } as BrandFormData;
-      saveBrand(toSave, isEdit);
+      // If the user selected a file, convert to FormData to upload file
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append("logo", imageFile);
+        fd.append("name", parsed.data.name);
+        fd.append("description", parsed.data.description || "");
+        fd.append("isActive", String(parsed.data.isActive));
+        saveBrand(fd, isEdit);
+      } else if (imagePreview && imagePreview.startsWith("data:")) {
+        // If preview is a data URL but no File object (rare), convert to Blob
+        const dataURLtoBlob = (dataurl: string) => {
+          const arr = dataurl.split(",");
+          const mimeMatch = arr[0].match(/:(.*?);/);
+          const mime = mimeMatch ? mimeMatch[1] : "image/png";
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          return new Blob([u8arr], { type: mime });
+        };
+        const blob = dataURLtoBlob(imagePreview);
+        const fd = new FormData();
+        if (brand && (brand as any).id)
+          fd.append("id", String((brand as any).id));
+        fd.append("logo", new File([blob], "logo.png", { type: blob.type }));
+        fd.append("name", parsed.data.name);
+        fd.append("description", parsed.data.description || "");
+        fd.append("isActive", String(parsed.data.isActive));
+        saveBrand(fd, isEdit);
+      } else {
+        const toSave = {
+          ...parsed.data,
+          name: parsed.data.name,
+          description: parsed.data.description,
+          isActive: parsed.data.isActive,
+          logo: parsed.data.logo || imagePreview,
+        } as BrandFormData;
+        saveBrand(toSave, isEdit);
+      }
       // Close the dialog and notify parent
       try {
         onOpenChange(false);

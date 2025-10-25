@@ -1,10 +1,17 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import useAuth from "@/hooks/useAuth";
 import type { Category, CategoryFormData } from "@/types/Category";
 import { categoryService } from "@/services/factories/categoryServiceFactory";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableHead, TableRow, TableCell, TableHeader } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableHeader,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -22,7 +29,9 @@ export default function Category() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
@@ -49,7 +58,10 @@ export default function Category() {
     fetchCategories();
   }, []);
 
-  const handleSaveCategory = async (cat: Category | CategoryFormData, isEdit: boolean) => {
+  const handleSaveCategory = async (
+    cat: Category | CategoryFormData,
+    isEdit: boolean
+  ) => {
     if (!cat.name) return toast.error("El nombre es obligatorio");
     if (!token) {
       toast.error("Por favor, inicia sesión para realizar esta acción.");
@@ -57,7 +69,11 @@ export default function Category() {
       return;
     }
     if (!isEdit) {
-      const { success, category: created, message } = await categoryService.createCategory(token, {
+      const {
+        success,
+        category: created,
+        message,
+      } = await categoryService.createCategory(token, {
         name: cat.name,
         description: cat.description,
       });
@@ -68,16 +84,23 @@ export default function Category() {
       setCategories((p) => [created, ...p]);
       toast.success("Categoría creada");
     } else {
-      if (!("id" in cat) || !cat.id) return toast.error("ID de categoría no válida");
-      const { success, message } = await categoryService.updateCategoryById(token, cat.id, {
-        name: cat.name,
-        description: cat.description,
-      });
+      if (!("id" in cat) || !cat.id)
+        return toast.error("ID de categoría no válida");
+      const { success, message } = await categoryService.updateCategoryById(
+        token,
+        cat.id,
+        {
+          name: cat.name,
+          description: cat.description,
+        }
+      );
       if (!success) {
         toast.error(message || "No se pudo actualizar la categoría.");
         return;
       }
-      setCategories((p) => p.map((c) => (c.id === cat.id ? { ...c, ...cat } : c)));
+      setCategories((p) =>
+        p.map((c) => (c.id === cat.id ? { ...c, ...cat } : c))
+      );
       toast.success("Categoría actualizada");
     }
     setModalOpen(false);
@@ -92,11 +115,18 @@ export default function Category() {
   const filtered = categories.filter((c) => {
     const q = search.toLowerCase().trim();
     if (!q) return true;
-    return c.name.toLowerCase().includes(q) || (c.description || "").toLowerCase().includes(q) || c.id.includes(q);
+    return (
+      c.name.toLowerCase().includes(q) ||
+      (c.description || "").toLowerCase().includes(q) ||
+      c.id.includes(q)
+    );
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const paginated = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+  const paginated = filtered.slice(
+    (currentPage - 1) * perPage,
+    currentPage * perPage
+  );
 
   return (
     <>
@@ -112,18 +142,21 @@ export default function Category() {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                   <Search size={16} />
                 </span>
-                <Input 
-                  placeholder="Buscar" 
-                  value={search} 
-                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} 
-                  className="w-full pl-10 border-none" 
+                <Input
+                  placeholder="Buscar"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full pl-10 border-none"
                 />
               </div>
               <div className="w-full md:w-auto">
-                <Button 
-                  onClick={() => { 
-                    setSelectedCategory(null); 
-                    setModalOpen(true); 
+                <Button
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setModalOpen(true);
                   }}
                 >
                   Agregar Categoría
@@ -140,7 +173,9 @@ export default function Category() {
                     <TableHead className="text-gray-400">ID</TableHead>
                     <TableHead className="text-gray-400">Nombre</TableHead>
                     <TableHead className="text-gray-400">Descripción</TableHead>
-                    <TableHead className="flex justify-center text-gray-400">Acciones</TableHead>
+                    <TableHead className="flex justify-center text-gray-400">
+                      Acciones
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-start">
@@ -163,13 +198,17 @@ export default function Category() {
                         <TableCell>{c.name}</TableCell>
                         <TableCell>{c.description}</TableCell>
                         <TableCell className="text-center space-x-2">
-                          <EditButton handleEdit={() => { 
-                            setSelectedCategory(c); 
-                            setModalOpen(true); }}
+                          <EditButton
+                            handleEdit={() => {
+                              setSelectedCategory(c);
+                              setModalOpen(true);
+                            }}
                           />
-                          <DeleteButton handleDelete={() => { 
-                            setSelectedCategory(c); 
-                            setDeleteModalOpen(true); }}
+                          <DeleteButton
+                            handleDelete={() => {
+                              setSelectedCategory(c);
+                              setDeleteModalOpen(true);
+                            }}
                           />
                         </TableCell>
                       </TableRow>
@@ -182,27 +221,27 @@ export default function Category() {
         </Card>
 
         {modalOpen && (
-          <EditCategoryModal 
-            open={modalOpen} 
-            onOpenChange={setModalOpen} 
-            category={selectedCategory} 
-            saveCategory={handleSaveCategory} 
+          <EditCategoryModal
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            category={selectedCategory}
+            saveCategory={handleSaveCategory}
           />
         )}
         {deleteModalOpen && selectedCategory && (
-          <ConfirmDeleteModal 
-            isOpen={deleteModalOpen} 
-            onClose={() => { 
-              setDeleteModalOpen(false); 
-              setSelectedCategory(null); 
-            }} 
+          <ConfirmDeleteModal
+            isOpen={deleteModalOpen}
+            onClose={() => {
+              setDeleteModalOpen(false);
+              setSelectedCategory(null);
+            }}
             onConfirm={async () => {
-            if (selectedCategory && selectedCategory.id) {
-              await handleDeleteCategory(selectedCategory.id);
-            }
-            setDeleteModalOpen(false);
-            setSelectedCategory(null);
-          }}
+              if (selectedCategory && selectedCategory.id) {
+                await handleDeleteCategory(selectedCategory.id);
+              }
+              setDeleteModalOpen(false);
+              setSelectedCategory(null);
+            }}
           />
         )}
       </div>

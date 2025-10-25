@@ -72,7 +72,8 @@ export default function Brands() {
       return;
     }
 
-    setBrands(brands);
+    // Copiar el arreglo para evitar referencias compartidas con el mock
+    setBrands([...brands]);
   };
 
   useEffect(() => {
@@ -80,17 +81,23 @@ export default function Brands() {
   }, [modalOpen, deleteModalOpen]);
 
   const handleSaveBrand = async (
-    brand: Brand | BrandFormData,
+    brand: Brand | BrandFormData | FormData,
     isEdit: boolean
   ) => {
-    if (
-      !brand.name ||
-      !("logo" in brand) ||
-      !("description" in brand) ||
-      !("isActive" in brand)
-    ) {
-      toast.error("Por favor, completa todos los campos obligatorios.");
-      return;
+    const isForm = brand instanceof FormData;
+
+    if (!isForm) {
+      // Validate required fields for non-FormData payloads
+      if (
+        !brand ||
+        !("name" in brand) ||
+        !("logo" in brand) ||
+        !("description" in brand) ||
+        !("isActive" in brand)
+      ) {
+        toast.error("Por favor, completa todos los campos obligatorios.");
+        return;
+      }
     }
 
     if (!token) {
@@ -100,35 +107,68 @@ export default function Brands() {
     }
 
     if (!isEdit) {
-      const { success, brand: newBrand } = await createBrand(token, brand);
+      // Create
+      const { success, brand: newBrand } = await createBrand(
+        token,
+        brand as any
+      );
       if (!success || !newBrand) {
         toast.error("Error al crear la marca. Intenta nuevamente.");
         return;
       }
-      setBrands((prev) => [newBrand, ...prev]);
+      // Prepend but filter any existing occurrence (defensive: evita duplicados)
+      setBrands((prev) => [
+        newBrand,
+        ...prev.filter((p) => p.id !== newBrand.id),
+      ]);
       toast.success("Marca creada correctamente.");
     } else {
-      if (!brand) {
-        toast.error("Marca no encontrada.");
-        return;
+      // Update
+      if (isForm) {
+        // extract id from FormData
+        const form = brand as FormData;
+        const idVal = form.get("id");
+        const id = idVal ? String(idVal) : null;
+        if (!id) {
+          toast.error("ID de la marca es necesario para actualizar.");
+          return;
+        }
+        const {
+          success,
+          message,
+          brand: updatedBrand,
+        } = await updateBrandById(token, id, form as any);
+        if (!success) {
+          toast.error(message);
+          return;
+        }
+        setBrands((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, ...updatedBrand } : p))
+        );
+        toast.success("Marca actualizada correctamente.");
+      } else {
+        if (!brand) {
+          toast.error("Marca no encontrada.");
+          return;
+        }
+        if (!("id" in brand) || !brand.id) {
+          toast.error("ID de la marca es necesario para actualizar.");
+          return;
+        }
+        const {
+          success,
+          message,
+          brand: updatedBrand,
+        } = await updateBrandById(token, brand.id, brand as Partial<Brand>);
+        if (!success) {
+          toast.error(message);
+          return;
+        }
+        setBrands((prev) =>
+          prev.map((p) => (p.id === brand.id ? { ...p, ...updatedBrand } : p))
+        );
+        toast.success("Marca actualizada correctamente.");
       }
-      if (!("id" in brand) || !brand.id) {
-        toast.error("ID de la marca es necesario para actualizar.");
-        return;
-      }
-      const {
-        success,
-        message,
-        brand: updatedBrand,
-      } = await updateBrandById(token, brand.id, brand);
-      if (!success) {
-        toast.error(message);
-        return;
-      }
-      setBrands((prev) =>
-        prev.map((p) => (p.id === brand.id ? { ...p, ...updatedBrand } : p))
-      );
-      toast.success("Marca actualizada correctamente.");
     }
 
     setModalOpen(false);

@@ -747,7 +747,11 @@ export default function EditProductModal({
           open={brandModalOpen}
           onOpenChange={(v: boolean) => setBrandModalOpen(v)}
           brand={null}
-          saveBrand={saveBrand}
+          // Wrapper to satisfy the expected prop type (Brand | BrandFormData | FormData, boolean) => void
+          saveBrand={(b, isEditFlag) => {
+            // normalize/cast to BrandFormData and call the existing async saveBrand
+            void saveBrand(b as BrandFormData, isEditFlag);
+          }}
         />
       )}
       {categoryModalOpen && (

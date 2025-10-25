@@ -70,17 +70,30 @@ class BrandServiceReal implements IBrandService {
 
   async createBrand(
     token: string,
-    brand: BrandFormData
+    brand: BrandFormData | FormData
   ): Promise<{ success: boolean; message?: string; brand?: Brand }> {
     try {
-      const response = await fetch(apiEndpoints.brands.CREATE_BRAND, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(brand),
-      });
+      let response: Response;
+      if (brand instanceof FormData) {
+        response = await fetch(apiEndpoints.brands.CREATE_BRAND, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            // Do not set Content-Type for FormData; browser will add the boundary
+          } as Record<string, string>,
+          body: brand,
+        });
+      } else {
+        response = await fetch(apiEndpoints.brands.CREATE_BRAND, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(brand),
+        });
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         return {
@@ -108,17 +121,30 @@ class BrandServiceReal implements IBrandService {
   async updateBrandById(
     token: string,
     brandId: string,
-    brand: Partial<Brand>
+    brand: Partial<Brand> | FormData
   ): Promise<{ success: boolean; message?: string; brand?: Brand }> {
     try {
-      const response = await fetch(apiEndpoints.brands.UPDATE_BRAND(brandId), {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(brand),
-      });
+      let response: Response;
+      if (brand instanceof FormData) {
+        response = await fetch(apiEndpoints.brands.UPDATE_BRAND(brandId), {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` } as Record<
+            string,
+            string
+          >,
+          body: brand,
+        });
+      } else {
+        response = await fetch(apiEndpoints.brands.UPDATE_BRAND(brandId), {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(brand),
+        });
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         return {

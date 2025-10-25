@@ -8,7 +8,7 @@ export const BRANDS: Brand[] = [
     logo: "/favicon/favicon-96x96.png",
     description: "Acer - equipos y accesos",
     productsCount: 12,
-    state: true,
+    isActive: true,
   },
   {
     id: "brand-dell",
@@ -16,7 +16,7 @@ export const BRANDS: Brand[] = [
     logo: "/favicon/favicon-96x96.png",
     description: "Dell - computadoras y servidores",
     productsCount: 18,
-    state: true,
+    isActive: true,
   },
   {
     id: "brand-asus",
@@ -24,7 +24,7 @@ export const BRANDS: Brand[] = [
     logo: "/favicon/favicon-96x96.png",
     description: "ASUS - hardware y componentes",
     productsCount: 14,
-    state: true,
+    isActive: true,
   },
   {
     id: "brand-lenovo",
@@ -32,7 +32,7 @@ export const BRANDS: Brand[] = [
     logo: "/favicon/favicon-96x96.png",
     description: "Lenovo - laptops y desktops",
     productsCount: 10,
-    state: true,
+    isActive: true,
   },
   {
     id: "brand-corsair",
@@ -40,7 +40,7 @@ export const BRANDS: Brand[] = [
     logo: "/favicon/favicon-96x96.png",
     description: "Corsair - periféricos y componentes",
     productsCount: 20,
-    state: true,
+    isActive: true,
   },
 ];
 
@@ -58,15 +58,32 @@ class BrandServiceMock implements IBrandService {
   }
   createBrand(
     _token: string,
-    brand: BrandFormData
+    brand: BrandFormData | FormData
   ): Promise<{ success: boolean; message?: string; brand?: Brand }> {
+    let payload: any;
+    if (brand instanceof FormData) {
+      payload = {
+        name: String(brand.get("name") || "Sin nombre"),
+        logo: String(
+          brand.get("logo") instanceof File
+            ? (brand.get("logo") as File).name
+            : brand.get("logo") || "/favicon/favicon-96x96.png"
+        ),
+        description: String(brand.get("description") || ""),
+        productsCount: 0,
+        isActive: String(brand.get("isActive")) === "true",
+      };
+    } else {
+      payload = brand;
+    }
+
     const newBrand: Brand = {
       id: `mock-id-${BRANDS.length + 1}`,
-      name: brand.name,
-      logo: brand.logo,
-      description: brand.description,
-      productsCount: brand.productsCount,
-      state: brand.state,
+      name: payload.name,
+      logo: payload.logo,
+      description: payload.description,
+      productsCount: payload.productsCount || 0,
+      isActive: payload.isActive,
     };
     BRANDS.push(newBrand);
     return Promise.resolve({ success: true, brand: newBrand });
@@ -74,15 +91,36 @@ class BrandServiceMock implements IBrandService {
   updateBrandById(
     _token: string,
     brandId: string,
-    brand: Partial<Brand>
+    brand: Partial<Brand> | FormData
   ): Promise<{ success: boolean; message?: string; brand?: Brand }> {
     const index = BRANDS.findIndex((b) => b.id === brandId);
-    if (index !== -1) {
-      BRANDS[index] = { ...BRANDS[index], ...brand };
-      return Promise.resolve({ success: true, brand: BRANDS[index] });
-    } else {
+    if (index === -1) {
       return Promise.resolve({ success: false, message: "Brand not found" });
     }
+
+    let updates: any;
+    if (brand instanceof FormData) {
+      updates = {
+        name: brand.get("name") ? String(brand.get("name")) : undefined,
+        description: brand.get("description")
+          ? String(brand.get("description"))
+          : undefined,
+        logo:
+          brand.get("logo") instanceof File
+            ? (brand.get("logo") as File).name
+            : brand.get("logo")
+            ? String(brand.get("logo"))
+            : undefined,
+        state: brand.get("isActive")
+          ? brand.get("isActive") === "true"
+          : undefined,
+      };
+    } else {
+      updates = brand;
+    }
+
+    BRANDS[index] = { ...BRANDS[index], ...updates };
+    return Promise.resolve({ success: true, brand: BRANDS[index] });
   }
   deleteBrandById(
     _token: string,

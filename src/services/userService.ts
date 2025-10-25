@@ -128,7 +128,6 @@ class UserServiceReal implements IUserService {
             : "Error desconocido al actualizar el usuario",
       };
     }
-
   }
 
   async changePassword(
@@ -140,7 +139,7 @@ class UserServiceReal implements IUserService {
     ): Promise<{ success: boolean; message?: string }> {
       try {
         const response = await fetch(apiEndpoints.users.CHANGE_PASSWORD(email), {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

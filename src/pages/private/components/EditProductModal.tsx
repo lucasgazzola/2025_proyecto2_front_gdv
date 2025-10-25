@@ -54,6 +54,7 @@ export default function EditProductModal({
 
   const [formFields, setFormFields] = useState({
     name: "",
+    price: 0,
     brand: {} as Brand,
     categories: [] as Category[],
     imageUrl: "",
@@ -61,11 +62,12 @@ export default function EditProductModal({
     state: true,
   });
 
-  const { name, brand, imageUrl, quantity } = formFields;
+  const { name, price, brand, imageUrl, quantity } = formFields;
 
   const productSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, "El nombre es obligatorio"),
+    price: z.number().min(0, "El precio es obligatorio"),
     brand: z.string().min(1, "La marca es obligatoria"),
     categories: z.array(z.string()).min(1, "Selecciona al menos una categoría"),
     imageUrl: z.string().optional(),
@@ -79,19 +81,13 @@ export default function EditProductModal({
   const { getAccessToken } = useAuth();
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
-
-  // Brand modal state
   const [brandModalOpen, setBrandModalOpen] = useState(false);
-  // Category modal state
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-
-  // For multi-category selection UI
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
-
-  // Image upload handling
   const [_imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  
 
   // obtener categorías únicas desde los productos registrados
   const token = getAccessToken();
@@ -171,6 +167,7 @@ export default function EditProductModal({
     if (isEdit && product) {
       setFormFields({
         name: product.name,
+        price: product.price,
         brand: product.brand,
         categories: product.categories,
         imageUrl: product.imageUrl || "",
@@ -182,6 +179,7 @@ export default function EditProductModal({
     } else {
       setFormFields({
         name: "",
+        price: 0,
         brand: {} as Brand,
         categories: [],
         imageUrl: "",
@@ -196,9 +194,11 @@ export default function EditProductModal({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormFields((prev) => {
-      if (name === "quantity") {
-        return { ...prev, [name]: Number(value) };
+      if (name === "quantity" || name === "price") {
+        const num = value === "" ? 0 : Number(value);
+        return { ...prev, [name]: num } as typeof prev;
       }
+
       return { ...prev, [name]: value };
     });
     setErrors((prev) => {
@@ -255,7 +255,7 @@ export default function EditProductModal({
       const parsed = productSchema.safeParse({
         id: product.id,
         name,
-        // pasar brand.id (string) para la validación
+        price,
         brand: (formFields.brand as Brand).id || "",
         categories: selectedCategories.map((c) => c.id),
         imageUrl,
@@ -304,6 +304,8 @@ export default function EditProductModal({
         categories: selectedCategories.map((c) => c.id),
         imageUrl,
         quantity,
+        // incluir price (número) en la validación
+        price: formFields.price,
       });
 
       if (!parsed.success) {
@@ -326,22 +328,23 @@ export default function EditProductModal({
         return;
       }
 
-      // parsed.data coincide con ProductFormData
       const toSave = {
         ...parsed.data,
-        // El DTO/Form espera un objeto Brand
         brand: formFields.brand,
         categories: selectedCategories,
         imageUrl: imagePreview,
         quantity: parsed.data.quantity,
-        // Price no se captura en el formulario actual; usar 0 por defecto al crear
-        price: 0,
+        // usar el price validado
+        price: parsed.data.price,
         state: formFields.state,
       } as ProductFormData;
 
       saveProduct(toSave, isEdit);
     }
   };
+
+
+
   //Para guardar cuando se crea una marca desde el modal de marcas
   const saveBrand = async (brand: BrandFormData, _isEdit: boolean) => {
     if (!token) {
@@ -415,6 +418,35 @@ export default function EditProductModal({
                   {errors.name && (
                     <p className="text-sm text-start text-red-500">
                       {errors.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-1 flex-col">
+                <div className="flex w-full">
+                  <Label
+                    className="text-nowrap text-gray-500 w-2/5"
+                    htmlFor="price"
+                  >
+                    Precio*
+                  </Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    name="price"
+                    step="1"
+                    min={0}
+                    value={price}
+                    onChange={handleChange}
+                    placeholder="Ingrese precio"
+                    className="w-3/5"
+                  />
+                </div>
+                <div className="w-3/5 ml-auto">
+                  {errors.price && (
+                    <p className="text-sm text-start text-red-500">
+                      {errors.price}
                     </p>
                   )}
                 </div>

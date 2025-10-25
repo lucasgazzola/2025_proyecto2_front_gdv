@@ -51,11 +51,13 @@ export default function Category() {
       toast.error("Error al cargar categorías.");
       return;
     }
-    if (categories?.length === 0) {
+    if (!categories || categories.length === 0) {
       toast.info("No se encontraron categorías.");
       return;
     }
-    setCategories(categories || []);
+
+    console.log(categories);
+    setCategories([...categories]);
   };
 
   useEffect(() => {
@@ -90,20 +92,20 @@ export default function Category() {
     } else {
       if (!("id" in cat) || !cat.id)
         return toast.error("ID de categoría no válida");
-      const { success, message } = await categoryService.updateCategoryById(
-        token,
-        cat.id,
-        {
-          name: cat.name,
-          description: cat.description,
-        }
-      );
+      const {
+        success,
+        message,
+        category: updatedCategory,
+      } = await categoryService.updateCategoryById(token, cat.id, {
+        name: cat.name,
+        description: cat.description,
+      });
       if (!success) {
         toast.error(message || "No se pudo actualizar la categoría.");
         return;
       }
       setCategories((p) =>
-        p.map((c) => (c.id === cat.id ? { ...c, ...cat } : c))
+        p.map((c) => (c.id === updatedCategory?.id ? updatedCategory : c))
       );
       toast.success("Categoría actualizada");
     }
@@ -112,6 +114,19 @@ export default function Category() {
   };
 
   const handleDeleteCategory = async (id: string) => {
+    if (!token) {
+      toast.error("Por favor, inicia sesión para realizar esta acción.");
+      logout();
+      return;
+    }
+    const { success, message } = await categoryService.deleteCategoryById(
+      token,
+      id
+    );
+    if (!success) {
+      toast.error(message || "No se pudo eliminar la categoría.");
+      return;
+    }
     setCategories((p) => p.filter((c) => c.id !== id));
     toast.success("Categoría eliminada");
   };

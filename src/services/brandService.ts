@@ -15,7 +15,6 @@ class BrandServiceReal implements IBrandService {
         return { success: false, message: "Error al obtener las marcas" };
       }
       const data = (await response.json()) as Brand[];
-      console.log({ data });
 
       // Normalizar la ruta del logo: si el backend devuelve una ruta
       // relativa (p.ej. "uploads/brands/.."), prefijarla con el base URL

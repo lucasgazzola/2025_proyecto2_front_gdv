@@ -71,7 +71,6 @@ export default function Customers() {
       toast.info("No se encontraron clientes.");
       return;
     }
-    console.log({ customers });
     setCustomers([...customers]);
   };
 

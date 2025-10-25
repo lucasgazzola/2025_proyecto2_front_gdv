@@ -63,8 +63,6 @@ export default function Provider() {
       return;
     }
 
-    console.log({ providers });
-
     setProviders([...providers]);
   };
 
@@ -106,17 +104,23 @@ export default function Provider() {
         toast.error("ID del proveedor es necesario para actualizar.");
         return;
       }
-      const { success, message } = await updateProviderById(
-        token,
-        provider.id,
-        provider
-      );
+      const {
+        success,
+        message,
+        provider: updatedProvider,
+      } = await updateProviderById(token, provider.id, provider);
+
       if (!success) {
         toast.error(message);
         return;
       }
+      if (!updatedProvider) {
+        toast.error("Error al actualizar el proveedor. Intenta nuevamente.");
+        return;
+      }
+
       setProviders((prev) =>
-        prev.map((p) => (p.id === provider.id ? { ...p, ...provider } : p))
+        prev.map((p) => (p.id === updatedProvider.id ? updatedProvider : p))
       );
       toast.success("Proveedor actualizado correctamente.");
     }
@@ -198,6 +202,7 @@ export default function Provider() {
                     <TableHead className="text-gray-400">Código</TableHead>
                     <TableHead className="text-gray-400">Nombre</TableHead>
                     <TableHead className="text-gray-400">Dirección</TableHead>
+                    <TableHead className="text-gray-400">Cuidad</TableHead>
                     <TableHead className="text-gray-400 text-center">
                       Acciones
                     </TableHead>
@@ -222,6 +227,7 @@ export default function Provider() {
                         <TableCell>{provider.code}</TableCell>
                         <TableCell>{provider.name}</TableCell>
                         <TableCell>{provider.address ?? "-"}</TableCell>
+                        <TableCell>{provider.city ?? "-"}</TableCell>
                         <TableCell className="text-center space-x-2">
                           <EditButton
                             handleEdit={() => {

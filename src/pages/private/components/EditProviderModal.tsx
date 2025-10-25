@@ -101,12 +101,12 @@ export default function EditProviderModal({
 
     if (isEdit) {
       const parsed = providerSchema.safeParse({
-        id: provider!.id,
-        code,
-        name,
-        email,
-        address,
-        city,
+        id: String(provider!.id || ""),
+        code: code.trim(),
+        name: name.trim(),
+        email: email.trim(),
+        address: address?.trim(),
+        city: city?.trim(),
       });
       if (!parsed.success) {
         const fieldErrors: Partial<
@@ -120,16 +120,15 @@ export default function EditProviderModal({
         return;
       }
 
-      console.log(parsed.data);
       const toSave = parsed.data as Provider;
       saveProvider(toSave, isEdit);
     } else {
       const parsed = providerSchema.safeParse({
-        code,
-        name,
-        email,
-        address,
-        city,
+        code: code?.trim() || "",
+        name: name?.trim() || "",
+        email: email?.trim() || "",
+        address: address?.trim() || "",
+        city: city?.trim() || "",
       });
 
       if (!parsed.success) {

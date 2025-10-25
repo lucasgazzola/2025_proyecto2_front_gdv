@@ -33,8 +33,7 @@ import useAuth from "@/hooks/useAuth";
 
 import type { Customer } from "@/types/Customer";
 import { customerService } from "@/services/factories/customerServiceFactory";
-const { getAllCustomers, updateCustomerById, deleteCustomerById } =
-  customerService;
+const { getAllCustomers, deleteCustomerById } = customerService;
 
 export default function Customers() {
   const { logout, getAccessToken } = useAuth();

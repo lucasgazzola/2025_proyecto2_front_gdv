@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import useAuth from "@/hooks/useAuth";
 import { customerService } from "@/services/factories/customerServiceFactory";
 import type { Customer } from "@/types/Customer";
+import z from "zod";
 
 type Props = {
   open: boolean;
@@ -44,6 +45,22 @@ export default function EditCustomerModal({
 
   const [form, setForm] = useState<typeof initialForm>(initialForm);
   const [loading, setLoading] = useState(false);
+
+  const { firstName, lastName, email, dni, phone, address, city } = form;
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof typeof initialForm, string>>
+  >({});
+
+  const customerSchema = z.object({
+    id: z.string().optional(),
+    firstName: z.string().min(1, "El nombre es obligatorio"),
+    lastName: z.string().min(1, "El apellido es obligatorio"),
+    email: z.string().min(1, "El email es obligatorio"),
+    dni: z.string().min(1, "El DNI es obligatorio"),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+  });
 
   useEffect(() => {
     if (isEdit && customer) {
@@ -76,10 +93,15 @@ export default function EditCustomerModal({
       return;
     }
 
-    if (!form.firstName || !form.lastName || !form.email || !form.dni) {
-      toast.error(
-        "Completa los campos obligatorios (nombre, apellido, email, dni)."
-      );
+    const payload = isEdit ? { id: String(customer.id), ...form } : { ...form };
+    const parsed = customerSchema.safeParse(payload);
+    if (!parsed.success) {
+      const fieldErrors: Partial<Record<keyof typeof initialForm, string>> = {};
+      parsed.error.issues.forEach((issue) => {
+        fieldErrors[issue.path[0] as keyof typeof initialForm] = issue.message;
+      });
+      console.log({ fieldErrors });
+      setErrors(fieldErrors);
       return;
     }
 
@@ -91,13 +113,13 @@ export default function EditCustomerModal({
           customer: updated,
           message,
         } = await customerService.updateCustomerById(token, customer.id, {
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-          dni: form.dni,
-          phone: form.phone,
-          address: form.address,
-          city: form.city,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim(),
+          dni: dni.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          city: city.trim(),
         });
         setLoading(false);
         if (!success || !updated) {
@@ -112,13 +134,13 @@ export default function EditCustomerModal({
           customer: created,
           message,
         } = await customerService.createCustomer(token, {
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-          dni: form.dni,
-          phone: form.phone,
-          address: form.address,
-          city: form.city,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim(),
+          dni: dni.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          city: city.trim(),
         });
         setLoading(false);
         if (!success || !created) {

@@ -81,7 +81,7 @@ class CustomerServiceReal implements ICustomerService {
   ): Promise<{ success: boolean; message?: string; customer?: Customer }> {
     try {
       const response = await fetch(apiEndpoints.customers.UPDATE_BY_ID(id), {
-        method: "POST",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

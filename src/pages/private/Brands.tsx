@@ -273,9 +273,7 @@ export default function Brands() {
                     <TableHead className="text-gray-400">Logo</TableHead>
                     <TableHead className="text-gray-400">Nombre</TableHead>
                     <TableHead className="text-gray-400">Descripción</TableHead>
-                    <TableHead className="text-gray-400">
-                      Productos asociados
-                    </TableHead>
+
                     <TableHead className="text-gray-400">Estado</TableHead>
                     <TableHead className="text-gray-400 text-center">
                       Acciones
@@ -307,7 +305,6 @@ export default function Brands() {
                         </TableCell>
                         <TableCell>{brand.name}</TableCell>
                         <TableCell>{brand.description}</TableCell>
-                        <TableCell>{brand.productsCount}</TableCell>
                         <TableCell>
                           {brand.isActive ? (
                             <span className="block text-center w-24 text-emerald-700 p-4 rounded-sm bg-emerald-100 text-xs">

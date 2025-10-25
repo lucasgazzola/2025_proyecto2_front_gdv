@@ -17,4 +17,8 @@ export interface ICustomerService {
     id: string,
     customer: Partial<Customer>
   ): Promise<{ success: boolean; message?: string; customer?: Customer }>;
+  deleteCustomerById(
+    token: string,
+    id: string
+  ): Promise<{ success: boolean; message?: string }>;
 }

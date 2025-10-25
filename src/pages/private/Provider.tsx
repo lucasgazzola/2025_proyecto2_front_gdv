@@ -4,15 +4,21 @@ import useAuth from "@/hooks/useAuth";
 import type { Provider, ProviderFormData } from "@/types/Provider";
 import EditProviderModal from "@/pages/private/components/EditProviderModal";
 import { providerService } from "@/services/factories/providerServiceFactory";
-const { deleteProviderById, getAllProviders, getProviderById, createProvider, updateProviderById } = providerService;
+const {
+  deleteProviderById,
+  getAllProviders,
+  getProviderById,
+  createProvider,
+  updateProviderById,
+} = providerService;
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Table, 
-  TableBody, 
-  TableRow, 
-  TableCell, 
-  TableHead, 
-  TableHeader 
+import {
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHead,
+  TableHeader,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -21,7 +27,6 @@ import EditButton from "@/components/common/EditButton";
 import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
 import { Input } from "@/components/ui/input";
 import FetchingSpinner from "@/components/common/FetchingSpinner";
-
 
 export default function Provider() {
   const { getAccessToken, logout } = useAuth();
@@ -32,8 +37,8 @@ export default function Provider() {
   const [loading, setLoading] = useState<boolean>(true);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(
-      null
-    );
+    null
+  );
   const [search, setSearch] = useState("");
   const providersPerPage = 10;
 
@@ -72,7 +77,7 @@ export default function Provider() {
     if (!provider.name) {
       toast.error("El nombre es obligatorio.");
     }
-    
+
     if (!token) {
       toast.error("Por favor, inicia sesión para realizar esta acción.");
       logout();
@@ -80,7 +85,10 @@ export default function Provider() {
     }
 
     if (!isEdit) {
-      const { success, provider: newProvider } = await createProvider(token, provider);
+      const { success, provider: newProvider } = await createProvider(
+        token,
+        provider
+      );
       if (!success || !newProvider) {
         toast.error("Error al crear el proveedor. Intenta nuevamente.");
         return;
@@ -115,18 +123,18 @@ export default function Provider() {
     setCurrentPage(1);
   };
 
-  const handleDeleteProvider = async (p: Provider) => {
+  const handleDeleteProvider = async (providerId: string) => {
     if (!token) {
       toast.error("Por favor, inicia sesión para realizar esta acción.");
       logout();
       return;
     }
-    const { success } = await deleteProviderById(token, p.id);
+    const { success } = await deleteProviderById(token, providerId);
     if (!success) {
       toast.error("Error al eliminar el proveedor. Intenta nuevamente.");
       return;
     }
-    setProviders((prev) => prev.filter((x) => x.id !== p.id));
+    setProviders((prev) => prev.filter((x) => x.id !== providerId));
     toast.success("Proveedor eliminado correctamente.");
   };
 
@@ -154,7 +162,9 @@ export default function Provider() {
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <div className="text-start">
-                <h3 className="text-2xl font-semibold">Todos los proveedores</h3>
+                <h3 className="text-2xl font-semibold">
+                  Todos los proveedores
+                </h3>
               </div>
               <div className="relative w-full max-w-60 md:w-1/3 ml-auto bg-gray-50">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -180,7 +190,7 @@ export default function Provider() {
               </div>
             </div>
           </CardContent>
-          
+
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
@@ -189,7 +199,9 @@ export default function Provider() {
                     <TableHead className="text-gray-400">Código</TableHead>
                     <TableHead className="text-gray-400">Nombre</TableHead>
                     <TableHead className="text-gray-400">Dirección</TableHead>
-                    <TableHead className="text-gray-400">Cantidad productos</TableHead>
+                    <TableHead className="text-gray-400">
+                      Cantidad productos
+                    </TableHead>
                     <TableHead className="text-gray-400">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -205,7 +217,7 @@ export default function Provider() {
                       <TableCell colSpan={7} className="text-center py-6">
                         No hay resultados
                       </TableCell>
-                    </TableRow> 
+                    </TableRow>
                   ) : (
                     paginatedProviders.map((provider) => (
                       <TableRow key={provider.id}>
@@ -214,13 +226,13 @@ export default function Provider() {
                         <TableCell>{provider.address ?? "-"}</TableCell>
                         <TableCell>{provider.productsCount ?? 0}</TableCell>
                         <TableCell className="text-center space-x-2">
-                          <EditButton 
+                          <EditButton
                             handleEdit={() => {
                               setSelectedProvider(provider);
                               setModalOpen(true);
-                            }} 
+                            }}
                           />
-                          <DeleteButton 
+                          <DeleteButton
                             handleDelete={() => {
                               setSelectedProvider(provider);
                               setDeleteModalOpen(true);

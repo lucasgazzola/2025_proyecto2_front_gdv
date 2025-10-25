@@ -33,7 +33,8 @@ import useAuth from "@/hooks/useAuth";
 
 import type { Customer } from "@/types/Customer";
 import { customerService } from "@/services/factories/customerServiceFactory";
-const { getAllCustomers, updateCustomerById } = customerService;
+const { getAllCustomers, updateCustomerById, deleteCustomerById } =
+  customerService;
 
 export default function Customers() {
   const { logout, getAccessToken } = useAuth();
@@ -41,7 +42,9 @@ export default function Customers() {
   const [search, setSearch] = useState("");
   const [orderBy, setOrderBy] = useState<string>("latest");
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,11 +67,12 @@ export default function Customers() {
       toast.error(message);
       return;
     }
-    if (!customers || customers.length === 0) {
-      toast.info("No customers found");
+    if (!customers || customers?.length === 0) {
+      toast.info("No se encontraron clientes.");
       return;
     }
-    setCustomers(customers);
+    console.log({ customers });
+    setCustomers([...customers]);
   };
 
   useEffect(() => {
@@ -146,9 +150,7 @@ export default function Customers() {
     }
 
     try {
-      const { success, message } = await updateCustomerById(token, customer.id, {
-        active: false,
-      });
+      const { success, message } = await deleteCustomerById(token, customer.id);
 
       if (!success) {
         toast.error(message || "Error al eliminar el cliente.");
@@ -185,8 +187,7 @@ export default function Customers() {
               <div className="text-start">
                 <h3 className="text-2xl font-semibold">Todos los clientes</h3>
                 <p className="text-md text-green-500">
-                  Clientes activos ({customers.filter((customer) => customer.active).length}
-                  )
+                  Clientes activos ({customers.length})
                 </p>
               </div>
               <div className="relative w-full max-w-60 md:w-1/3 ml-auto bg-gray-50">
@@ -237,12 +238,13 @@ export default function Customers() {
                   <TableRow>
                     <TableHead className="text-gray-400">Nombre</TableHead>
                     <TableHead className="text-gray-400">Apellido</TableHead>
-                    <TableHead className="text-gray-400">Correo electrónico</TableHead>
+                    <TableHead className="text-gray-400">
+                      Correo electrónico
+                    </TableHead>
                     <TableHead className="text-gray-400">DNI</TableHead>
                     <TableHead className="text-gray-400">Telefono</TableHead>
                     <TableHead className="text-gray-400">Direccion</TableHead>
                     <TableHead className="text-gray-400">Ciudad</TableHead>
-                    <TableHead className="text-gray-400">Estado</TableHead>
                     <TableHead className="text-center text-gray-400">
                       Acciones
                     </TableHead>
@@ -289,17 +291,7 @@ export default function Customers() {
                         <TableCell>{customer.phone}</TableCell>
                         <TableCell>{customer.address}</TableCell>
                         <TableCell>{customer.city}</TableCell>
-                        <TableCell>
-                          {customer.active ? (
-                            <span className="block text-center w-24 text-emerald-700 p-4 rounded-sm bg-emerald-100 text-xs">
-                              Activo
-                            </span>
-                          ) : (
-                            <span className="block text-center w-24 text-rose-700 p-4 rounded-sm bg-rose-100 text-xs">
-                              Inactivo
-                            </span>
-                          )}
-                        </TableCell>
+
                         <TableCell className="text-center space-x-2">
                           <MoreDetailsButton
                             handleViewDetails={() => {

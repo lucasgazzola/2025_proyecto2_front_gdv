@@ -13,7 +13,6 @@ export const CUSTOMERS: Customer[] = [
     address: "Calle Falsa 123",
     city: "Buenos Aires",
     invoices: [],
-    active: true,
   },
   {
     id: "c2",
@@ -25,7 +24,6 @@ export const CUSTOMERS: Customer[] = [
     address: "Av. Siempre Viva 742",
     city: "Córdoba",
     invoices: [],
-    active: true,
   },
   {
     id: "c3",
@@ -37,7 +35,6 @@ export const CUSTOMERS: Customer[] = [
     address: "Pasaje 5",
     city: "Rosario",
     invoices: [],
-    active: false,
   },
 ];
 
@@ -46,12 +43,18 @@ class CustomerServiceMock implements ICustomerService {
     _token: string,
     customer: Partial<Customer>
   ): Promise<{ success: boolean; message?: string; customer?: Customer }> {
-    if (!customer || !customer.firstName || !customer.lastName || !customer.dni) {
+    if (
+      !customer ||
+      !customer.firstName ||
+      !customer.lastName ||
+      !customer.dni
+    ) {
       return { success: false, message: "Datos incompletos" };
     }
     // prevent duplicate dni
     const exists = CUSTOMERS.some((c) => c.dni === customer.dni);
-    if (exists) return { success: false, message: "Cliente con ese DNI ya existe" };
+    if (exists)
+      return { success: false, message: "Cliente con ese DNI ya existe" };
 
     const newCustomer: Customer = {
       id: `c${Date.now()}`,
@@ -63,7 +66,6 @@ class CustomerServiceMock implements ICustomerService {
       address: customer.address,
       city: customer.city,
       invoices: customer.invoices || [],
-      active: typeof customer.active === "boolean" ? customer.active : true,
     };
     CUSTOMERS.unshift(newCustomer);
     return { success: true, customer: { ...newCustomer } };
@@ -93,6 +95,16 @@ class CustomerServiceMock implements ICustomerService {
     const updated = { ...CUSTOMERS[idx], ...customer };
     CUSTOMERS[idx] = updated;
     return { success: true, customer: { ...updated } };
+  }
+
+  async deleteCustomerById(
+    _token: string,
+    id: string
+  ): Promise<{ success: boolean; message?: string }> {
+    const idx = CUSTOMERS.findIndex((c) => c.id === id);
+    if (idx === -1) return { success: false, message: "Cliente no encontrado" };
+    CUSTOMERS.splice(idx, 1);
+    return { success: true };
   }
 }
 

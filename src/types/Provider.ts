@@ -1,14 +1,16 @@
-export interface ProviderFormData{
+export interface ProviderFormData {
   code: string;
   name: string;
-  productsCount?: number;
+  email: string;
   address?: string;
+  city?: string;
 }
 
 export interface Provider {
   id: string;
   code: string;
   name: string;
-  productsCount: number;
+  email: string;
   address?: string;
+  city?: string;
 }

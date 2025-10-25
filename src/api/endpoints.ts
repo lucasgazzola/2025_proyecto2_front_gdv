@@ -79,6 +79,7 @@ export const API_ENDPOINTS = {
     CREATE_CUSTOMER: "/clientes",
     GET_BY_ID: (id: string) => `/clientes/${encodeURIComponent(id)}`,
     UPDATE_BY_ID: (id: string) => `/clientes/${encodeURIComponent(id)}`,
+    DELETE_BY_ID: (id: string) => `/clientes/${encodeURIComponent(id)}`,
   },
   //Facturas
   invoices: {

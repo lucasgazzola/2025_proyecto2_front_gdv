@@ -90,12 +90,38 @@ class CustomerServiceReal implements ICustomerService {
       });
       if (!response.ok) {
         const err = await response.json().catch(() => null);
-        return { success: false, message: err?.message || "Error al actualizar el cliente" };
+        return {
+          success: false,
+          message: err?.message || "Error al actualizar el cliente",
+        };
       }
       const data = (await response.json()) as Customer;
       return { success: true, customer: data };
     } catch {
       return { success: false, message: "Error al actualizar el cliente" };
+    }
+  }
+  async deleteCustomerById(
+    token: string,
+    id: string
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await fetch(apiEndpoints.customers.DELETE_BY_ID(id), {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        return {
+          success: false,
+          message: err?.message || "Error al eliminar el cliente",
+        };
+      }
+      return { success: true };
+    } catch {
+      return { success: false, message: "Error al eliminar el cliente" };
     }
   }
 }

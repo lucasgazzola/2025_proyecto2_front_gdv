@@ -10,7 +10,6 @@ export interface Customer {
   address?: string;
   city?: string;
   invoices: Invoice[];
-  active: boolean;
 }
 
 export interface CustomerFormData {
@@ -22,5 +21,4 @@ export interface CustomerFormData {
   address?: string;
   city?: string;
   invoices: Invoice[];
-  active: boolean;
 }

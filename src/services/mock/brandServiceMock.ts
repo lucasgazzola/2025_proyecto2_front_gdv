@@ -7,7 +7,6 @@ export const BRANDS: Brand[] = [
     name: "Acer",
     logo: "/favicon/favicon-96x96.png",
     description: "Acer - equipos y accesos",
-    productsCount: 12,
     isActive: true,
   },
   {
@@ -15,7 +14,6 @@ export const BRANDS: Brand[] = [
     name: "Dell",
     logo: "/favicon/favicon-96x96.png",
     description: "Dell - computadoras y servidores",
-    productsCount: 18,
     isActive: true,
   },
   {
@@ -23,7 +21,6 @@ export const BRANDS: Brand[] = [
     name: "ASUS",
     logo: "/favicon/favicon-96x96.png",
     description: "ASUS - hardware y componentes",
-    productsCount: 14,
     isActive: true,
   },
   {
@@ -31,7 +28,6 @@ export const BRANDS: Brand[] = [
     name: "Lenovo",
     logo: "/favicon/favicon-96x96.png",
     description: "Lenovo - laptops y desktops",
-    productsCount: 10,
     isActive: true,
   },
   {
@@ -39,7 +35,6 @@ export const BRANDS: Brand[] = [
     name: "Corsair",
     logo: "/favicon/favicon-96x96.png",
     description: "Corsair - periféricos y componentes",
-    productsCount: 20,
     isActive: true,
   },
 ];
@@ -82,7 +77,6 @@ class BrandServiceMock implements IBrandService {
       name: payload.name,
       logo: payload.logo,
       description: payload.description,
-      productsCount: payload.productsCount || 0,
       isActive: payload.isActive,
     };
     BRANDS.push(newBrand);

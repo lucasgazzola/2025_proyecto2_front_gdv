@@ -51,6 +51,10 @@ export default function Category() {
       toast.error("Error al cargar categorías.");
       return;
     }
+    if (categories?.length === 0) {
+      toast.info("No se encontraron categorías.");
+      return;
+    }
     setCategories(categories || []);
   };
 

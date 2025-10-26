@@ -16,6 +16,8 @@ export interface Invoice {
   id: string;
   creator: User;
   customer?: Customer;
+  // estado de la factura — backend puede devolver 'PENDING' | 'PAID' | 'CANCELLED'
+  state?: "PENDING" | "PAID" | "CANCELLED";
   // The backend may return invoiceDetails or items; accept both shapes
   invoiceDetails: InvoiceDetail[];
   // alias used by some parts of the UI

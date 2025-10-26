@@ -73,7 +73,6 @@ export default function Products() {
       toast.info("No hay productos registrados.");
       return;
     }
-    console.log({ products });
 
     setProducts([...products]);
   };

@@ -38,17 +38,15 @@ export default function EditBrandModal({
     logo: "",
     name: "",
     description: "",
-    isActive: true,
   });
 
-  const { name, logo, description, isActive } = formFields;
+  const { name, logo, description } = formFields;
 
   const brandSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, "El nombre es obligatorio"),
     logo: z.string().min(1, "El logo es obligatorio"),
     description: z.string(),
-    isActive: z.boolean(),
   });
 
   const [errors, setErrors] = useState<
@@ -66,7 +64,6 @@ export default function EditBrandModal({
         name: brand.name,
         logo: brand.logo,
         description: brand.description,
-        isActive: brand.isActive,
       });
       // populate multi-category selection from joined string
 
@@ -76,7 +73,6 @@ export default function EditBrandModal({
         name: "",
         logo: "",
         description: "",
-        isActive: true,
       });
       setImagePreview("");
     }
@@ -135,7 +131,6 @@ export default function EditBrandModal({
         name,
         logo,
         description,
-        isActive,
       });
 
       if (!parsed.success) {
@@ -167,7 +162,6 @@ export default function EditBrandModal({
         fd.append("logo", imageFile);
         fd.append("name", parsed.data.name);
         fd.append("description", parsed.data.description || "");
-        fd.append("isActive", String(parsed.data.isActive));
         saveBrand(fd, isEdit);
       } else {
         const toSave = {
@@ -175,7 +169,6 @@ export default function EditBrandModal({
           name: parsed.data.name,
           description: parsed.data.description,
           logo: parsed.data.logo || imagePreview,
-          isActive: parsed.data.isActive,
         } as Brand;
         saveBrand(toSave, isEdit);
       }
@@ -187,7 +180,6 @@ export default function EditBrandModal({
         name,
         logo,
         description,
-        isActive,
       });
 
       if (!parsed.success) {
@@ -217,7 +209,6 @@ export default function EditBrandModal({
         fd.append("logo", imageFile);
         fd.append("name", parsed.data.name);
         fd.append("description", parsed.data.description || "");
-        fd.append("isActive", String(parsed.data.isActive));
         saveBrand(fd, isEdit);
       } else if (imagePreview && imagePreview.startsWith("data:")) {
         // If preview is a data URL but no File object (rare), convert to Blob
@@ -240,14 +231,12 @@ export default function EditBrandModal({
         fd.append("logo", new File([blob], "logo.png", { type: blob.type }));
         fd.append("name", parsed.data.name);
         fd.append("description", parsed.data.description || "");
-        fd.append("isActive", String(parsed.data.isActive));
         saveBrand(fd, isEdit);
       } else {
         const toSave = {
           ...parsed.data,
           name: parsed.data.name,
           description: parsed.data.description,
-          isActive: parsed.data.isActive,
           logo: parsed.data.logo || imagePreview,
         } as BrandFormData;
         saveBrand(toSave, isEdit);
@@ -396,32 +385,6 @@ export default function EditBrandModal({
                 >
                   Estado*
                 </Label>
-                <div className="flex gap-10 justify-center w-3/5">
-                  <label className="inline-flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="isActive"
-                      value="active"
-                      checked={formFields.isActive === true}
-                      onChange={() =>
-                        setFormFields((prev) => ({ ...prev, isActive: true }))
-                      }
-                    />
-                    <span>Activo</span>
-                  </label>
-                  <label className="inline-flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="isActive"
-                      value="inactive"
-                      checked={formFields.isActive === false}
-                      onChange={() =>
-                        setFormFields((prev) => ({ ...prev, isActive: false }))
-                      }
-                    />
-                    <span>Inactivo</span>
-                  </label>
-                </div>
               </div>
               <div className="flex w-full items-center gap-3">
                 <Button

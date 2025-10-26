@@ -36,12 +36,17 @@ import { categoryService } from "@/services/factories/categoryServiceFactory";
 import { toast } from "react-toastify";
 import type { Category } from "@/types/Category";
 import { brandService } from "@/services/factories/brandServiceFactory";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 type Props = {
   open: boolean;
   onOpenChange: (val: boolean) => void;
   product: ProductDto | null;
-  saveProduct: (product: ProductDto | ProductFormData, isEdit: boolean) => void;
+  // saveProduct should return a Promise so modal can await it for loading UX.
+  saveProduct: (
+    product: ProductDto | ProductFormData,
+    isEdit: boolean
+  ) => Promise<void>;
 };
 
 export default function EditProductModal({
@@ -83,6 +88,7 @@ export default function EditProductModal({
   const [brandModalOpen, setBrandModalOpen] = useState(false);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
   const [_imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -270,97 +276,103 @@ export default function EditProductModal({
 
   // Nota: la creación de marca se abre desde el botón y actualmente no necesita lógica adicional aquí.
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (isEdit) {
-      // Validación para edición
-      const parsed = productSchema.safeParse({
-        id: product.id,
-        name,
-        price,
-        brand: (formFields.brand as Brand).id || "",
-        categories: selectedCategories.map((c) => c.id),
-        imageUrl,
-        stock,
-      });
-
-      if (!parsed.success) {
-        const fieldErrors: Partial<
-          Record<keyof z.infer<typeof productSchema>, string>
-        > = {};
-        parsed.error.issues.forEach((issue: z.ZodIssue) => {
-          fieldErrors[issue.path[0] as keyof z.infer<typeof productSchema>] =
-            issue.message;
+    setLoading(true);
+    try {
+      if (isEdit) {
+        // Validación para edición
+        const parsed = productSchema.safeParse({
+          id: product.id,
+          name,
+          price,
+          brand: (formFields.brand as Brand).id || "",
+          categories: selectedCategories.map((c) => c.id),
+          imageUrl,
+          stock,
         });
-        setErrors(fieldErrors);
-        return;
-      }
-      // ensure image preview exists (image required)
-      if (!imagePreview) {
-        setErrors((prev) => ({
-          ...prev,
-          imageUrl: "La imagen es obligatoria",
-        }));
-        return;
-      }
 
-      const toSave = {
-        ...parsed.data,
-        id: product!.id,
-        // El DTO espera un objeto Brand, no el id string validado por Zod
-        brand: formFields.brand,
-        categories: selectedCategories,
-        imageUrl: imagePreview,
-        stock: parsed.data.stock,
-        price: product!.price, // Ensure price is included
-      } as ProductDto;
+        if (!parsed.success) {
+          const fieldErrors: Partial<
+            Record<keyof z.infer<typeof productSchema>, string>
+          > = {};
+          parsed.error.issues.forEach((issue: z.ZodIssue) => {
+            fieldErrors[issue.path[0] as keyof z.infer<typeof productSchema>] =
+              issue.message;
+          });
+          setErrors(fieldErrors);
+          return;
+        }
+        // ensure image preview exists (image required)
+        if (!imagePreview) {
+          setErrors((prev) => ({
+            ...prev,
+            imageUrl: "La imagen es obligatoria",
+          }));
+          return;
+        }
 
-      saveProduct(toSave, isEdit);
-    } else {
-      const parsed = productSchema.safeParse({
-        name,
-        // pasar brand.id (string) para la validación
-        brand: (formFields.brand as Brand).id || "",
-        // Zod espera un array de strings (ids), no objetos Category
-        categories: selectedCategories.map((c) => c.id),
-        imageUrl,
-        stock,
-        // incluir price (número) en la validación
-        price: formFields.price,
-      });
+        const toSave = {
+          ...parsed.data,
+          id: product!.id,
+          // El DTO espera un objeto Brand, no el id string validado por Zod
+          brand: formFields.brand,
+          categories: selectedCategories,
+          imageUrl: imagePreview,
+          stock: parsed.data.stock,
+          price: product!.price, // Ensure price is included
+        } as ProductDto;
 
-      if (!parsed.success) {
-        const fieldErrors: Partial<
-          Record<keyof z.infer<typeof productSchema>, string>
-        > = {};
-        parsed.error.issues.forEach((issue: z.ZodIssue) => {
-          fieldErrors[issue.path[0] as keyof z.infer<typeof productSchema>] =
-            issue.message;
+        await saveProduct(toSave, isEdit);
+      } else {
+        const parsed = productSchema.safeParse({
+          name,
+          // pasar brand.id (string) para la validación
+          brand: (formFields.brand as Brand).id || "",
+          // Zod espera un array de strings (ids), no objetos Category
+          categories: selectedCategories.map((c) => c.id),
+          imageUrl,
+          stock,
+          // incluir price (número) en la validación
+          price: formFields.price,
         });
-        setErrors(fieldErrors);
-        return;
+
+        if (!parsed.success) {
+          const fieldErrors: Partial<
+            Record<keyof z.infer<typeof productSchema>, string>
+          > = {};
+          parsed.error.issues.forEach((issue: z.ZodIssue) => {
+            fieldErrors[issue.path[0] as keyof z.infer<typeof productSchema>] =
+              issue.message;
+          });
+          setErrors(fieldErrors);
+          return;
+        }
+
+        if (!imagePreview) {
+          setErrors((prev) => ({
+            ...prev,
+            imageUrl: "La imagen es obligatoria",
+          }));
+          return;
+        }
+
+        const toSave = {
+          ...parsed.data,
+          brand: formFields.brand,
+          categories: selectedCategories,
+          imageUrl: imagePreview,
+          stock: parsed.data.stock,
+          // usar el price validado
+          price: parsed.data.price,
+        } as ProductFormData;
+        await saveProduct(toSave, isEdit);
       }
-
-      if (!imagePreview) {
-        setErrors((prev) => ({
-          ...prev,
-          imageUrl: "La imagen es obligatoria",
-        }));
-        return;
-      }
-
-      const toSave = {
-        ...parsed.data,
-        brand: formFields.brand,
-        categories: selectedCategories,
-        imageUrl: imagePreview,
-        stock: parsed.data.stock,
-        // usar el price validado
-        price: parsed.data.price,
-      } as ProductFormData;
-
-      saveProduct(toSave, isEdit);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || "Error al guardar el producto");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -720,7 +732,13 @@ export default function EditProductModal({
                 >
                   Cancelar
                 </Button>
-                <Button className="w-1/2" type="submit" variant="default">
+                <Button
+                  className="w-1/2"
+                  type="submit"
+                  disabled={loading}
+                  variant="default"
+                >
+                  {loading && <LoadingSpinner />}
                   {isEdit ? "Guardar cambios" : "Confirmar"}
                 </Button>
               </div>

@@ -21,12 +21,8 @@ export const getStoredAccessToken = (): {
   };
 };
 
-export const storeNewAccessToken = (
-  accessToken: string,
-  refreshToken: string
-): void => {
+export const storeNewAccessToken = (accessToken: string): void => {
   localStorage.setItem("accessToken", accessToken);
-  localStorage.setItem("refreshToken", refreshToken);
 };
 
 type LoggedInUserData = {
@@ -54,5 +50,4 @@ export const removeLoggedUserData = (): void => {
   localStorage.removeItem("lastname");
   localStorage.removeItem("role");
   localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
 };

@@ -119,6 +119,9 @@ export default function EditCategoryModal({
                 className="w-3/5"
               />
             </div>
+            {errors.name && (
+              <p className="text-red-500 text-sm">{errors.name}</p>
+            )}
 
             <div className="flex">
               <Label
@@ -135,6 +138,9 @@ export default function EditCategoryModal({
                 className="w-3/5"
               />
             </div>
+            {errors.description && (
+              <p className="text-red-500 text-sm">{errors.description}</p>
+            )}
             <div className="flex w-full items-center gap-3">
               <Button
                 variant="outline"

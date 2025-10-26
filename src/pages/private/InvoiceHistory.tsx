@@ -22,6 +22,7 @@ import { invoiceService } from "@/services/factories/invoiceServiceFactory";
 import type { Invoice, InvoiceDetail } from "@/types/Invoice";
 import ViewInvoiceDetailsModal from "./components/ViewInvoiceDetailsModal";
 import { Link } from "react-router-dom";
+import ConfirmStateChangeModal from "@/components/common/ConfirmStateChangeModal";
 
 export default function InvoiceHistory() {
   const { logout, getAccessToken } = useAuth();
@@ -32,6 +33,12 @@ export default function InvoiceHistory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [viewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
+  const [confirmStateModalOpen, setConfirmStateModalOpen] = useState(false);
+  const [confirmTargetInvoice, setConfirmTargetInvoice] =
+    useState<Invoice | null>(null);
+  const [confirmTargetState, setConfirmTargetState] = useState<
+    "PAID" | "CANCELLED"
+  >("PAID");
   // const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const token = getAccessToken();
@@ -50,7 +57,6 @@ export default function InvoiceHistory() {
         invoices: fetched,
         message,
       } = await invoiceService.getAllInvoices(token);
-      console.log({ fetched });
       if (!success) {
         toast.error(message || "Error al obtener facturas");
         setInvoices([]);
@@ -177,6 +183,9 @@ export default function InvoiceHistory() {
                 <TableRow>
                   <TableHead className="text-gray-400">ID</TableHead>
                   <TableHead className="text-gray-400">Fecha</TableHead>
+                  <TableHead className="text-center text-gray-400">
+                    Estado
+                  </TableHead>
                   <TableHead className="text-gray-400">Cliente</TableHead>
                   <TableHead className="text-gray-400">Productos</TableHead>
                   <TableHead className="text-gray-400">Total</TableHead>
@@ -211,6 +220,19 @@ export default function InvoiceHistory() {
                         {inv.createdAt
                           ? new Date(inv.createdAt).toLocaleString()
                           : "—"}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <span
+                          className={`inline-block px-2 py-1 rounded-full text-sm font-medium ${
+                            inv.state === "PAID"
+                              ? "bg-green-100 text-green-800"
+                              : inv.state === "CANCELLED"
+                              ? "bg-rose-100 text-rose-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {inv.state ?? "PENDING"}
+                        </span>
                       </TableCell>
                       <TableCell className="font-medium whitespace-nowrap text-start">
                         {inv.customer
@@ -252,6 +274,42 @@ export default function InvoiceHistory() {
                             }}
                           >
                             <Eye className="w-3 h-3" />
+                          </Button>
+                          {/* Sólo permitir cambiar estado si está PENDING */}
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            title={
+                              (inv.state ?? "PENDING") !== "PENDING"
+                                ? "No se puede cambiar el estado"
+                                : "Marcar como pagada"
+                            }
+                            onClick={() => {
+                              setConfirmTargetInvoice(inv);
+                              setConfirmTargetState("PAID");
+                              setConfirmStateModalOpen(true);
+                            }}
+                            disabled={(inv.state ?? "PENDING") !== "PENDING"}
+                          >
+                            Pagar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            title={
+                              (inv.state ?? "PENDING") !== "PENDING"
+                                ? "No se puede cambiar el estado"
+                                : "Cancelar factura"
+                            }
+                            onClick={() => {
+                              setConfirmTargetInvoice(inv);
+                              setConfirmTargetState("CANCELLED");
+                              setConfirmStateModalOpen(true);
+                            }}
+                            disabled={(inv.state ?? "PENDING") !== "PENDING"}
+                          >
+                            Cancelar
                           </Button>
                         </div>
                       </TableCell>
@@ -297,8 +355,44 @@ export default function InvoiceHistory() {
         onOpenChange={(v) => setViewDetailsModalOpen(v)}
         selectedInvoice={selectedInvoice}
         setSelectedInvoice={setSelectedInvoice}
+        onStateChanged={fetchInvoices}
       />
 
+      <ConfirmStateChangeModal
+        isOpen={confirmStateModalOpen}
+        onClose={() => setConfirmStateModalOpen(false)}
+        invoiceId={confirmTargetInvoice?.id}
+        stateToSet={confirmTargetState}
+        onConfirm={async () => {
+          if (!confirmTargetInvoice) return;
+          const token = getAccessToken();
+          if (!token) {
+            toast.error("Por favor, inicia sesión para realizar esta acción.");
+            logout();
+            return;
+          }
+          const res = await invoiceService.changeInvoiceState(
+            token,
+            confirmTargetInvoice.id,
+            confirmTargetState
+          );
+          if (!res.success) {
+            toast.error(res.message || "No se pudo cambiar el estado");
+            setConfirmStateModalOpen(false);
+            return;
+          }
+          toast.success("Estado actualizado");
+          setConfirmStateModalOpen(false);
+          // refresh list
+          await fetchInvoices();
+          // if currently viewing details of that invoice, update it
+          if (selectedInvoice?.id === confirmTargetInvoice.id && res.invoice) {
+            setSelectedInvoice(res.invoice);
+            setViewDetailsModalOpen(false);
+            setViewDetailsModalOpen(true);
+          }
+        }}
+      />
       {/* Confirm delete modal */}
       {/* <ConfirmDeleteModal
         isOpen={deleteModalOpen}

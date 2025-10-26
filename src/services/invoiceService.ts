@@ -66,6 +66,8 @@ class InvoiceServiceReal implements IInvoiceService {
           creator: inv.user ?? inv.creator ?? inv.createdBy,
           // customer may be under different keys (customer, user, client)
           customer: inv.customer ?? inv.user ?? inv.client ?? null,
+          // normalize state/status
+          state: inv.state ?? inv.status ?? inv.paymentState ?? "PENDING",
           priceTotal: inv.priceTotal ?? inv.total ?? inv.amount ?? 0,
           createdAt: inv.createdAt,
           updatedAt: inv.updatedAt,
@@ -144,6 +146,7 @@ class InvoiceServiceReal implements IInvoiceService {
         creator: data.user ?? data.creator ?? data.createdBy,
         // customer may be under different keys
         customer: data.customer ?? data.user ?? data.client ?? null,
+        state: data.state ?? data.status ?? data.paymentState ?? "PENDING",
         priceTotal: data.priceTotal ?? data.total ?? data.amount ?? 0,
         createdAt: data.createdAt,
       };
@@ -225,6 +228,7 @@ class InvoiceServiceReal implements IInvoiceService {
         creator: data.user ?? data.creator ?? data.createdBy,
         // customer may be under different keys
         customer: data.customer,
+        state: data.state ?? data.status ?? data.paymentState ?? "PENDING",
         priceTotal: data.priceTotal ?? data.total ?? data.amount ?? 0,
         createdAt: data.createdAt,
       };
@@ -233,6 +237,39 @@ class InvoiceServiceReal implements IInvoiceService {
       return { success: true, invoice: normalizedInv as Invoice };
     } catch (error) {
       return { success: false, message: "Error creando la factura" };
+    }
+  }
+
+  async changeInvoiceState(
+    token: string,
+    id: string,
+    state: "PAID" | "CANCELLED"
+  ): Promise<{ success: boolean; invoice?: Invoice; message?: string }> {
+    try {
+      const url = apiEndpoints.invoices.CHANGE_STATE(id);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ state }),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        return { success: false, message: text || "Error cambiando estado" };
+      }
+
+      // return normalized invoice from GET
+      const { success, invoice, message } = await this.getInvoiceById(
+        token,
+        id
+      );
+
+      return { success, invoice, message };
+    } catch (error) {
+      return { success: false, message: "Error cambiando estado" };
     }
   }
 

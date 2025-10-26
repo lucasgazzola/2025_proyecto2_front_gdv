@@ -1,290 +1,216 @@
-// import { useEffect, useMemo, useState } from "react";
-
-// import useAuth from "@/hooks/useAuth";
-// import { toast } from "react-toastify";
-
-// import { userService } from "@/services/factories/userServiceFactory";
-// import { productService } from "@/services/factories/productServiceFactory";
-// import { invoiceService } from "@/services/factories/invoiceServiceFactory";
-// import { brandService } from "@/services/factories/brandServiceFactory";
-
-// import {
-//   Card,
-//   CardHeader,
-//   CardTitle,
-//   CardDescription,
-//   CardContent,
-// } from "@/components/ui/card";
-
-// // Recharts
-// import React, { Suspense } from "react";
-// const DashboardCharts = React.lazy(
-//   () => import("./components/DashboardCharts")
-// );
-// const MetabaseComponent = React.lazy(
-//   () => import("./components/MetabaseComponent")
-// );
-// import Sparkline from "@/components/ui/Sparkline";
-// import { Users, Box, FileText } from "lucide-react";
-// import type { Invoice } from "@/types/Invoice";
-// import type { ProductDto } from "@/types/Product";
-
-// const useMetabaseCharts = import.meta.env.VITE_USE_METABASE_CHARTS === "true";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { invoiceService } from "@/services/factories/invoiceServiceFactory";
+import { productService } from "@/services/factories/productServiceFactory";
+import { userService } from "@/services/factories/userServiceFactory";
+import { customerService } from "@/services/factories/customerServiceFactory";
+import useAuth from "@/hooks/useAuth";
+import DashboardCharts from "./components/DashboardCharts";
+import type { Invoice } from "@/types/Invoice";
+import type { ProductDto } from "@/types/Product";
 
 export default function Dashboard() {
-  // const { getAccessToken, logout } = useAuth();
+  const { getAccessToken, logout } = useAuth();
+  const token = getAccessToken();
 
-  // const token = getAccessToken();
+  // loading state intentionally omitted (not needed in this summary view)
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [products, setProducts] = useState<ProductDto[]>([]);
+  const [usersCount, setUsersCount] = useState<number | null>(null);
+  const [customersCount, setCustomersCount] = useState<number | null>(null);
 
-  // const [loading, setLoading] = useState(true);
-  // const [usersCount, setUsersCount] = useState<number | null>(null);
-  // const [productsCount, setProductsCount] = useState<number | null>(null);
-  // const [invoicesCount, setInvoicesCount] = useState<number | null>(null);
-  // const [brandsCount, setBrandsCount] = useState<number | null>(null);
+  useEffect(() => {
+    const load = async () => {
+      if (!token) {
+        toast.error("Por favor inicia sesión para ver el dashboard");
+        logout();
+        return;
+      }
+      // start loading
+      try {
+        const [invRes, prodRes, usersRes, customersRes] = await Promise.all([
+          invoiceService.getAllInvoices(token),
+          productService.getAllProducts(token),
+          userService.getAllUsers(token),
+          customerService.getAllCustomers(token),
+        ]);
 
-  // const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
-  // const [recentProducts, setRecentProducts] = useState<any[]>([]);
-  // const [allProducts, setAllProducts] = useState<any[]>([]);
+        if (invRes.success && invRes.invoices) setInvoices(invRes.invoices);
+        else setInvoices([]);
 
-  // useEffect(() => {
-  //   if (!token) {
-  //     toast.error("Por favor, inicia sesión para acceder a esta sección.");
-  //     logout();
-  //     return;
-  //   }
+        if (prodRes.success && prodRes.products) setProducts(prodRes.products);
+        else setProducts([]);
 
-  //   let mounted = true;
+        if (usersRes.success && usersRes.users)
+          setUsersCount(usersRes.users.length);
+        else setUsersCount(null);
 
-  //   async function loadData() {
-  //     setLoading(true);
-  //     try {
-  //       const t = token as string;
+        if (customersRes.success && customersRes.customers)
+          setCustomersCount(customersRes.customers.length);
+        else setCustomersCount(null);
+      } catch (error) {
+        toast.error("Error cargando datos del dashboard");
+      } finally {
+        // finished
+      }
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
-  //       const [uRes, pRes, iRes, bRes] = await Promise.all([
-  //         userService.getAllUsers(t),
-  //         productService.getAllProducts(t),
-  //         invoiceService.getAllInvoices(t),
-  //         brandService.getAllBrands(t),
-  //       ]);
+  // Sólo sumar ingresos de facturas que estén en estado PAID
+  const totalRevenue = useMemo(() => {
+    return invoices
+      .filter((i) => i.state === "PAID")
+      .reduce((s, i) => s + (i.priceTotal ?? 0), 0);
+  }, [invoices]);
 
-  //       if (!mounted) return;
+  const counts = useMemo(() => {
+    const totalInvoices = invoices.length;
+    const pending = invoices.filter(
+      (i) => (i.state ?? "PENDING") === "PENDING"
+    ).length;
+    const paid = invoices.filter((i) => i.state === "PAID").length;
+    const cancelled = invoices.filter((i) => i.state === "CANCELLED").length;
+    return { totalInvoices, pending, paid, cancelled };
+  }, [invoices]);
 
-  //       if (uRes.success) setUsersCount(uRes.users?.length ?? 0);
-  //       if (pRes.success) setProductsCount(pRes.products?.length ?? 0);
-  //       if (iRes.success) setInvoicesCount(iRes.invoices?.length ?? 0);
-  //       if (bRes.success) setBrandsCount(bRes.brands?.length ?? 0);
+  const recentInvoices = useMemo(() => {
+    // last 14 days
+    const cutoff = Date.now() - 1000 * 60 * 60 * 24 * 13; // include today and 13 previous days => 14
+    return invoices.filter((i) =>
+      i.createdAt ? new Date(i.createdAt).getTime() >= cutoff : false
+    );
+  }, [invoices]);
 
-  //       // keep some recent items (first 5)
-  //       if (iRes.success && iRes.invoices) {
-  //         setRecentInvoices(iRes.invoices.slice(0, 5));
-  //       }
-  //       if (pRes.success && pRes.products) {
-  //         setRecentProducts(pRes.products.slice(0, 5));
-  //         setAllProducts(pRes.products);
-  //       }
-  //     } catch (err) {
-  //       toast.error("Error cargando datos del dashboard");
-  //     } finally {
-  //       if (mounted) setLoading(false);
-  //     }
-  //   }
-
-  //   void loadData();
-
-  //   return () => {
-  //     mounted = false;
-  //   };
-  // }, [token]);
-
-  // const stats = useMemo(
-  //   () => [
-  //     {
-  //       title: "Usuarios",
-  //       value: usersCount ?? "—",
-  //       className: "text-indigo-600",
-  //       icon: Users,
-  //       color: "bg-indigo-500/10",
-  //     },
-  //     {
-  //       title: "Productos",
-  //       value: productsCount ?? "—",
-  //       className: "text-amber-500",
-  //       icon: Box,
-  //       color: "bg-amber-500/10",
-  //     },
-  //     {
-  //       title: "Facturas",
-  //       value: invoicesCount ?? "—",
-  //       className: "text-emerald-600",
-  //       icon: FileText,
-  //       color: "bg-emerald-500/10",
-  //     },
-  //     { title: "Marcas", value: brandsCount ?? "—", className: "text-sky-500" },
-  //   ],
-  //   [usersCount, productsCount, invoicesCount, brandsCount]
-  // );
-
-  // const pieData = useMemo(() => {
-  //   const map = new Map<string, number>();
-  //   allProducts.forEach((p) => {
-  //     const brand =
-  //       typeof p.brand === "string" ? p.brand : p.brand?.name ?? "Sin marca";
-  //     map.set(brand, (map.get(brand) || 0) + 1);
-  //   });
-  //   return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
-  // }, [allProducts]);
-
-  // if (useMetabaseCharts) {
-  //   return (
-  //     <Suspense fallback={<div>Cargando gráficos...</div>}>
-  //       <MetabaseComponent />
-  //     </Suspense>
-  //   );
-  // }
+  const pieData = useMemo(() => {
+    const map = new Map<string, number>();
+    products.forEach((p) => {
+      const key = p.brand?.name ?? "Sin marca";
+      map.set(key, (map.get(key) || 0) + 1);
+    });
+    return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
+  }, [products]);
 
   return (
     <div className="p-6 space-y-6">
-      {/* <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => {
-          const Icon = s.icon as any;
-          return (
-            <Card key={s.title} className="p-4">
-              <CardHeader className="p-0">
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`p-2 rounded-md ${s.color || "bg-slate-100"}`}
-                    >
-                      {Icon ? <Icon className="h-5 w-5 text-current" /> : null}
-                    </div>
-                    <div>
-                      <CardTitle className="text-sm">{s.title}</CardTitle>
-                      <CardDescription />
-                    </div>
-                  </div>
-                  <Sparkline
-                    data={new Array(8)
-                      .fill(0)
-                      .map(() => ({ value: Math.round(Math.random() * 10) }))}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-end justify-between">
-                  <div className="flex flex-col">
-                    <span className={`text-3xl font-semibold ${s.className}`}>
-                      {s.value}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      Actualizado recientemente
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+      <h1 className="text-4xl font-bold">Dashboard</h1>
+      <p className="text-muted-foreground">Resumen general del sistema</p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">
+              Ingresos totales
+            </div>
+            <div className="text-2xl font-semibold mt-2">
+              $
+              {totalRevenue.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Basado en facturas marcadas como pagadas
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">Facturas</div>
+            <div className="text-2xl font-semibold mt-2">
+              {counts.totalInvoices}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Pendientes: {counts.pending} • Pagadas: {counts.paid} •
+              Canceladas: {counts.cancelled}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">Clientes</div>
+            <div className="text-2xl font-semibold mt-2">
+              {customersCount ?? "—"}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Usuarios: {usersCount ?? "—"}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3 h-full">
-        <DashboardCharts recentInvoices={recentInvoices} pieData={pieData} />
-        <div className="lg:col-span-1 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <DashboardCharts recentInvoices={recentInvoices} pieData={pieData} />
+        </div>
+
+        <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Últimas facturas</CardTitle>
+              <CardTitle>Top métricas</CardTitle>
               <CardDescription>Resumen rápido</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-3">
-                {loading && (
-                  <li className="text-sm text-muted-foreground">Cargando...</li>
-                )}
-                {!loading && recentInvoices.length === 0 && (
-                  <li className="text-sm text-muted-foreground">
-                    No hay facturas
-                  </li>
-                )}
-                {recentInvoices.map((inv: Invoice) => {
-                  const customerLabel =
-                    typeof inv.creator.name === "string"
-                      ? inv.creator.name
-                      : inv.creator.name && typeof inv.creator.name === "object"
-                      ? inv.creator.name ?? "-"
-                      : "-";
-
-                  return (
-                    <li
-                      key={inv.id}
-                      className="flex justify-between items-start"
-                    >
-                      <div className="text-left">
-                        <div className="text-sm font-medium">{inv.id}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {customerLabel}
-                        </div>
-                      </div>
-                      <div className="text-left">
-                        <div className="text-sm font-semibold">
-                          ${inv.priceTotal}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(inv.createdAt ?? "").toLocaleDateString()}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs text-muted-foreground">Productos</div>
+                  <div className="text-lg font-semibold">{products.length}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Usuarios</div>
+                  <div className="text-lg font-semibold">
+                    {usersCount ?? "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Clientes</div>
+                  <div className="text-lg font-semibold">
+                    {customersCount ?? "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Facturas</div>
+                  <div className="text-lg font-semibold">
+                    {counts.totalInvoices}
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Últimos productos</CardTitle>
-              <CardDescription>Últimos añadidos</CardDescription>
+              <CardTitle>Acciones rápidas</CardTitle>
+              <CardDescription>Atajos para tareas comunes</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-3">
-                {loading && (
-                  <li className="text-sm text-muted-foreground">Cargando...</li>
-                )}
-                {!loading && recentProducts.length === 0 && (
-                  <li className="text-sm text-muted-foreground">
-                    No hay productos
-                  </li>
-                )}
-                {recentProducts.map((p: ProductDto) => {
-                  const brandLabel =
-                    typeof p.brand === "string"
-                      ? p.brand
-                      : p.brand && typeof p.brand === "object"
-                      ? p.brand.name ?? "-"
-                      : "-";
-
-                  return (
-                    <li key={p.id} className="flex justify-between items-start">
-                      <div>
-                        <div className="text-sm font-medium">{p.name}</div>
-                        <div className="text-xs text-muted-foreground text-start">
-                          {brandLabel}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold">
-                          ${p.price ?? "0"}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Stock: {p.quantity ?? 0}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="flex flex-col gap-2">
+                <Button asChild size="sm">
+                  <Link to="/new-invoice">Crear factura</Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/invoice-history">Ver facturas</Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/products">Administrar productos</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
-      </div> */}
+      </div>
     </div>
   );
 }

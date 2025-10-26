@@ -7,35 +7,30 @@ export const BRANDS: Brand[] = [
     name: "Acer",
     logo: "/favicon/favicon-96x96.png",
     description: "Acer - equipos y accesos",
-    isActive: true,
   },
   {
     id: "brand-dell",
     name: "Dell",
     logo: "/favicon/favicon-96x96.png",
     description: "Dell - computadoras y servidores",
-    isActive: true,
   },
   {
     id: "brand-asus",
     name: "ASUS",
     logo: "/favicon/favicon-96x96.png",
     description: "ASUS - hardware y componentes",
-    isActive: true,
   },
   {
     id: "brand-lenovo",
     name: "Lenovo",
     logo: "/favicon/favicon-96x96.png",
     description: "Lenovo - laptops y desktops",
-    isActive: true,
   },
   {
     id: "brand-corsair",
     name: "Corsair",
     logo: "/favicon/favicon-96x96.png",
     description: "Corsair - periféricos y componentes",
-    isActive: true,
   },
 ];
 
@@ -66,7 +61,6 @@ class BrandServiceMock implements IBrandService {
         ),
         description: String(brand.get("description") || ""),
         productsCount: 0,
-        isActive: String(brand.get("isActive")) === "true",
       };
     } else {
       payload = brand;
@@ -77,7 +71,6 @@ class BrandServiceMock implements IBrandService {
       name: payload.name,
       logo: payload.logo,
       description: payload.description,
-      isActive: payload.isActive,
     };
     BRANDS.push(newBrand);
     return Promise.resolve({ success: true, brand: newBrand });
@@ -105,9 +98,6 @@ class BrandServiceMock implements IBrandService {
             : brand.get("logo")
             ? String(brand.get("logo"))
             : undefined,
-        state: brand.get("isActive")
-          ? brand.get("isActive") === "true"
-          : undefined,
       };
     } else {
       updates = brand;

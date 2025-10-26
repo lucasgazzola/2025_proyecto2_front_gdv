@@ -328,5 +328,22 @@ class InvoiceServiceMock implements IInvoiceService {
       });
     }
   }
+
+  async changeInvoiceState(
+    _token: string,
+    id: string,
+    state: "PAID" | "CANCELLED"
+  ): Promise<{ success: boolean; invoice?: Invoice; message?: string }> {
+    const invoice = INVOICES.find((i) => i.id === id);
+    if (!invoice) {
+      return Promise.resolve({
+        success: false,
+        message: "Factura no encontrada",
+      });
+    }
+    // Only change state if different
+    (invoice as any).state = state;
+    return Promise.resolve({ success: true, invoice });
+  }
 }
 export const invoiceServiceMock = new InvoiceServiceMock();

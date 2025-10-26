@@ -56,7 +56,6 @@ export default function Category() {
       return;
     }
 
-    console.log(categories);
     setCategories([...categories]);
   };
 
@@ -141,7 +140,7 @@ export default function Category() {
     );
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  // const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paginated = filtered.slice(
     (currentPage - 1) * perPage,
     currentPage * perPage

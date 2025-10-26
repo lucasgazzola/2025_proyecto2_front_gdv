@@ -83,6 +83,7 @@ export const API_ENDPOINTS = {
   invoices: {
     GET_ALL: "/facturas",
     GET_INVOICE: (id: string) => `/facturas/${id}`,
+    CHANGE_STATE: (id: string) => `/facturas/${id}/state`,
     CREATE_INVOICE: "/facturas",
     DELETE_INVOICE: (id: string) => `/facturas/${id}`,
   },

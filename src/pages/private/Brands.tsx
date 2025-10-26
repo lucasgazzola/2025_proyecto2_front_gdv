@@ -155,17 +155,18 @@ export default function Brands() {
           toast.error("ID de la marca es necesario para actualizar.");
           return;
         }
+        const id = String(brand.id);
         const {
           success,
           message,
           brand: updatedBrand,
-        } = await updateBrandById(token, brand.id, brand as Partial<Brand>);
+        } = await updateBrandById(token, id, brand as Partial<Brand>);
         if (!success) {
           toast.error(message);
           return;
         }
         setBrands((prev) =>
-          prev.map((p) => (p.id === brand.id ? { ...p, ...updatedBrand } : p))
+          prev.map((p) => (p.id === id ? { ...p, ...updatedBrand } : p))
         );
         toast.success("Marca actualizada correctamente.");
       }
@@ -273,8 +274,6 @@ export default function Brands() {
                     <TableHead className="text-gray-400">Logo</TableHead>
                     <TableHead className="text-gray-400">Nombre</TableHead>
                     <TableHead className="text-gray-400">Descripción</TableHead>
-
-                    <TableHead className="text-gray-400">Estado</TableHead>
                     <TableHead className="text-gray-400 text-center">
                       Acciones
                     </TableHead>
@@ -305,17 +304,7 @@ export default function Brands() {
                         </TableCell>
                         <TableCell>{brand.name}</TableCell>
                         <TableCell>{brand.description}</TableCell>
-                        <TableCell>
-                          {brand.isActive ? (
-                            <span className="block text-center w-24 text-emerald-700 p-4 rounded-sm bg-emerald-100 text-xs">
-                              Activo
-                            </span>
-                          ) : (
-                            <span className="block text-center w-24 text-rose-700 p-4 rounded-sm bg-rose-100 text-xs">
-                              Inactivo
-                            </span>
-                          )}
-                        </TableCell>
+
                         <TableCell className="text-center space-x-2">
                           <MoreDetailsButton
                             handleViewDetails={() => {

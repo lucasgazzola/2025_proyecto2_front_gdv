@@ -19,4 +19,10 @@ export interface IInvoiceService {
     token: string,
     id: string
   ): Promise<{ success: boolean; message?: string }>;
+
+  changeInvoiceState(
+    token: string,
+    id: string,
+    state: "PAID" | "CANCELLED"
+  ): Promise<{ success: boolean; invoice?: Invoice; message?: string }>;
 }

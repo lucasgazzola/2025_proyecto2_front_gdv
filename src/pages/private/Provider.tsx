@@ -7,7 +7,6 @@ import { providerService } from "@/services/factories/providerServiceFactory";
 const {
   deleteProviderById,
   getAllProviders,
-  getProviderById,
   createProvider,
   updateProviderById,
 } = providerService;
@@ -151,7 +150,7 @@ export default function Provider() {
     return provider.name.toLowerCase().includes(q);
   });
 
-  const totalPages = Math.ceil(filteredProviders.length / providersPerPage);
+  // const totalPages = Math.ceil(filteredProviders.length / providersPerPage);
   const paginatedProviders = filteredProviders.slice(
     (currentPage - 1) * providersPerPage,
     currentPage * providersPerPage

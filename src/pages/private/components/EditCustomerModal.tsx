@@ -100,7 +100,6 @@ export default function EditCustomerModal({
       parsed.error.issues.forEach((issue) => {
         fieldErrors[issue.path[0] as keyof typeof initialForm] = issue.message;
       });
-      console.log({ fieldErrors });
       setErrors(fieldErrors);
       return;
     }
@@ -188,6 +187,9 @@ export default function EditCustomerModal({
                   className="w-2/3"
                 />
               </div>
+              {errors.firstName && (
+                <p className="text-red-500 text-sm">{errors.firstName}</p>
+              )}
               <div className="flex">
                 <Label className="w-1/3 text-gray-600">Apellido*</Label>
                 <Input
@@ -196,6 +198,9 @@ export default function EditCustomerModal({
                   className="w-2/3"
                 />
               </div>
+              {errors.lastName && (
+                <p className="text-red-500 text-sm">{errors.lastName}</p>
+              )}
               <div className="flex">
                 <Label className="w-1/3 text-gray-600">
                   Correo electrónico*
@@ -206,6 +211,9 @@ export default function EditCustomerModal({
                   className="w-2/3"
                 />
               </div>
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email}</p>
+              )}
               <div className="flex">
                 <Label className="w-1/3 text-gray-600">DNI*</Label>
                 <Input
@@ -214,6 +222,9 @@ export default function EditCustomerModal({
                   className="w-2/3"
                 />
               </div>
+              {errors.dni && (
+                <p className="text-red-500 text-sm">{errors.dni}</p>
+              )}
               <div className="flex">
                 <Label className="w-1/3 text-gray-600">Teléfono</Label>
                 <Input
@@ -222,6 +233,9 @@ export default function EditCustomerModal({
                   className="w-2/3"
                 />
               </div>
+              {errors.phone && (
+                <p className="text-red-500 text-sm">{errors.phone}</p>
+              )}
               <div className="flex">
                 <Label className="w-1/3 text-gray-600">Dirección</Label>
                 <Input
@@ -230,6 +244,9 @@ export default function EditCustomerModal({
                   className="w-2/3"
                 />
               </div>
+              {errors.address && (
+                <p className="text-red-500 text-sm">{errors.address}</p>
+              )}
               <div className="flex">
                 <Label className="w-1/3 text-gray-600">Ciudad</Label>
                 <Input
@@ -238,6 +255,9 @@ export default function EditCustomerModal({
                   className="w-2/3"
                 />
               </div>
+              {errors.city && (
+                <p className="text-red-500 text-sm">{errors.city}</p>
+              )}
             </div>
           </div>
           <div className="flex w-full items-center gap-3">

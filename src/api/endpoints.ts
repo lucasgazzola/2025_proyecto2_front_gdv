@@ -67,7 +67,7 @@ export const API_ENDPOINTS = {
   products: {
     GET_ALL: "/productos",
     GET_PRODUCT: (id: string) => `/productos/${id}`,
-    ADD_PRODUCT: "/productos/add",
+    ADD_PRODUCT: "/productos",
     UPDATE_PRODUCT: "/productos/update",
     // CREATE_PRODUCT: "/productos/createProduct",
     // UPDATE_PRODUCT: "/productos/updateProduct",

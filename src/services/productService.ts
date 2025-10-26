@@ -60,7 +60,6 @@ class ProductServiceReal implements IProductService {
           imageUrl: product.imageUrl,
           quantity: product.quantity,
           price: product.price,
-          state: product.state,
         } as ProductDto,
       };
     } catch (error) {

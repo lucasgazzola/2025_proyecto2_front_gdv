@@ -8,7 +8,6 @@ export interface ProductDto {
   imageUrl?: string;
   quantity: number;
   price: number;
-  state: boolean;
 }
 
 export interface ProductFormData {
@@ -18,5 +17,4 @@ export interface ProductFormData {
   imageUrl?: string;
   quantity: number;
   price: number;
-  state: boolean;
 }

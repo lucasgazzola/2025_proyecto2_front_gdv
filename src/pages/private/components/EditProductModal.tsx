@@ -59,7 +59,6 @@ export default function EditProductModal({
     categories: [] as Category[],
     imageUrl: "",
     quantity: 0,
-    state: true,
   });
 
   const { name, price, brand, imageUrl, quantity } = formFields;
@@ -111,7 +110,7 @@ export default function EditProductModal({
         return;
       }
 
-      setCategoriesList(categories);
+      setCategoriesList([...categories]);
     };
 
     fetchCategories();
@@ -137,7 +136,7 @@ export default function EditProductModal({
         return;
       }
 
-      setBrands(brands);
+      setBrands([...brands]);
     };
     fetchBrands();
   }, [brandModalOpen]);
@@ -181,7 +180,6 @@ export default function EditProductModal({
         categories: product.categories,
         imageUrl: product.imageUrl || "",
         quantity: product.quantity,
-        state: product.state,
       });
       setSelectedCategories(product.categories);
       setImagePreview(product.imageUrl || "");
@@ -193,7 +191,6 @@ export default function EditProductModal({
         categories: [],
         imageUrl: "",
         quantity: 0,
-        state: true,
       });
       setSelectedCategories([]);
       setImagePreview("");
@@ -300,7 +297,6 @@ export default function EditProductModal({
         imageUrl: imagePreview,
         quantity: parsed.data.quantity,
         price: product!.price, // Ensure price is included
-        state: formFields.state,
       } as ProductDto;
 
       saveProduct(toSave, isEdit);
@@ -345,7 +341,6 @@ export default function EditProductModal({
         quantity: parsed.data.quantity,
         // usar el price validado
         price: parsed.data.price,
-        state: formFields.state,
       } as ProductFormData;
 
       saveProduct(toSave, isEdit);
@@ -469,7 +464,7 @@ export default function EditProductModal({
                   </Label>
                   <div className="flex gap-2 items-center w-3/5">
                     <Select
-                      value={brand.id}
+                      value={brand?.id ?? ""}
                       onValueChange={(val: string) => {
                         const selectedBrand = brands.find((b) => b.id === val);
                         setFormFields((prev) => ({
@@ -689,40 +684,6 @@ export default function EditProductModal({
                       {errors.categories}
                     </p>
                   )}
-                </div>
-              </div>
-              <div className="flex">
-                <Label
-                  className="text-nowrap text-gray-500 w-2/5"
-                  htmlFor="state"
-                >
-                  Estado*
-                </Label>
-                <div className="flex gap-10 justify-center w-3/5">
-                  <label className="inline-flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="state"
-                      value="active"
-                      checked={formFields.state === true}
-                      onChange={() =>
-                        setFormFields((prev) => ({ ...prev, state: true }))
-                      }
-                    />
-                    <span>Activo</span>
-                  </label>
-                  <label className="inline-flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="state"
-                      value="inactive"
-                      checked={formFields.state === false}
-                      onChange={() =>
-                        setFormFields((prev) => ({ ...prev, state: false }))
-                      }
-                    />
-                    <span>Inactivo</span>
-                  </label>
                 </div>
               </div>
               <div className="flex w-full items-center gap-3">

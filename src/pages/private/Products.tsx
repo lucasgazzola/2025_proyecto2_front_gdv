@@ -84,14 +84,17 @@ export default function Products() {
     product: ProductDto | ProductFormData,
     isEdit: boolean
   ) => {
-    if (
-      !product.name ||
-      !("brand" in product) ||
-      !("categories" in product) ||
-      product.quantity === undefined
-    ) {
-      toast.error("Por favor, completa todos los campos obligatorios.");
-      return;
+    // If the payload is FormData, the modal already validated fields; skip JS-level shape checks.
+    if (!(product instanceof FormData)) {
+      if (
+        !product.name ||
+        !("brand" in product) ||
+        !("categories" in product) ||
+        product.quantity === undefined
+      ) {
+        toast.error("Por favor, completa todos los campos obligatorios.");
+        return;
+      }
     }
 
     if (!token) {
@@ -119,6 +122,7 @@ export default function Products() {
         toast.error("ID del producto es necesario para actualizar.");
         return;
       }
+
       const { success, message } = await updateProductById(
         token,
         product.id,
@@ -131,6 +135,7 @@ export default function Products() {
       setProducts((prev) =>
         prev.map((p) => (p.id === product.id ? { ...p, ...product } : p))
       );
+
       toast.success("Producto actualizado correctamente.");
     }
 
@@ -212,8 +217,7 @@ export default function Products() {
               <div className="text-start">
                 <h3 className="text-2xl font-semibold">Todos los productos</h3>
                 <p className="text-md text-green-500">
-                  Productos activos (
-                  {products.filter((product) => product.state).length})
+                  Productos activos ({products.length})
                 </p>
               </div>
               <div className="relative w-full max-w-60 md:w-1/3 ml-auto bg-gray-50">
@@ -267,7 +271,6 @@ export default function Products() {
                     <TableHead className="text-gray-400">Imágenes</TableHead>
                     <TableHead className="text-gray-400">Stock</TableHead>
                     <TableHead className="text-gray-400">Precio</TableHead>
-                    <TableHead className="text-gray-400">Estado</TableHead>
                     <TableHead className="text-gray-400 text-center">
                       Acciones
                     </TableHead>
@@ -305,17 +308,6 @@ export default function Products() {
                         </TableCell>
                         <TableCell>{product.quantity}</TableCell>
                         <TableCell>${product.price}</TableCell>
-                        <TableCell>
-                          {product.state ? (
-                            <span className="block text-center w-24 text-emerald-700 p-4 rounded-sm bg-emerald-100 text-xs">
-                              Activo
-                            </span>
-                          ) : (
-                            <span className="block text-center w-24 text-rose-700 p-4 rounded-sm bg-rose-100 text-xs">
-                              Inactivo
-                            </span>
-                          )}
-                        </TableCell>
                         <TableCell className="text-center space-x-2">
                           <MoreDetailsButton
                             handleViewDetails={() => {

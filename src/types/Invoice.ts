@@ -1,13 +1,11 @@
 import type { Customer } from "./Customer";
 import type { ProductDto } from "./Product";
-import type { Provider } from "./Provider";
 import type { User } from "./User";
 
 // Invoice.ts
 export interface InvoiceDetail {
   id: string;
   product: ProductDto;
-  provider: Provider;
   quantity: number;
   unitPrice: number;
   subtotal: number;
@@ -17,8 +15,11 @@ export interface InvoiceDetail {
 export interface Invoice {
   id: string;
   creator: User;
-  customer: Customer;
+  customer?: Customer;
+  // The backend may return invoiceDetails or items; accept both shapes
   invoiceDetails: InvoiceDetail[];
+  // alias used by some parts of the UI
+  items?: InvoiceDetail[];
   priceTotal: number;
   createdAt?: string;
 }

@@ -9,28 +9,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+
 import { Search, Plus, FileText, Users as IconUsers } from "lucide-react";
 import { Link } from "react-router-dom";
 import FetchingSpinner from "@/components/common/FetchingSpinner";
 import { productService } from "@/services/factories/productServiceFactory";
-import { providerService } from "@/services/factories/providerServiceFactory";
 import { toast } from "react-toastify";
 import useAuth from "@/hooks/useAuth";
 import type { ProductDto } from "@/types/Product";
-import type { Provider } from "@/types/Provider";
 import DeleteButton from "@/components/common/DeleteButton";
 import { Card, CardContent } from "@/components/ui/card";
 import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
 import SelectCustomerModal from "./components/SelectCustomerModal";
 import { invoiceService } from "@/services/factories/invoiceServiceFactory";
 import type { Invoice, InvoiceDetail } from "@/types/Invoice";
+import type { Customer } from "@/types/Customer";
 
 export default function AgregarFactura() {
   const { logout, getAccessToken } = useAuth();
@@ -38,17 +31,17 @@ export default function AgregarFactura() {
   const [productos, setProductos] = useState<ProductDto[]>([]);
   const [invoiceDetails, setInvoiceDetails] = useState<InvoiceDetail[]>([]);
   const [search, setSearch] = useState("");
-  const [providers, setProviders] = useState<Provider[]>([]);
   // store only providerId to avoid holding objects in per-row state (reduces re-renders)
   type Selection = { quantity: number; providerId?: string };
   const [selections, setSelections] = useState<Record<string, Selection>>({});
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [selectCustomerOpen, setSelectCustomerOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<import("@/types/Customer").Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
   // estados de carga separados para que la interfaz sea responsiva
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [loadingProviders, setLoadingProviders] = useState(false);
 
   const isMountedRef = useRef(true);
 
@@ -59,56 +52,49 @@ export default function AgregarFactura() {
     };
   }, []);
 
-  const handleAgregar = useCallback(
-    (product: ProductDto, qty: number, providerId?: string) => {
-      // prevent adding without provider
-      if (!providerId) {
-        toast.error("Seleccione un proveedor antes de agregar el producto.");
-        return;
-      }
+  const handleAgregar = (product: ProductDto, qty: number) => {
+    if (qty <= 0) return;
+    if (product.stock < qty) {
+      toast.error(
+        `No hay suficiente stock para el producto "${product.name}". Stock disponible: ${product.stock}`
+      );
+      return;
+    }
 
-      const providerObj = providers.find((p) => p.id === providerId);
-      if (!providerObj) {
-        toast.error("Proveedor inválido.");
-        return;
-      }
+    const lineSubtotal = (product.price || 0) * qty;
 
-      const lineSubtotal = (product.price || 0) * qty;
+    setInvoiceDetails((prev) => {
+      // Buscar existing por product.id + provider.id
+      const existing = prev.find(
+        (invDetail) => invDetail.product.id === product.id
+      );
 
-      setInvoiceDetails((prev) => {
-        // Buscar existing por product.id + provider.id
-        const existing = prev.find(
-          (invDetail) =>
-            invDetail.product.id === product.id &&
-            invDetail.provider.id === providerObj.id
+      if (existing) {
+        product.stock -= qty; // Decrease stock locally
+        return prev.map((invDetail) =>
+          invDetail.product.id === product.id
+            ? {
+                ...invDetail,
+                quantity: (invDetail.quantity || 0) + qty,
+                subtotal: (invDetail.subtotal || 0) + lineSubtotal,
+              }
+            : invDetail
         );
+      }
 
-        if (existing) {
-          return prev.map((invDetail) =>
-            invDetail.product.id === product.id &&
-            invDetail.provider.id === providerObj.id
-              ? {
-                  ...invDetail,
-                  quantity: (invDetail.quantity || 0) + qty,
-                  subtotal: (invDetail.subtotal || 0) + lineSubtotal,
-                }
-              : invDetail
-          );
-        }
+      const toAdd: InvoiceDetail = {
+        id: `${product.id}-${Date.now()}`, // unique id
+        product: product,
+        quantity: qty,
+        unitPrice: product.price || 0,
+        subtotal: lineSubtotal,
+      };
 
-        const toAdd: InvoiceDetail = {
-          id: `${product.id}-${providerObj.id}`,
-          product: product,
-          provider: providerObj,
-          quantity: qty,
-          unitPrice: product.price || 0,
-          subtotal: lineSubtotal,
-        };
-        return [...prev, toAdd];
-      });
-    },
-    [providers]
-  );
+      product.stock -= qty; // Decrease stock locally
+
+      return [...prev, toAdd];
+    });
+  };
 
   // stable handlers to update per-row selection without recreating functions per render
   const handleQuantityChange = useCallback(
@@ -118,19 +104,6 @@ export default function AgregarFactura() {
         [productId]: {
           ...(prev[productId] ?? { quantity: 1 }),
           quantity,
-        },
-      }));
-    },
-    []
-  );
-
-  const handleProviderChange = useCallback(
-    (productId: string, providerId?: string) => {
-      setSelections((prev) => ({
-        ...prev,
-        [productId]: {
-          ...(prev[productId] ?? { quantity: 1 }),
-          providerId: providerId || undefined,
         },
       }));
     },
@@ -185,34 +158,8 @@ export default function AgregarFactura() {
       }
     };
     fetchProducts();
-    // eager load providers again so the Select is instant when opened
-    fetchProviders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // fetchProviders is available to call lazily when the Select opens
-  const fetchProviders = useCallback(async () => {
-    const token = getAccessToken();
-    if (!token) {
-      toast.error("Por favor, inicia sesión para acceder a esta sección.");
-      logout();
-      return;
-    }
-    setLoadingProviders(true);
-    const {
-      success: provSuccess,
-      providers: provs,
-      message: provMessage,
-    } = await providerService.getAllProviders(token);
-    setLoadingProviders(false);
-    if (!provSuccess) {
-      toast.error(provMessage || "Error al cargar los proveedores.");
-      return;
-    }
-    if (provSuccess && provs) {
-      setProviders(provs);
-    }
-  }, [getAccessToken, logout]);
 
   const handleConfirmInvoice = async () => {
     if (invoiceDetails.length === 0) {
@@ -271,9 +218,9 @@ export default function AgregarFactura() {
           {/* Buscador */}
           <div className="flex md:flex-row gap-4 items-center">
             <div className="flex items-center gap-4">
-              <Button 
-                size="sm" 
-                className="flex items-center gap-2" 
+              <Button
+                size="sm"
+                className="flex items-center gap-2"
                 onClick={() => setSelectCustomerOpen(true)}
               >
                 <IconUsers size={16} />
@@ -282,7 +229,10 @@ export default function AgregarFactura() {
               {/*TEMPORAL*/}
               {selectedCustomer ? (
                 <div className="text-sm">
-                  Seleccionado: <span>{selectedCustomer.firstName} {selectedCustomer.lastName}</span>
+                  Seleccionado:{" "}
+                  <span>
+                    {selectedCustomer.firstName} {selectedCustomer.lastName}
+                  </span>
                 </div>
               ) : null}
             </div>
@@ -329,7 +279,7 @@ export default function AgregarFactura() {
                         <TableHead className="py-3">Nombre</TableHead>
                         <TableHead className="py-3">Código</TableHead>
                         <TableHead className="py-3">Precio</TableHead>
-                        <TableHead className="py-3">Proveedor</TableHead>
+                        <TableHead className="py-3">Stock Actual</TableHead>
                         <TableHead className="py-3">Cantidad</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -339,13 +289,8 @@ export default function AgregarFactura() {
                           key={p.id}
                           product={p}
                           quantity={selections[p.id]?.quantity ?? 1}
-                          providerId={selections[p.id]?.providerId}
                           onQuantityChange={handleQuantityChange}
-                          onProviderChange={handleProviderChange}
                           onAdd={handleAgregar}
-                          providers={providers}
-                          loadingProviders={loadingProviders}
-                          fetchProviders={fetchProviders}
                         />
                       ))}
                     </TableBody>
@@ -368,7 +313,6 @@ export default function AgregarFactura() {
                       <TableRow className="bg-gray-50">
                         <TableHead className="py-3">Nombre</TableHead>
                         <TableHead className="py-3">Código</TableHead>
-                        <TableHead className="py-3">Proveedor</TableHead>
                         <TableHead className="py-3">Cantidad</TableHead>
                         <TableHead className="py-3">Subtotal</TableHead>
                         <TableHead className="py-3"></TableHead>
@@ -394,9 +338,6 @@ export default function AgregarFactura() {
                             </TableCell>
                             <TableCell className="px-4 py-3 text-start">
                               {p.product.id}
-                            </TableCell>
-                            <TableCell className="px-4 py-3 text-start">
-                              {p.provider?.name || "—"}
                             </TableCell>
                             <TableCell className="px-4 py-3 text-start">
                               {p.quantity ?? 1}
@@ -471,73 +412,17 @@ export default function AgregarFactura() {
   );
 }
 
-// Memoized ProviderSelect to reduce per-row render work
-function ProviderSelectInner({
-  value,
-  onChange,
-  providers,
-  loading,
-  onOpen,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  providers: Provider[];
-  loading: boolean;
-  onOpen?: () => void;
-}) {
-  return (
-    <Select
-      value={value}
-      onValueChange={(v) => onChange(v)}
-      onOpenChange={(open) => open && onOpen && onOpen()}
-    >
-      <SelectTrigger className="w-32 h-8 text-sm">
-        <SelectValue placeholder="Proveedor" />
-      </SelectTrigger>
-      <SelectContent>
-        {loading ? (
-          <SelectItem value="__loading" disabled>
-            Cargando proveedores...
-          </SelectItem>
-        ) : providers.length === 0 ? (
-          <SelectItem value="__no_providers" disabled>
-            No hay proveedores
-          </SelectItem>
-        ) : (
-          providers.map((prov) => (
-            <SelectItem key={prov.id} value={prov.id}>
-              {prov.name}
-            </SelectItem>
-          ))
-        )}
-      </SelectContent>
-    </Select>
-  );
-}
-
-const ProviderSelect = memo(ProviderSelectInner);
-
 // Row item memoized to avoid re-rendering unrelated rows
 const RowItem = memo(function RowItemInner({
   product,
   quantity,
-  providerId,
   onQuantityChange,
-  onProviderChange,
   onAdd,
-  providers,
-  loadingProviders,
-  fetchProviders,
 }: {
   product: ProductDto;
   quantity: number;
-  providerId?: string;
   onQuantityChange: (productId: string, quantity: number) => void;
-  onProviderChange: (productId: string, providerId?: string) => void;
   onAdd: (product: ProductDto, qty: number, providerId?: string) => void;
-  providers: Provider[];
-  loadingProviders: boolean;
-  fetchProviders: () => void;
 }) {
   return (
     <TableRow key={product.id} className="hover:bg-primary/10 transition">
@@ -546,17 +431,7 @@ const RowItem = memo(function RowItemInner({
       <TableCell className="text-start">
         ${(product.price || 0).toLocaleString()}
       </TableCell>
-      <TableCell>
-        <ProviderSelect
-          value={providerId || ""}
-          onChange={(v) => onProviderChange(product.id, v)}
-          providers={providers}
-          loading={loadingProviders}
-          onOpen={() => {
-            if (providers.length === 0 && !loadingProviders) fetchProviders();
-          }}
-        />
-      </TableCell>
+      <TableCell className="text-start">{product.stock}</TableCell>
       <TableCell className="text-center">
         <div className="flex items-center gap-2 justify-center">
           <Input
@@ -577,7 +452,7 @@ const RowItem = memo(function RowItemInner({
             title="Agregar producto"
             aria-label={`Agregar ${product.name}`}
             className="rounded-full h-8 w-8 p-0 bg-[#5932EA] text-white hover:bg-[#502DD3] active:bg-[#4728BB] shadow-sm flex items-center justify-center"
-            onClick={() => onAdd(product, quantity, providerId)}
+            onClick={() => onAdd(product, quantity)}
           >
             <Plus size={16} />
           </Button>

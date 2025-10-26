@@ -22,18 +22,21 @@ export default function ViewInvoiceDetailsModal({
   setSelectedInvoice?: (i: Invoice | null) => void;
 }) {
   // close handler: mirror other modals behaviour
+  console.log({ selectedInvoice });
   const handleOpenChange = (val: boolean) => {
     onOpenChange(val);
     if (!val && setSelectedInvoice) setSelectedInvoice(null);
   };
 
-  const items = selectedInvoice?.invoiceDetails ?? [];
+  // Support both shapes: invoiceDetails or items
+  const items = selectedInvoice?.invoiceDetails ?? selectedInvoice?.items ?? [];
 
-  const calculatedSubtotal = useMemo(
-    () => items.reduce((s, it) => s + (it.subtotal || 0), 0),
-    [items]
-  );
-
+  const calculatedSubtotal = useMemo<number>(() => {
+    return items.reduce(
+      (s, it) => s + (it.subtotal ?? (it.unitPrice ?? 0) * (it.quantity ?? 0)),
+      0
+    );
+  }, [items]);
   if (!selectedInvoice) return null;
 
   return (
@@ -55,7 +58,6 @@ export default function ViewInvoiceDetailsModal({
                 Factura
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
-                {selectedInvoice.id} •{" "}
                 {selectedInvoice.createdAt
                   ? new Date(selectedInvoice.createdAt).toLocaleString()
                   : "—"}
@@ -75,25 +77,38 @@ export default function ViewInvoiceDetailsModal({
 
         <div className="grid grid-cols-1 gap-4 py-4">
           <Card className="p-4">
-            <div className="flex justify-between">
+            <div className="flex flex-col md:flex-row justify-between gap-4">
               <div>
                 <div className="text-xs text-muted-foreground">Cliente</div>
                 <div className="font-medium">
-                  {`${selectedInvoice.customer.firstName} ${selectedInvoice.customer.lastName}`}
+                  {selectedInvoice.customer
+                    ? `${selectedInvoice.customer.firstName ?? ""} ${
+                        selectedInvoice.customer.lastName ?? ""
+                      }`
+                    : `${selectedInvoice.creator?.firstName ?? ""} ${
+                        selectedInvoice.creator?.lastName ?? ""
+                      }`}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {selectedInvoice.customer.email}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-xs text-muted-foreground">Factura</div>
-                <div className="font-medium">{selectedInvoice.id}</div>
-                <div className="text-sm text-muted-foreground">
-                  Emitida:{" "}
-                  {selectedInvoice.createdAt
-                    ? new Date(selectedInvoice.createdAt).toLocaleDateString()
-                    : "—"}
-                </div>
+                {selectedInvoice.customer?.email ? (
+                  <div className="text-sm text-muted-foreground">
+                    {selectedInvoice.customer.email}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    {selectedInvoice.creator?.email}
+                  </div>
+                )}
+                {selectedInvoice.customer?.phone && (
+                  <div className="text-sm text-muted-foreground">
+                    Tel: {selectedInvoice.customer.phone}
+                  </div>
+                )}
+                {selectedInvoice.customer?.address && (
+                  <div className="text-sm text-muted-foreground">
+                    {selectedInvoice.customer.address}{" "}
+                    {selectedInvoice.customer.city ?? ""}
+                  </div>
+                )}
               </div>
             </div>
           </Card>
@@ -117,17 +132,42 @@ export default function ViewInvoiceDetailsModal({
                     <td className="py-3 px-2 align-center w-14">
                       {it.quantity}
                     </td>
-                    <td className="py-3 align-top">
-                      <div className="font-medium">{it.product.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Proveedor: {it.provider.name}
+                    <td className="py-3 align-center">
+                      <div className="flex items-center gap-3">
+                        {it.product?.imageUrl ? (
+                          <img
+                            src={it.product.imageUrl}
+                            alt={it.product?.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-100 rounded" />
+                        )}
+                        <div className="flex-1">
+                          <div className="font-medium">{it.product?.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {it.product?.brand?.name}
+                            {it.product?.categories &&
+                              it.product.categories.length > 0 && (
+                                <span className="ml-2">
+                                  •{" "}
+                                  {it.product.categories
+                                    .map((c) => c.name)
+                                    .join(", ")}
+                                </span>
+                              )}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="py-3 align-center text-right">
-                      ${(it.unitPrice || 0).toLocaleString()}
+                      ${(it.unitPrice ?? 0).toLocaleString()}
                     </td>
                     <td className="py-3 align-center text-right font-semibold">
-                      ${(it.subtotal || 0).toLocaleString()}
+                      $
+                      {(
+                        it.subtotal ?? (it.unitPrice ?? 0) * (it.quantity ?? 0)
+                      ).toLocaleString()}
                     </td>
                   </tr>
                 ))}

@@ -19,7 +19,7 @@ import FetchingSpinner from "@/components/common/FetchingSpinner";
 
 import useAuth from "@/hooks/useAuth";
 import { invoiceService } from "@/services/factories/invoiceServiceFactory";
-import type { Invoice } from "@/types/Invoice";
+import type { Invoice, InvoiceDetail } from "@/types/Invoice";
 import ViewInvoiceDetailsModal from "./components/ViewInvoiceDetailsModal";
 import { Link } from "react-router-dom";
 
@@ -50,6 +50,7 @@ export default function InvoiceHistory() {
         invoices: fetched,
         message,
       } = await invoiceService.getAllInvoices(token);
+      console.log({ fetched });
       if (!success) {
         toast.error(message || "Error al obtener facturas");
         setInvoices([]);
@@ -80,11 +81,15 @@ export default function InvoiceHistory() {
     // Buscar en id, provider, line names y fecha
     const inId = (inv.id || "").toLowerCase().includes(q);
     const inDate = (inv.createdAt || "").toLowerCase().includes(q);
-    const inCustomer = `${inv.customer.firstName ?? ""} ${inv.customer.lastName ?? ""}`.toLowerCase().includes(q);
-    const inLines = inv.invoiceDetails.some(
-      (l) =>
-        (l.product.name || "").toLowerCase().includes(q) ||
-        (l.provider.name || "").toLowerCase().includes(q)
+    const inCustomer = (
+      inv.customer
+        ? `${inv.customer.firstName ?? ""} ${inv.customer.lastName ?? ""}`
+        : ""
+    )
+      .toLowerCase()
+      .includes(q);
+    const inLines = (inv.items || []).some((l) =>
+      (l.product.name || "").toLowerCase().includes(q)
     );
     return inId || inDate || inCustomer || inLines;
   });
@@ -174,7 +179,6 @@ export default function InvoiceHistory() {
                   <TableHead className="text-gray-400">Fecha</TableHead>
                   <TableHead className="text-gray-400">Cliente</TableHead>
                   <TableHead className="text-gray-400">Productos</TableHead>
-                  <TableHead className="text-gray-400">Proveedores</TableHead>
                   <TableHead className="text-gray-400">Total</TableHead>
                   <TableHead className="text-center text-gray-400">
                     Acciones
@@ -216,9 +220,9 @@ export default function InvoiceHistory() {
 
                       <TableCell>
                         <div className="text-sm flex flex-col max-w-[440px]">
-                          {inv.invoiceDetails.map((invDetail) => (
+                          {(inv.items || []).map((invDetail: InvoiceDetail) => (
                             <div
-                              key={`${invDetail.id}-${invDetail.provider.id}`}
+                              key={`${invDetail.id}-${invDetail.product.id}`}
                               className="flex items-center"
                             >
                               <span className="truncate block max-w-[340px]">
@@ -226,21 +230,6 @@ export default function InvoiceHistory() {
                               </span>
                               <span className="text-muted-foreground ml-4 whitespace-nowrap">
                                 x{invDetail.quantity}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="text-sm flex flex-col gap-1 max-w-[440px]">
-                          {inv.invoiceDetails.map((invDetail) => (
-                            <div
-                              key={invDetail.id}
-                              className="flex justify-between items-center"
-                            >
-                              <span className="truncate block max-w-[340px]">
-                                {invDetail.provider.name}
                               </span>
                             </div>
                           ))}

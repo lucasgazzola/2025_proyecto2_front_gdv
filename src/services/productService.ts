@@ -11,8 +11,40 @@ class ProductServiceReal implements IProductService {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = (await response.json()) as ProductDto[];
-      return { success: true, products: data };
+      const data = (await response.json()) as any[];
+      // Normalize server shape: imageURL -> imageUrl, ensure brand/category ids are strings
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+      const normalized: ProductDto[] = (data || []).map((p: any) => {
+        const rawImage = p.imageUrl ?? p.imageURL ?? p.image ?? "";
+        const imageUrl =
+          rawImage && !rawImage.startsWith("http")
+            ? `${API_BASE_URL}/${rawImage}`
+            : rawImage;
+        const brand = p.brand
+          ? {
+              ...p.brand,
+              id: String((p.brand as any).id ?? ""),
+              logo:
+                p.brand.logo && !p.brand.logo.startsWith("http")
+                  ? `${API_BASE_URL}/${p.brand.logo}`
+                  : p.brand.logo,
+            }
+          : p.brand;
+
+        return {
+          ...p,
+          id: String(p.id ?? ""),
+          imageUrl,
+          brand,
+          categories: (p.categories || []).map((c: any) => ({
+            ...c,
+            id: String(c.id ?? ""),
+          })),
+        } as ProductDto;
+      });
+
+      return { success: true, products: normalized };
     } catch (error) {
       return { success: false };
     }
@@ -28,8 +60,37 @@ class ProductServiceReal implements IProductService {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = (await response.json()) as ProductDto;
-      return { success: response.ok, product: data };
+      const data = (await response.json()) as any;
+      if (!data) return { success: response.ok };
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+      const rawImage = data.imageUrl ?? data.imageURL ?? data.image ?? "";
+      const imageUrl =
+        rawImage && !rawImage.startsWith("http")
+          ? `${API_BASE_URL}/${rawImage}`
+          : rawImage;
+      const brand = data.brand
+        ? {
+            ...data.brand,
+            id: String((data.brand as any).id ?? ""),
+            logo:
+              data.brand.logo && !data.brand.logo.startsWith("http")
+                ? `${API_BASE_URL}/${data.brand.logo}`
+                : data.brand.logo,
+          }
+        : data.brand;
+
+      const normalized: ProductDto = {
+        ...data,
+        id: String(data.id ?? ""),
+        imageUrl,
+        brand,
+        categories: (data.categories || []).map((c: any) => ({
+          ...c,
+          id: String(c.id ?? ""),
+        })),
+      };
+      return { success: response.ok, product: normalized };
     } catch (error) {
       return { success: false };
     }
@@ -49,19 +110,38 @@ class ProductServiceReal implements IProductService {
         body: JSON.stringify(product),
       });
       if (!response.ok) throw new Error("Failed to create product");
-      const productId = (await response.text()) as ProductDto["id"];
-      return {
-        success: true,
-        product: {
-          id: productId,
-          name: product.name,
-          brand: product.brand,
-          categories: product.categories,
-          imageUrl: product.imageUrl,
-          quantity: product.quantity,
-          price: product.price,
-        } as ProductDto,
-      };
+      const newProduct = (await response.json()) as any;
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+      const rawImage =
+        newProduct.imageUrl ?? newProduct.imageURL ?? newProduct.image ?? "";
+      const imageUrl =
+        rawImage && !rawImage.startsWith("http")
+          ? `${API_BASE_URL}/${rawImage}`
+          : rawImage;
+      const brand = newProduct.brand
+        ? {
+            ...newProduct.brand,
+            id: String((newProduct.brand as any).id ?? ""),
+            logo:
+              newProduct.brand.logo && !newProduct.brand.logo.startsWith("http")
+                ? `${API_BASE_URL}/${newProduct.brand.logo}`
+                : newProduct.brand.logo,
+          }
+        : newProduct.brand;
+
+      const normalized: ProductDto = {
+        ...newProduct,
+        id: String(newProduct.id ?? ""),
+        imageUrl,
+        brand,
+        categories: (newProduct.categories || []).map((c: any) => ({
+          ...c,
+          id: String(c.id ?? ""),
+        })),
+      } as ProductDto;
+
+      return { success: true, product: normalized };
     } catch (error) {
       return { success: false, message: "Error al crear el producto." };
     }
@@ -73,15 +153,16 @@ class ProductServiceReal implements IProductService {
     product: Partial<ProductDto>
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      const url = apiEndpoints.products.UPDATE_PRODUCT;
+      const url = apiEndpoints.products.UPDATE_PRODUCT(productId);
       const response = await fetch(url, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ ...product, id: productId }),
       });
+
       return { success: response.ok };
     } catch (error) {
       return {

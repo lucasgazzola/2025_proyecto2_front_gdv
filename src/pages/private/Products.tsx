@@ -73,6 +73,8 @@ export default function Products() {
       toast.info("No hay productos registrados.");
       return;
     }
+    console.log({ products });
+
     setProducts([...products]);
   };
 
@@ -90,7 +92,7 @@ export default function Products() {
         !product.name ||
         !("brand" in product) ||
         !("categories" in product) ||
-        product.quantity === undefined
+        product.stock === undefined
       ) {
         toast.error("Por favor, completa todos los campos obligatorios.");
         return;
@@ -168,15 +170,12 @@ export default function Products() {
     const name = (product.name || "").toLowerCase();
     const brand = (product.brand.name || "").toLowerCase();
 
-    const quantity = String(product.quantity || "");
-
     return (
       name.includes(q) ||
       brand.includes(q) ||
       (product.categories || []).some((category) =>
         category.name.toLowerCase().includes(q)
-      ) ||
-      quantity.includes(q)
+      )
     );
   });
 
@@ -188,7 +187,7 @@ export default function Products() {
       case "brand":
         return (a.brand.name || "").localeCompare(b.brand.name || "");
       case "quantity":
-        return (b.quantity || 0) - (a.quantity || 0); // mayor a menor
+        return (b.stock || 0) - (a.stock || 0); // mayor a menor
       case "price":
         return (b.price || 0) - (a.price || 0); // mayor a menor
       case "latest":
@@ -306,7 +305,7 @@ export default function Products() {
                             className="w-12 h-12 object-cover rounded"
                           />
                         </TableCell>
-                        <TableCell>{product.quantity}</TableCell>
+                        <TableCell>{product.stock}</TableCell>
                         <TableCell>${product.price}</TableCell>
                         <TableCell className="text-center space-x-2">
                           <MoreDetailsButton

@@ -6,7 +6,7 @@ export interface ProductDto {
   brand: Brand;
   categories: Category[];
   imageUrl?: string;
-  quantity: number;
+  stock: number;
   price: number;
 }
 
@@ -15,6 +15,6 @@ export interface ProductFormData {
   brand: Brand;
   categories: Category[];
   imageUrl?: string;
-  quantity: number;
+  stock: number;
   price: number;
 }

@@ -58,10 +58,10 @@ export default function EditProductModal({
     brand: {} as Brand,
     categories: [] as Category[],
     imageUrl: "",
-    quantity: 0,
+    stock: 0,
   });
 
-  const { name, price, brand, imageUrl, quantity } = formFields;
+  const { name, price, brand, imageUrl, stock } = formFields;
 
   const productSchema = z.object({
     id: z.string().optional(),
@@ -70,7 +70,7 @@ export default function EditProductModal({
     brand: z.string().min(1, "La marca es obligatoria"),
     categories: z.array(z.string()).min(1, "Selecciona al menos una categoría"),
     imageUrl: z.string().optional(),
-    quantity: z.number().min(0, "La cantidad es obligatoria"),
+    stock: z.number().min(0, "La cantidad es obligatoria"),
   });
 
   const [errors, setErrors] = useState<
@@ -110,7 +110,10 @@ export default function EditProductModal({
         return;
       }
 
-      setCategoriesList([...categories]);
+      // Normalize category ids to string so Zod validation (array of strings) matches
+      setCategoriesList(
+        categories.map((c) => ({ ...c, id: String((c as any).id) }))
+      );
     };
 
     fetchCategories();
@@ -136,7 +139,8 @@ export default function EditProductModal({
         return;
       }
 
-      setBrands([...brands]);
+      // Normalize brand ids to string to avoid mismatches with Select (which uses string values)
+      setBrands(brands.map((b) => ({ ...b, id: String((b as any).id) })));
     };
     fetchBrands();
   }, [brandModalOpen]);
@@ -164,24 +168,37 @@ export default function EditProductModal({
       setCategoryModalOpen(false);
       return;
     }
-    // update local lists
-    setCategoriesList((prev) => [...prev, created]);
-    setSelectedCategories((prev) => [...prev, created]);
+    // Normalize created category id to string and update local lists
+    const normalizedCat: Category = {
+      ...created,
+      id: String((created as any).id),
+    };
+    setCategoriesList((prev) => [...prev, normalizedCat]);
+    setSelectedCategories((prev) => [...prev, normalizedCat]);
     setCategoryModalOpen(false);
     toast.success("Categoría creada correctamente.");
   };
 
   useEffect(() => {
     if (isEdit && product) {
+      // Normalize ids to strings for brand and categories so Select / Dropdown compare correctly
+      const normalizedBrand = product.brand
+        ? ({ ...product.brand, id: String((product.brand as any).id) } as Brand)
+        : ({} as Brand);
+      const normalizedCategories = (product.categories || []).map((c) => ({
+        ...c,
+        id: String((c as any).id),
+      }));
+
       setFormFields({
         name: product.name,
         price: product.price,
-        brand: product.brand,
-        categories: product.categories,
+        brand: normalizedBrand,
+        categories: normalizedCategories,
         imageUrl: product.imageUrl || "",
-        quantity: product.quantity,
+        stock: product.stock,
       });
-      setSelectedCategories(product.categories);
+      setSelectedCategories(normalizedCategories);
       setImagePreview(product.imageUrl || "");
     } else {
       setFormFields({
@@ -190,7 +207,7 @@ export default function EditProductModal({
         brand: {} as Brand,
         categories: [],
         imageUrl: "",
-        quantity: 0,
+        stock: 0,
       });
       setSelectedCategories([]);
       setImagePreview("");
@@ -200,7 +217,7 @@ export default function EditProductModal({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormFields((prev) => {
-      if (name === "quantity" || name === "price") {
+      if (name === "stock" || name === "price") {
         const num = value === "" ? 0 : Number(value);
         return { ...prev, [name]: num } as typeof prev;
       }
@@ -265,7 +282,7 @@ export default function EditProductModal({
         brand: (formFields.brand as Brand).id || "",
         categories: selectedCategories.map((c) => c.id),
         imageUrl,
-        quantity,
+        stock,
       });
 
       if (!parsed.success) {
@@ -295,7 +312,7 @@ export default function EditProductModal({
         brand: formFields.brand,
         categories: selectedCategories,
         imageUrl: imagePreview,
-        quantity: parsed.data.quantity,
+        stock: parsed.data.stock,
         price: product!.price, // Ensure price is included
       } as ProductDto;
 
@@ -308,7 +325,7 @@ export default function EditProductModal({
         // Zod espera un array de strings (ids), no objetos Category
         categories: selectedCategories.map((c) => c.id),
         imageUrl,
-        quantity,
+        stock,
         // incluir price (número) en la validación
         price: formFields.price,
       });
@@ -338,7 +355,7 @@ export default function EditProductModal({
         brand: formFields.brand,
         categories: selectedCategories,
         imageUrl: imagePreview,
-        quantity: parsed.data.quantity,
+        stock: parsed.data.stock,
         // usar el price validado
         price: parsed.data.price,
       } as ProductFormData;
@@ -353,9 +370,6 @@ export default function EditProductModal({
       toast.error("Por favor, inicia sesión para acceder a esta sección.");
       return;
     }
-    if (!brands.find((br) => br.name === name)) {
-      setBrands((prev) => [...prev, brand as Brand]);
-    }
     const {
       success,
       message,
@@ -369,7 +383,18 @@ export default function EditProductModal({
       toast.error("Error al crear la marca");
       return;
     }
-    setFormFields((prev) => ({ ...prev, brand: createdBrand }));
+    // Normalize created brand id to string and add to local brands list if missing
+    const normalizedBrand: Brand = {
+      ...createdBrand,
+      id: String((createdBrand as any).id),
+    };
+    setBrands((prev) =>
+      prev.some((b) => String((b as any).id) === String(normalizedBrand.id))
+        ? prev
+        : [...prev, normalizedBrand]
+    );
+
+    setFormFields((prev) => ({ ...prev, brand: normalizedBrand }));
     setBrandModalOpen(false);
   };
 
@@ -581,26 +606,26 @@ export default function EditProductModal({
                 <div className="flex w-full">
                   <Label
                     className="text-nowrap text-gray-500 w-2/5"
-                    htmlFor="quantity"
+                    htmlFor="stock"
                   >
                     Stock*
                   </Label>
                   <Input
-                    id="quantity"
+                    id="stock"
                     type="number"
-                    name="quantity"
+                    name="stock"
                     step="1"
                     min={0}
-                    value={quantity}
+                    value={stock}
                     onChange={handleChange}
                     placeholder="Ingrese cantidad"
                     className="w-3/5"
                   />
                 </div>
                 <div className="w-3/5 ml-auto">
-                  {errors.quantity && (
+                  {errors.stock && (
                     <p className="text-sm text-start text-red-500">
-                      {errors.quantity}
+                      {errors.stock}
                     </p>
                   )}
                 </div>

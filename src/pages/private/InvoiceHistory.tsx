@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import { Search, Eye, Plus } from "lucide-react";
 
@@ -13,6 +13,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 // import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
 import FetchingSpinner from "@/components/common/FetchingSpinner";
@@ -29,6 +36,10 @@ export default function InvoiceHistory() {
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [customerFilter, setCustomerFilter] = useState<string>("all");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -76,39 +87,86 @@ export default function InvoiceHistory() {
     }
   };
 
+  const customersList = useMemo(() => {
+    const map = new Map<string, string>();
+    invoices.forEach((i) => {
+      if (i.customer && i.customer.id) {
+        map.set(
+          i.customer.id,
+          `${i.customer.firstName ?? ""} ${i.customer.lastName ?? ""}`.trim()
+        );
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [invoices]);
+
   useEffect(() => {
     fetchInvoices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filtered = invoices.filter((inv) => {
+  const filteredInvoices = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return true;
-    // Buscar en id, provider, line names y fecha
-    const inId = (inv.id || "").toLowerCase().includes(q);
-    const inDate = (inv.createdAt || "").toLowerCase().includes(q);
-    const inCustomer = (
-      inv.customer
-        ? `${inv.customer.firstName ?? ""} ${inv.customer.lastName ?? ""}`
-        : ""
-    )
-      .toLowerCase()
-      .includes(q);
-    const inLines = (inv.items || []).some((l) =>
-      (l.product.name || "").toLowerCase().includes(q)
-    );
-    return inId || inDate || inCustomer || inLines;
-  });
+
+    return invoices.filter((inv) => {
+      // search (id, date string, customer name, line product names)
+      const inId = (inv.id || "").toLowerCase().includes(q);
+      const inDate = (inv.createdAt || "").toLowerCase().includes(q);
+      const inCustomer = (
+        inv.customer
+          ? `${inv.customer.firstName ?? ""} ${inv.customer.lastName ?? ""}`
+          : ""
+      )
+        .toLowerCase()
+        .includes(q);
+      const inLines = (inv.items || []).some((l) =>
+        (l.product.name || "").toLowerCase().includes(q)
+      );
+
+      if (q && !(inId || inDate || inCustomer || inLines)) return false;
+
+      // status filter
+      if (statusFilter !== "all" && inv.state !== statusFilter) return false;
+
+      // customer filter (by id)
+      if (customerFilter !== "all") {
+        if (!inv.customer || inv.customer.id !== customerFilter) return false;
+      }
+
+      // date range filter (startDate/endDate are YYYY-MM-DD)
+      if (startDate) {
+        const invDate = inv.createdAt ? new Date(inv.createdAt) : null;
+        const start = new Date(startDate + "T00:00:00");
+        if (!invDate || invDate < start) return false;
+      }
+      if (endDate) {
+        const invDate = inv.createdAt ? new Date(inv.createdAt) : null;
+        // include the whole end day
+        const end = new Date(endDate + "T23:59:59.999");
+        if (!invDate || invDate > end) return false;
+      }
+
+      return true;
+    });
+  }, [invoices, search, startDate, endDate, statusFilter, customerFilter]);
 
   const INVOICES_PER_PAGE = 6;
+  useEffect(
+    () => setCurrentPage(1),
+    [search, startDate, endDate, statusFilter, customerFilter]
+  );
+
   const totalPages = Math.max(
     1,
-    Math.ceil(filtered.length / INVOICES_PER_PAGE)
+    Math.ceil(filteredInvoices.length / INVOICES_PER_PAGE)
   );
-  const paginated = filtered.slice(
-    (currentPage - 1) * INVOICES_PER_PAGE,
-    currentPage * INVOICES_PER_PAGE
-  );
+
+  const paginated = useMemo(() => {
+    return filteredInvoices.slice(
+      (currentPage - 1) * INVOICES_PER_PAGE,
+      currentPage * INVOICES_PER_PAGE
+    );
+  }, [filteredInvoices, currentPage]);
 
   // const handleDelete = async (id?: string) => {
   //   if (!id) return;
@@ -161,6 +219,54 @@ export default function InvoiceHistory() {
                   setCurrentPage(1);
                 }}
                 className="w-full pl-10 border-none"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <Select
+                value={statusFilter}
+                onValueChange={(v) => setStatusFilter(v)}
+              >
+                <SelectTrigger className="w-36 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Estado</span>
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="PAID">Pagadas</SelectItem>
+                  <SelectItem value="CANCELLED">Canceladas</SelectItem>
+                  <SelectItem value="PENDING">Pendientes</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={customerFilter}
+                onValueChange={(v) => setCustomerFilter(v)}
+              >
+                <SelectTrigger className="w-48 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Cliente</span>
+                  <SelectValue placeholder="Cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {customersList.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-gray-50 border-none w-40"
+              />
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="bg-gray-50 border-none w-40"
               />
             </div>
             <div className="flex items-center gap-4">

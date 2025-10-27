@@ -44,6 +44,25 @@ export const USERS: UserWithPassword[] = [
 ];
 
 class UserServiceMock implements IUserService {
+  updateUserProfile(
+    _token: string,
+    user: Partial<User>
+  ): Promise<{ success: boolean; message?: string; user?: User }> {
+    const index = USERS.findIndex((u) => u.email === user.email);
+    if (index !== -1) {
+      USERS[index] = { ...USERS[index], ...user };
+      const { password, ...userWithoutPassword } = USERS[index];
+      return Promise.resolve({
+        success: true,
+        user: userWithoutPassword,
+      });
+    } else {
+      return Promise.resolve({
+        success: false,
+        message: "Usuario no encontrado (mock)",
+      });
+    }
+  }
   async getAllUsers(
     _token: string
   ): Promise<{ success: boolean; users?: User[]; message?: string }> {

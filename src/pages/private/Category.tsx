@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import useAuth from "@/hooks/useAuth";
 import type { Category, CategoryFormData } from "@/types/Category";
@@ -15,6 +15,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import FetchingSpinner from "@/components/common/FetchingSpinner";
 import EditCategoryModal from "@/pages/private/components/EditCategoryModal";
 import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal";
@@ -33,6 +40,7 @@ export default function Category() {
     null
   );
   const [search, setSearch] = useState("");
+  const [orderBy, setOrderBy] = useState<string>("latest");
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
 
@@ -140,8 +148,21 @@ export default function Category() {
     );
   });
 
+  const sorted = useMemo(() => {
+    const list = [...filtered];
+    switch (orderBy) {
+      case "name":
+        return list.sort((a, b) => a.name.localeCompare(b.name));
+      case "latest":
+      default:
+        return list;
+    }
+  }, [filtered, orderBy]);
+
   // const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const paginated = filtered.slice(
+  useEffect(() => setCurrentPage(1), [search, orderBy]);
+
+  const paginated = sorted.slice(
     (currentPage - 1) * perPage,
     currentPage * perPage
   );
@@ -170,6 +191,16 @@ export default function Category() {
                   className="w-full pl-10 border-none"
                 />
               </div>
+              <Select value={orderBy} onValueChange={(v) => setOrderBy(v)}>
+                <SelectTrigger className="w-full lg:w-1/4 max-w-60 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Ordenar por:</span>
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="latest">Más reciente</SelectItem>
+                  <SelectItem value="name">Nombre</SelectItem>
+                </SelectContent>
+              </Select>
               <div className="w-full md:w-auto">
                 <Button
                   onClick={() => {

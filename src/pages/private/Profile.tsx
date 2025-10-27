@@ -16,7 +16,7 @@ import {
 import useAuth from "@/hooks/useAuth";
 
 import { userService } from "@/services/factories/userServiceFactory";
-const { getUserProfile, updateUserByEmail } = userService;
+const { getUserProfile, updateUserProfile } = userService;
 import { authService } from "@/services/factories/authServiceFactory";
 const { changePassword } = authService;
 
@@ -102,19 +102,15 @@ export default function Profile() {
       }
     }
 
-    const { success, message } = await updateUserByEmail(
-      token,
-      user?.email || "",
-      {
-        firstName: newName,
-        lastName: newLastname,
-        email: user?.email || "",
-        address,
-        phone,
-        city,
-        province,
-      }
-    );
+    const { success, message } = await updateUserProfile(token, {
+      firstName: newName,
+      lastName: newLastname,
+      email: user?.email || "",
+      address,
+      phone,
+      city,
+      province,
+    });
 
     if (!success) {
       toast.error(message || "Error al actualizar el perfil");
@@ -296,7 +292,9 @@ export default function Profile() {
             </div>
           </div>
           <div className="mt-10 flex justify-between items-center gap-6">
-            <Button onClick={() => setPasswordModalOpen(true)}>Cambiar contraseña</Button>
+            <Button onClick={() => setPasswordModalOpen(true)}>
+              Cambiar contraseña
+            </Button>
             <div className="flex gap-6">
               <Button
                 variant="outline"

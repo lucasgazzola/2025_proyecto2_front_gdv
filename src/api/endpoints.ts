@@ -46,7 +46,9 @@ export const API_ENDPOINTS = {
     GET_PROFILE: "/usuarios/profile",
     GET_USER_BY_EMAIL: (email: string) =>
       `/usuarios/${encodeURIComponent(email)}`,
-    UPDATE_USER_BY_EMAIL: (email: string) => `/usuarios/${email}`,
+    UPDATE_USER_PROFILE: `/usuarios/profile`,
+    UPDATE_USER_BY_EMAIL: (email: string) =>
+      `/usuarios/${encodeURIComponent(email)}`,
     DELETE_USER_BY_EMAIL: (email: string) => `/usuarios/${email}`,
     UPDATE_PROFILE: "/usuarios/profile",
     CHANGE_PASSWORD: (email: string) => `/usuarios/${email}/change-password`,

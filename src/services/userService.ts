@@ -103,7 +103,7 @@ class UserServiceReal implements IUserService {
       const response = await fetch(
         apiEndpoints.users.UPDATE_USER_BY_EMAIL(userEmail),
         {
-          method: "POST",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -131,39 +131,71 @@ class UserServiceReal implements IUserService {
   }
 
   async changePassword(
-      token: string,
-      email: string,
-      oldPassword: string,
-      newPassword: string,
-      confirmPassword: string
-    ): Promise<{ success: boolean; message?: string }> {
-      try {
-        const response = await fetch(apiEndpoints.users.CHANGE_PASSWORD(email), {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            old_password: oldPassword,
-            new_password: newPassword,
-            password_confirm: confirmPassword,
-          }),
-        });
-        if (!response.ok) {
-          if (response.status === 400) {
-            return { success: false, message: "Contraseña actual incorrecta" };
-          }
-          const errorData = (await response.json()) as { message: string };
-          return {
-            success: false,
-            message: errorData.message || "Error al cambiar la contraseña",
-          };
+    token: string,
+    email: string,
+    oldPassword: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await fetch(apiEndpoints.users.CHANGE_PASSWORD(email), {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          old_password: oldPassword,
+          new_password: newPassword,
+          password_confirm: confirmPassword,
+        }),
+      });
+      if (!response.ok) {
+        if (response.status === 400) {
+          return { success: false, message: "Contraseña actual incorrecta" };
         }
-        return { success: true, message: "Contraseña cambiada correctamente" };
-      } catch {
-        return { success: false, message: "Error al conectar con el servidor" };
+        const errorData = (await response.json()) as { message: string };
+        return {
+          success: false,
+          message: errorData.message || "Error al cambiar la contraseña",
+        };
       }
+      return { success: true, message: "Contraseña cambiada correctamente" };
+    } catch {
+      return { success: false, message: "Error al conectar con el servidor" };
+    }
+  }
+
+  async updateUserProfile(
+    token: string,
+    user: Partial<User>
+  ): Promise<{ success: boolean; message?: string; user?: User }> {
+    try {
+      const response = await fetch(apiEndpoints.users.UPDATE_USER_PROFILE, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(user),
+      });
+      if (!response.ok) {
+        throw new Error("Error al actualizar el perfil del usuario");
+      }
+      const responseData = (await response.json()) as UserDto;
+      return {
+        success: true,
+        user: userDtoToUser(responseData),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error desconocido al actualizar el perfil del usuario",
+      };
+    }
   }
 }
 

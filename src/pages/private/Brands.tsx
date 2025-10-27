@@ -80,6 +80,8 @@ export default function Brands() {
     if (modalOpen === false && deleteModalOpen === false) fetchBrands();
   }, [modalOpen, deleteModalOpen]);
 
+  useEffect(() => setCurrentPage(1), [search, orderBy]);
+
   const handleSaveBrand = async (
     brand: Brand | BrandFormData | FormData,
     isEdit: boolean
@@ -247,9 +249,6 @@ export default function Brands() {
                 <SelectContent>
                   <SelectItem value="latest">Más reciente</SelectItem>
                   <SelectItem value="name">Nombre</SelectItem>
-                  <SelectItem value="brand">Marca</SelectItem>
-                  <SelectItem value="category">Categoría</SelectItem>
-                  <SelectItem value="quantity">Cantidad</SelectItem>{" "}
                 </SelectContent>
               </Select>
 

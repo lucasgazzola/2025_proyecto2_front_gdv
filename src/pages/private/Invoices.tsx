@@ -1,4 +1,12 @@
-import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  memo,
+  useRef,
+  Fragment,
+} from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +32,13 @@ import SelectCustomerModal from "./components/SelectCustomerModal";
 import { invoiceService } from "@/services/factories/invoiceServiceFactory";
 import type { Invoice, InvoiceDetail } from "@/types/Invoice";
 import type { Customer } from "@/types/Customer";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 export default function AgregarFactura() {
   const { logout, getAccessToken } = useAuth();
@@ -31,6 +46,10 @@ export default function AgregarFactura() {
   const [productos, setProductos] = useState<ProductDto[]>([]);
   const [invoiceDetails, setInvoiceDetails] = useState<InvoiceDetail[]>([]);
   const [search, setSearch] = useState("");
+  const [brandFilter, setBrandFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [orderBy, setOrderBy] = useState<string>("name");
+  const [currentPage, setCurrentPage] = useState<number>(1);
   // store only providerId to avoid holding objects in per-row state (reduces re-renders)
   type Selection = { quantity: number; providerId?: string };
   const [selections, setSelections] = useState<Record<string, Selection>>({});
@@ -42,6 +61,7 @@ export default function AgregarFactura() {
   );
   // estados de carga separados para que la interfaz sea responsiva
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const PRODUCTS_PER_PAGE = 8;
 
   const isMountedRef = useRef(true);
 
@@ -110,13 +130,68 @@ export default function AgregarFactura() {
     []
   );
 
-  const productosFiltrados = useMemo(
-    () =>
-      productos.filter((p) =>
-        (p.name || "").toLowerCase().includes(search.toLowerCase())
-      ),
-    [productos, search]
+  const productosFiltrados = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return productos
+      .filter((p) => {
+        if (q === "") return true;
+        return (
+          (p.name || "").toLowerCase().includes(q) ||
+          (p.brand?.name || "").toLowerCase().includes(q) ||
+          (p.id || "").toLowerCase().includes(q)
+        );
+      })
+      .filter((p) => {
+        if (brandFilter === "all") return true;
+        return (p.brand?.name || "Sin marca") === brandFilter;
+      })
+      .filter((p) => {
+        if (categoryFilter === "all") return true;
+        return (p.categories || []).some((c) => c.name === categoryFilter);
+      });
+  }, [productos, search, brandFilter, categoryFilter]);
+
+  // sort
+  const productosOrdenados = useMemo(() => {
+    return [...productosFiltrados].sort((a, b) => {
+      switch (orderBy) {
+        case "priceAsc":
+          return (a.price || 0) - (b.price || 0);
+        case "priceDesc":
+          return (b.price || 0) - (a.price || 0);
+        case "stockDesc":
+          return (b.stock || 0) - (a.stock || 0);
+        case "name":
+        default:
+          return (a.name || "").localeCompare(b.name || "");
+      }
+    });
+  }, [productosFiltrados, orderBy]);
+
+  // pagination
+  const totalPages = Math.max(
+    1,
+    Math.ceil(productosOrdenados.length / PRODUCTS_PER_PAGE)
   );
+  useEffect(
+    () => setCurrentPage(1),
+    [search, brandFilter, categoryFilter, orderBy]
+  );
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    return productosOrdenados.slice(start, start + PRODUCTS_PER_PAGE);
+  }, [productosOrdenados, currentPage]);
+
+  // grouping for current page (representative division by brand)
+  const groupedByBrand = useMemo(() => {
+    const map = new Map<string, ProductDto[]>();
+    paginatedProducts.forEach((p) => {
+      const key = p.brand?.name || "Sin marca";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(p);
+    });
+    return Array.from(map.entries());
+  }, [paginatedProducts]);
 
   // load products and providers from mock services on mount (uses token like Products)
   useEffect(() => {
@@ -248,6 +323,64 @@ export default function AgregarFactura() {
                 className="w-full pl-10 border-none"
               />
             </div>
+            <div className="flex items-center gap-3">
+              <Select
+                value={brandFilter}
+                onValueChange={(v) => setBrandFilter(v)}
+              >
+                <SelectTrigger className="w-40 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Marca</span>
+                  <SelectValue placeholder="Marca" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {Array.from(
+                    new Set(productos.map((p) => p.brand?.name || "Sin marca"))
+                  ).map((b) => (
+                    <SelectItem key={b} value={b}>
+                      {b}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={categoryFilter}
+                onValueChange={(v) => setCategoryFilter(v)}
+              >
+                <SelectTrigger className="w-40 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Categoría</span>
+                  <SelectValue placeholder="Categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {Array.from(
+                    new Set(
+                      productos.flatMap(
+                        (p) => p.categories?.map((c) => c.name) || []
+                      )
+                    )
+                  ).map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={orderBy} onValueChange={(v) => setOrderBy(v)}>
+                <SelectTrigger className="w-44 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Ordenar</span>
+                  <SelectValue placeholder="Orden" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Nombre (A-Z)</SelectItem>
+                  <SelectItem value="priceAsc">Precio ↑</SelectItem>
+                  <SelectItem value="priceDesc">Precio ↓</SelectItem>
+                  <SelectItem value="stockDesc">Stock ↓</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center gap-4">
               <Link to="/invoice-history" className="inline-block">
                 <Button size="sm" className="flex items-center gap-2">
@@ -273,28 +406,79 @@ export default function AgregarFactura() {
                     <FetchingSpinner />
                   </div>
                 ) : (
-                  <Table className="min-w-full">
-                    <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead className="py-3">Nombre</TableHead>
-                        <TableHead className="py-3">Código</TableHead>
-                        <TableHead className="py-3">Precio</TableHead>
-                        <TableHead className="py-3">Stock Actual</TableHead>
-                        <TableHead className="py-3">Cantidad</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {productosFiltrados.map((p: ProductDto) => (
-                        <RowItem
-                          key={p.id}
-                          product={p}
-                          quantity={selections[p.id]?.quantity ?? 1}
-                          onQuantityChange={handleQuantityChange}
-                          onAdd={handleAgregar}
-                        />
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div>
+                    <Table className="min-w-full">
+                      <TableHeader>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="py-3">Nombre</TableHead>
+                          <TableHead className="py-3">Código</TableHead>
+                          <TableHead className="py-3">Precio</TableHead>
+                          <TableHead className="py-3">Stock Actual</TableHead>
+                          <TableHead className="py-3">Cantidad</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {groupedByBrand.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-6">
+                              No hay productos
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          groupedByBrand.map(([brandName, items]) => (
+                            <Fragment key={`group-${brandName}`}>
+                              <TableRow className="bg-gray-100">
+                                <TableCell
+                                  colSpan={5}
+                                  className="font-semibold text-sm py-2"
+                                >
+                                  {brandName}
+                                </TableCell>
+                              </TableRow>
+                              {items.map((p) => (
+                                <RowItem
+                                  key={p.id}
+                                  product={p}
+                                  quantity={selections[p.id]?.quantity ?? 1}
+                                  onQuantityChange={handleQuantityChange}
+                                  onAdd={handleAgregar}
+                                />
+                              ))}
+                            </Fragment>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+
+                    {/* Paginación de productos */}
+                    <div className="flex items-center justify-between pt-4">
+                      <span className="text-sm text-muted-foreground">
+                        Página {currentPage} de {totalPages}
+                      </span>
+                      <div className="space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setCurrentPage((p) => Math.max(1, p - 1))
+                          }
+                          disabled={currentPage === 1}
+                        >
+                          Anterior
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setCurrentPage((p) => Math.min(totalPages, p + 1))
+                          }
+                          disabled={currentPage === totalPages}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

@@ -40,6 +40,7 @@ const Brands = lazy(() => import("@/pages/private/Brands"));
 const Category = lazy(() => import("@/pages/private/Category"));
 const Provider = lazy(() => import("@/pages/private/Provider"));
 const Customers = lazy(() => import("@/pages/private/Customers"));
+const TeamMetrics = lazy(() => import("@/pages/public/TeamMetrics"));
 
 export const publicRoutes: RouteItem[] = [
   {
@@ -65,6 +66,12 @@ export const publicRoutes: RouteItem[] = [
     to: "/reset-password",
     icon: Mail,
     element: <ResetPassword />,
+  },
+  {
+    label: "Métricas del equipo",
+    to: "/team-metrics",
+    icon: LayoutDashboard,
+    element: <TeamMetrics />,
   },
 ];
 

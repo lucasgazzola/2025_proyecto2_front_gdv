@@ -165,7 +165,6 @@ export default function Customers() {
 
   // Paginación
   const CUSTOMERS_PER_PAGE = 5;
-
   const totalPages = Math.ceil(sortedCustomers.length / CUSTOMERS_PER_PAGE);
   const paginatedCustomers = sortedCustomers.slice(
     (currentPage - 1) * CUSTOMERS_PER_PAGE,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,6 +41,8 @@ export default function Products() {
 
   const [products, setProducts] = useState<ProductDto[]>([]);
   const [orderBy, setOrderBy] = useState<string>("latest");
+  const [brandFilter, setBrandFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [selectedProduct, setSelectedProduct] = useState<ProductDto | null>(
     null
   );
@@ -161,44 +163,65 @@ export default function Products() {
     toast.success("Producto eliminado correctamente.");
   };
 
-  // Filtro de productos
-  const filteredProducts = products.filter((product) => {
+  // Filtro de productos (search + brand + category)
+  const filteredProducts = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return true;
-
-    const name = (product.name || "").toLowerCase();
-    const brand = (product.brand.name || "").toLowerCase();
-
-    return (
-      name.includes(q) ||
-      brand.includes(q) ||
-      (product.categories || []).some((category) =>
-        category.name.toLowerCase().includes(q)
-      )
-    );
-  });
+    return products
+      .filter((product) => {
+        if (!q) return true;
+        const name = (product.name || "").toLowerCase();
+        const brand = (product.brand?.name || "").toLowerCase();
+        return (
+          name.includes(q) ||
+          brand.includes(q) ||
+          (product.categories || []).some((category) =>
+            category.name.toLowerCase().includes(q)
+          )
+        );
+      })
+      .filter((product) => {
+        if (brandFilter === "all") return true;
+        return (product.brand?.name || "Sin marca") === brandFilter;
+      })
+      .filter((product) => {
+        if (categoryFilter === "all") return true;
+        return (product.categories || []).some(
+          (c) => c.name === categoryFilter
+        );
+      });
+  }, [products, search, brandFilter, categoryFilter]);
 
   // Ordenar por: nombre/marca/categoria de A-Z, cantidad DESC, latest = as-is
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (orderBy) {
-      case "name":
-        return (a.name || "").localeCompare(b.name || "");
-      case "brand":
-        return (a.brand.name || "").localeCompare(b.brand.name || "");
-      case "quantity":
-        return (b.stock || 0) - (a.stock || 0); // mayor a menor
-      case "price":
-        return (b.price || 0) - (a.price || 0); // mayor a menor
-      case "latest":
-      default:
-        return 0;
-    }
-  });
+  const sortedProducts = useMemo(() => {
+    return [...filteredProducts].sort((a, b) => {
+      switch (orderBy) {
+        case "name":
+          return (a.name || "").localeCompare(b.name || "");
+        case "brand":
+          return (a.brand.name || "").localeCompare(b.brand.name || "");
+        case "quantity":
+          return (b.stock || 0) - (a.stock || 0); // mayor a menor
+        case "price":
+          return (b.price || 0) - (a.price || 0); // mayor a menor
+        case "latest":
+        default:
+          return 0;
+      }
+    });
+  }, [orderBy, filteredProducts]);
 
   const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
-  const paginatedProducts = sortedProducts.slice(
-    (currentPage - 1) * productsPerPage,
-    currentPage * productsPerPage
+  useEffect(
+    () => setCurrentPage(1),
+    [search, orderBy, brandFilter, categoryFilter]
+  );
+  const paginatedProducts = useMemo(
+    () =>
+      sortedProducts.slice(
+        (currentPage - 1) * productsPerPage,
+        currentPage * productsPerPage
+      ),
+    [sortedProducts, currentPage, productsPerPage]
   );
 
   return (
@@ -230,6 +253,50 @@ export default function Products() {
                   className="w-full pl-10 border-none"
                 />
               </div>
+
+              <Select
+                value={brandFilter}
+                onValueChange={(v) => setBrandFilter(v)}
+              >
+                <SelectTrigger className="w-48 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Marca</span>
+                  <SelectValue placeholder="Marca" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {Array.from(
+                    new Set(products.map((p) => p.brand?.name || "Sin marca"))
+                  ).map((b) => (
+                    <SelectItem key={b} value={b}>
+                      {b}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={categoryFilter}
+                onValueChange={(v) => setCategoryFilter(v)}
+              >
+                <SelectTrigger className="w-48 bg-gray-50 border-none font-semibold">
+                  <span className="font-normal">Categoría</span>
+                  <SelectValue placeholder="Categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {Array.from(
+                    new Set(
+                      products.flatMap((p) =>
+                        (p.categories || []).map((c: any) => c.name)
+                      )
+                    )
+                  ).map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               <Select value={orderBy} onValueChange={(v) => setOrderBy(v)}>
                 <SelectTrigger className="w-full lg:w-1/4 max-w-60 bg-gray-50 border-none font-semibold">
@@ -288,13 +355,13 @@ export default function Products() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    paginatedProducts.map((product) => (
+                    paginatedProducts.map((product: ProductDto) => (
                       <TableRow key={product.id}>
                         <TableCell>{product.name}</TableCell>
                         <TableCell>{product.brand.name}</TableCell>
                         <TableCell>
                           {product.categories
-                            .map((category) => category.name)
+                            .map((category: any) => category.name)
                             .join(", ")}
                         </TableCell>
                         <TableCell>

@@ -25,7 +25,7 @@ import { logsService } from "@/services/factories/logServiceFactory";
 import { toast } from "react-toastify";
 
 import FetchingSpinner from "@/components/common/FetchingSpinner";
-import { LogsIcon, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 export default function Audits() {
   const { logout, getAccessToken } = useAuth();

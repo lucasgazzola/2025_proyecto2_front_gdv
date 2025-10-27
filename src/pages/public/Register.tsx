@@ -86,8 +86,7 @@ export default function Register() {
       return;
     }
 
-    const { confirmPassword, ...data } = formData;
-
+    const { ...data } = formData;
     setIsLoading(true);
     await register(data);
     setIsLoading(false);

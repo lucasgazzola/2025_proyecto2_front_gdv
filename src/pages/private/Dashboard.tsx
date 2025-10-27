@@ -17,6 +17,9 @@ import useAuth from "@/hooks/useAuth";
 import DashboardCharts from "./components/DashboardCharts";
 import type { Invoice } from "@/types/Invoice";
 import type { ProductDto } from "@/types/Product";
+import MetabaseComponent from "./components/MetabaseComponent";
+
+const USE_METABASE_CHARTS = import.meta.env.VITE_USE_METABASE_CHARTS === "true";
 
 export default function Dashboard() {
   const { getAccessToken, logout } = useAuth();
@@ -66,6 +69,10 @@ export default function Dashboard() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  if (USE_METABASE_CHARTS) {
+    return <MetabaseComponent key="2" />;
+  }
 
   // Sólo sumar ingresos de facturas que estén en estado PAID
   const totalRevenue = useMemo(() => {

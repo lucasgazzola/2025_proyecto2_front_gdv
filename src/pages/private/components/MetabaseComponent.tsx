@@ -10,7 +10,7 @@ const apiKey = import.meta.env.VITE_METABASE_API_KEY;
  * You'll need to replace the `metabaseInstanceUrl` and the `apiKey` values.
  */
 const authConfig = defineMetabaseAuthConfig({
-  metabaseInstanceUrl: "http://localhost:4400",
+  metabaseInstanceUrl: "http://localhost:3000",
   apiKey,
 });
 

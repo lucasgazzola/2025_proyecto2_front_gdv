@@ -69,7 +69,7 @@ class AuthServiceReal implements IAuthService {
   }
 
   async register(
-    data: Omit<RegisterFormDto, "confirmPassword">
+    data: RegisterFormDto
   ): Promise<{ success: boolean; message?: string }> {
     // ...existing code...
     try {

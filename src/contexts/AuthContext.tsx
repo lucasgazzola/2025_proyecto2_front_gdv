@@ -12,9 +12,7 @@ interface AuthContextProps {
   setName: (name: string) => void;
   setLastname: (lastname: string) => void;
   getAccessToken: () => string | null;
-  register: (
-    formData: Omit<RegisterFormDto, "confirmPassword">
-  ) => Promise<void>;
+  register: (formData: RegisterFormDto) => Promise<void>;
   login: (formData: LoginFormDto) => Promise<void>;
   logout: () => void;
 }

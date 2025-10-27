@@ -124,12 +124,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     lastName,
     email,
     password,
-  }: Omit<RegisterFormDto, "confirmPassword">): Promise<void> => {
+    confirmPassword,
+  }: RegisterFormDto): Promise<void> => {
     const { success, message } = await registerService({
       firstName,
       lastName,
       email,
       password,
+      confirmPassword,
     });
 
     if (!success) {

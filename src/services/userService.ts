@@ -1,5 +1,5 @@
 import { apiEndpoints } from "@/api/endpoints";
-import { userDtoToUser, type User, type UserDto } from "@/types/User";
+import { type User } from "@/types/User";
 import type { IUserService } from "@/services/interfaces/IUserService";
 
 class UserServiceReal implements IUserService {
@@ -16,10 +16,10 @@ class UserServiceReal implements IUserService {
       if (!response.ok) {
         throw new Error("Error al obtener los usuarios");
       }
-      const usersDto: UserDto[] = await response.json();
+      const users: User[] = await response.json();
       return {
         success: true,
-        users: usersDto.map((user) => userDtoToUser(user)),
+        users: users,
       };
     } catch (error) {
       return {
@@ -49,10 +49,10 @@ class UserServiceReal implements IUserService {
       if (!response.ok) {
         throw new Error("Error al obtener los usuarios");
       }
-      const userDto: UserDto = await response.json();
+      const user: User = await response.json();
       return {
         success: true,
-        user: userDtoToUser(userDto),
+        user: user,
       };
     } catch (error) {
       return {
@@ -78,10 +78,10 @@ class UserServiceReal implements IUserService {
       if (!response.ok) {
         throw new Error("Error al obtener el perfil del usuario");
       }
-      const userDto: UserDto = await response.json();
+      const user: User = await response.json();
       return {
         success: true,
-        user: userDtoToUser(userDto),
+        user: user,
       };
     } catch (error) {
       return {
@@ -114,10 +114,10 @@ class UserServiceReal implements IUserService {
       if (!response.ok) {
         throw new Error("Error al actualizar el usuario");
       }
-      const responseData = (await response.json()) as UserDto;
+      const updatedUser = (await response.json()) as User;
       return {
         success: true,
-        user: userDtoToUser(responseData),
+        user: updatedUser,
       };
     } catch (error) {
       return {
@@ -182,10 +182,10 @@ class UserServiceReal implements IUserService {
       if (!response.ok) {
         throw new Error("Error al actualizar el perfil del usuario");
       }
-      const responseData = (await response.json()) as UserDto;
+      const userProfile = (await response.json()) as User;
       return {
         success: true,
-        user: userDtoToUser(responseData),
+        user: userProfile,
       };
     } catch (error) {
       return {

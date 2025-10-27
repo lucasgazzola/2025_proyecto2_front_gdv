@@ -25,7 +25,7 @@ import { logsService } from "@/services/factories/logServiceFactory";
 import { toast } from "react-toastify";
 
 import FetchingSpinner from "@/components/common/FetchingSpinner";
-import { Search } from "lucide-react";
+import { LogsIcon, Search } from "lucide-react";
 
 export default function Audits() {
   const { logout, getAccessToken } = useAuth();
@@ -53,7 +53,7 @@ export default function Audits() {
         toast.error(message || "Error al cargar los registros.");
         return;
       }
-      setLogEntries(logs || []);
+      setLogEntries([...(logs?.reverse() || [])]);
       setTotalPages(Math.ceil((logs?.length || 0) / logsPerPage));
     };
     fetchLogs();
